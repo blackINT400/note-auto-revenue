@@ -60,7 +60,7 @@ jobs:
         run: |
           git config --global user.email "auto-publisher@zenn-revenue.bot"
           git config --global user.name "Zenn Auto Publisher"
-          git add articles/ logs/ data/ config.yaml
+          git add articles/ logs/ data/ config.yaml 2>/dev/null || true
           git diff --staged --quiet && echo "変更なし、コミットをスキップします" || \
             git commit -m "chore: auto publish $(date +%Y-%m-%d) [skip ci]"
           git push
