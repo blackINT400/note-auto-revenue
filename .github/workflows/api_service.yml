@@ -1,0 +1,62 @@
+name: API Service Auto Runner
+
+on:
+  schedule:
+    - cron: '0 23 * * *'   # 毎日 08:00 JST（メトリクス収集）
+    - cron: '0 3 * * 1'    # 毎週月曜 12:00 JST（新サービス探索・生成）
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '実行モード'
+        required: true
+        default: 'daily'
+        type: choice
+        options: [daily, weekly]
+      business_id:
+        description: '事業ID (businesses/ 配下のディレクトリ名)'
+        required: true
+        default: ''
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run API Service
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          BIZ_ID="${{ inputs.business_id }}"
+          MODE="${{ inputs.mode || 'daily' }}"
+          if [ -z "$BIZ_ID" ]; then
+            echo "business_id が指定されていません"
+            exit 1
+          fi
+          python "businesses/${BIZ_ID}/main.py" --mode "${MODE}"
+
+      - name: Commit results
+        run: |
+          git config --global user.email "empire-bot@auto-revenue.bot"
+          git config --global user.name "Empire Bot"
+          BIZ_ID="${{ inputs.business_id }}"
+          git add "businesses/${BIZ_ID}/" || true
+          git diff --staged --quiet || \
+            git commit -m "api_service: auto update $(date +%Y-%m-%d) [skip ci]"
+          git push

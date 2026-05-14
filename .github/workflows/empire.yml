@@ -1,0 +1,70 @@
+name: Empire Orchestrator
+
+on:
+  schedule:
+    # 毎日 07:00 JST = 22:00 UTC（前日）
+    - cron: '0 22 * * *'
+    # 毎週月曜 09:00 JST = 00:00 UTC 月曜
+    - cron: '0 0 * * 1'
+    # 毎月1日 10:00 JST = 01:00 UTC
+    - cron: '0 1 1 * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '実行モード'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+          - monthly
+
+jobs:
+  orchestrate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "01" ]; then
+            echo "mode=monthly" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%u)" = "1" ] && [ "$(date -u +%H)" = "00" ]; then
+            echo "mode=weekly" >> $GITHUB_OUTPUT
+          else
+            echo "mode=daily" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Empire Orchestrator
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python -m empire.empire_main --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Commit results
+        run: |
+          git config --global user.email "empire-bot@auto-revenue.bot"
+          git config --global user.name "Empire Bot"
+          git add empire/portfolio.yaml empire/data/ logs/ businesses/ articles/ data/ config.yaml .github/workflows/ || true
+          git diff --staged --quiet && echo "変更なし" || \
+            git commit -m "empire: auto update $(date +%Y-%m-%d) [skip ci]"
+          git push

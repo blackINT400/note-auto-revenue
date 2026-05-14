@@ -1,0 +1,30 @@
+# 環境変数・シークレット
+.env
+.env.*
+*.key
+*.pem
+secrets/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# ログ・データ（大きくなるもの）
+logs/*.log
+data/trends_*.json
+data/ab_variants.json
+empire/data/empire_cost.json
+empire/data/opportunities.jsonl
+empire/data/kpi_history.jsonl
+
+# macOS
+.DS_Store
+
+# IDE
+.vscode/
+.idea/

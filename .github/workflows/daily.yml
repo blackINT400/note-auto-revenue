@@ -1,0 +1,66 @@
+name: Zenn Auto Publisher
+
+on:
+  schedule:
+    # 毎日 06:00 JST = 21:00 UTC（前日）
+    - cron: '0 21 * * *'
+    # 毎週月曜 08:00 JST = 23:00 UTC（日曜）
+    - cron: '0 23 * * 0'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '実行モード (daily / weekly)'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # articles/をコミット・プッシュするために必要
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%u)" = "7" ] && [ "$(date -u +%H)" = "23" ]; then
+            # 日曜23時UTC = 月曜08時JST → weekly
+            echo "mode=weekly" >> $GITHUB_OUTPUT
+          else
+            echo "mode=daily" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run auto publisher
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: python main.py --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Commit and push articles
+        run: |
+          git config --global user.email "auto-publisher@zenn-revenue.bot"
+          git config --global user.name "Zenn Auto Publisher"
+          git add articles/ logs/ data/ config.yaml
+          git diff --staged --quiet && echo "変更なし、コミットをスキップします" || \
+            git commit -m "chore: auto publish $(date +%Y-%m-%d) [skip ci]"
+          git push

@@ -1,0 +1,48 @@
+id: affiliate_seo
+name: "アフィリエイト × SEO記事"
+description: "SEO記事をAIで量産してアフィリエイト収益を獲得。GitHub PagesまたはWordPress連携。"
+type: affiliate_seo
+revenue_model: "アフィリエイトリンクのクリック報酬 + 成果報酬"
+estimated_monthly_revenue_jpy: "10000-100000"
+monthly_cost_estimate_jpy: 600
+automation_level: 9
+
+required_accounts:
+  - name: "GitHub Pages（無料）"
+    url: "https://pages.github.com"
+    note: "このリポジトリのGitHub Pagesを有効化するだけ"
+  - name: "A8.net または もしもアフィリエイト"
+    url: "https://www.a8.net"
+    note: "アフィリエイトASP。無料登録。リンクをconfig.yamlに貼る"
+
+required_env_vars:
+  - ANTHROPIC_API_KEY
+  - SLACK_WEBHOOK_URL
+  - WORDPRESS_URL           # WordPressを使う場合のみ
+  - WORDPRESS_USER          # WordPressを使う場合のみ
+  - WORDPRESS_APP_PASSWORD  # WordPressを使う場合のみ
+
+kpi_metrics:
+  - name: monthly_revenue
+    unit: jpy
+    source: manual
+  - name: articles_published
+    unit: count
+    source: auto
+  - name: estimated_monthly_pv
+    unit: count
+    source: calculated
+
+scale_trigger:
+  metric: estimated_monthly_pv
+  threshold: 1000
+  action: "記事投稿数を2倍に増加"
+
+setup_steps:
+  - "このリポジトリのSettings → Pages → Source: GitHub Actions を有効化"
+  - "A8.net等に登録してアフィリエイトリンクを取得"
+  - "businesses/{id}/config.yaml の affiliate_links にリンクを追加"
+  - "ANTHROPIC_API_KEY をGitHub Secretsに登録"
+  - "（任意）WordPressを使う場合は WORDPRESS_* 変数も登録"
+
+caution: "SEO効果が出るまで1〜3ヶ月かかる。ドメインパワーのあるWordPressの方が早く収益化できる。"

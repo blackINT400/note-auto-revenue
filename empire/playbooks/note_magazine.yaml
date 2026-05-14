@@ -1,0 +1,44 @@
+id: note_magazine
+name: "note 有料マガジン"
+description: "noteで有料マガジンを運営。AIで記事を自動生成し継続購読収益を獲得。"
+type: note_magazine
+revenue_model: "有料マガジン購読 + 単記事販売"
+estimated_monthly_revenue_jpy: "5000-30000"
+monthly_cost_estimate_jpy: 400
+automation_level: 6
+
+required_accounts:
+  - name: "note"
+    url: "https://note.com"
+    note: "有料マガジン設定が必要（300〜500円/月推奨）"
+
+required_env_vars:
+  - ANTHROPIC_API_KEY
+  - NOTE_EMAIL          # 省略可: 手動投稿にフォールバック
+  - NOTE_PASSWORD       # 省略可
+  - SLACK_WEBHOOK_URL
+
+kpi_metrics:
+  - name: monthly_revenue
+    unit: jpy
+    source: manual
+  - name: subscriber_count
+    unit: people
+    source: manual
+  - name: articles_published
+    unit: count
+    source: auto
+
+scale_trigger:
+  metric: subscriber_count
+  threshold: 50
+  action: "マガジン追加・価格改定"
+
+setup_steps:
+  - "noteアカウントを作成し有料マガジンを設定（300〜500円/月推奨）"
+  - "ANTHROPIC_API_KEY をGitHub Secretsに登録"
+  - "NOTE_EMAIL / NOTE_PASSWORD を登録（任意。なければ手動投稿）"
+  - "businesses/{id}/config.yaml のnicheを設定"
+  - "businesses/{id}/data/kpi.json を作成して subscriber_count を手動更新"
+
+caution: "note APIは非公式のため自動投稿でアカウント停止リスクあり。初期は手動投稿を推奨。"

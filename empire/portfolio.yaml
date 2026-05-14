@@ -1,0 +1,33 @@
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# 帝国ポートフォリオ管理ファイル
+# ceo_agent.py が自動更新します（直接編集は非推奨）
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+businesses:
+  - id: "zenn_副業節税"
+    type: "zenn_article"
+    status: "active"
+    niche: "副業・節税"
+    monthly_revenue: 0
+    monthly_cost: 0
+    roi: 0
+    resource_weight: 1.0
+    started_date: "2026-05-14"
+    data_dir: "."   # プロジェクトルートからの相対パス
+
+revenue_pool:
+  total_earned: 0
+  available_budget: 0
+  monthly_cost_limit: 5000   # 全事業合計の月間コスト上限（円）
+
+empire_kpi:
+  total_monthly_revenue: 0
+  total_monthly_cost: 0
+  business_count: 1
+  best_performer: "zenn_副業節税"
+  last_updated: ""
+
+safety:
+  new_business_last_launched: ""   # 1日1件制限のチェック用
+  max_new_per_day: 1
+  pending_kills: []               # 停止予定事業リスト（24時間後に実行）

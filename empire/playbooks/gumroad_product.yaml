@@ -1,0 +1,48 @@
+id: gumroad_product
+name: "Gumroad デジタル商品販売"
+description: "GumroadでPDF・テンプレ・プロンプト集を販売。AI生成で商品を自動量産。"
+type: gumroad_product
+revenue_model: "デジタル商品の単品販売"
+estimated_monthly_revenue_jpy: "3000-50000"
+monthly_cost_estimate_jpy: 200
+automation_level: 7
+
+required_accounts:
+  - name: "Gumroad"
+    url: "https://gumroad.com"
+    note: "無料アカウント。販売手数料9%。Settings→Advanced でAPIトークン取得"
+
+required_env_vars:
+  - ANTHROPIC_API_KEY
+  - GUMROAD_API_TOKEN   # 省略可: 手動アップロードにフォールバック
+  - SLACK_WEBHOOK_URL
+
+kpi_metrics:
+  - name: monthly_revenue
+    unit: jpy
+    source: gumroad_api
+  - name: sales_count
+    unit: count
+    source: gumroad_api
+  - name: product_count
+    unit: count
+    source: auto
+
+scale_trigger:
+  metric: sales_count
+  threshold: 10
+  action: "商品ラインナップ拡充・バンドル販売開始"
+
+product_types:
+  - "テンプレート集（Notion/Excel）"
+  - "ノウハウまとめPDF"
+  - "プロンプト集"
+  - "チェックリスト・ワークシート"
+
+setup_steps:
+  - "Gumroadアカウントを作成"
+  - "Settings → Advanced → Gumroad API でトークンを取得"
+  - "GUMROAD_API_TOKEN をGitHub Secretsに登録"
+  - "businesses/{id}/config.yaml のnicheと価格帯を設定"
+
+caution: "年間売上が一定以上になると確定申告が必要。Gumroadの税務設定を確認すること。"

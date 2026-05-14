@@ -1,0 +1,54 @@
+id: api_service
+name: "簡易APIサービス（RapidAPI）"
+description: "FastAPI + Claude APIでマイクロサービスを構築しRapidAPIで販売。週次でコードを自動生成。"
+type: api_service
+revenue_model: "API従量課金（RapidAPI）"
+estimated_monthly_revenue_jpy: "0-100000"
+monthly_cost_estimate_jpy: 220
+automation_level: 7
+
+required_accounts:
+  - name: "RapidAPI（無料）"
+    url: "https://rapidapi.com/provider"
+    note: "APIをマーケットプレイスに出品。手数料20%"
+  - name: "さくらVPS（月220円〜）"
+    url: "https://vps.sakura.ad.jp"
+    note: "512MBプランで十分。Dockerが動けば他のVPSでも可"
+
+required_env_vars:
+  - ANTHROPIC_API_KEY
+  - SLACK_WEBHOOK_URL
+  - RAPIDAPI_KEY    # 省略可: RapidAPIアナリティクス取得用
+  - VPS_HOST        # 省略可: SSH自動デプロイ用 (user@host)
+
+kpi_metrics:
+  - name: monthly_requests
+    unit: count
+    source: logs
+  - name: monthly_revenue
+    unit: jpy
+    source: manual
+  - name: service_count
+    unit: count
+    source: auto
+
+scale_trigger:
+  metric: monthly_requests
+  threshold: 100
+  action: "有料プラン追加・エンドポイント拡充"
+
+tech_stack:
+  - "Python 3.11 + FastAPI"
+  - "Uvicorn + Docker"
+  - "RapidAPI（マーケットプレイス）"
+  - "さくらVPS（ホスティング）"
+
+setup_steps:
+  - "さくらVPS等でDockerを使えるVPSを契約（月220円〜）"
+  - "RapidAPIのProviderアカウントを作成"
+  - "ANTHROPIC_API_KEY をGitHub Secretsに登録"
+  - "（任意）VPS_HOST を登録してSSH自動デプロイを有効化"
+  - "週次実行でFastAPIのコードが自動生成され app/ ディレクトリに保存される"
+  - "生成されたコードをVPSにデプロイし、RapidAPIに登録"
+
+caution: "VPSの月額コストが発生する。収益が出るまでの初期投資あり。SSH秘密鍵の管理に注意。"
