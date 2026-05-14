@@ -701,21 +701,29 @@ def send_weekly_report(portfolio: dict, slack_fn=None):
         for b in active
     ) or "  稼働中の事業なし"
 
-    total_rev  = kpi.get("total_monthly_revenue", 0)
+    total_rev  = float(kpi.get("total_monthly_revenue", 0))
+    total_cost = float(kpi.get("total_monthly_cost", 0))
+    total_profit = total_rev - total_cost
+    roi_overall = (total_profit / total_cost * 100) if total_cost > 0 else 0.0
+
     next_target = next((t for t in REVENUE_TARGETS if t["revenue"] > total_rev), None)
     target_line = (
         f"次の目標({next_target['revenue']:,}円)まで残り{next_target['revenue']-total_rev:,}円"
         if next_target else "全目標達成！"
     )
 
+    pages_url = "https://blackINT400.github.io/note-auto-revenue/"
+
     msg = (
-        f"📊 *週次帝国レポート* ({date.today()})\n"
-        f"月間総収益: {total_rev:,.0f}円 / 総コスト: {kpi.get('total_monthly_cost',0):,.0f}円\n"
-        f"稼働事業: {kpi.get('business_count',0)}/{MAX_BUSINESSES}件\n"
-        f"累積収益プール: {revenue_pool.get('total_earned',0):,.0f}円\n"
-        f"オーナー残高: {revenue_pool.get('available_budget',0):,.0f}円\n"
-        f"{target_line}\n\n"
-        f"【事業別】\n{biz_lines}"
+        f"📊 *週次帝国レポート* ({date.today()})\n\n"
+        f"💰 今月の収益: ¥{total_rev:,.0f} / コスト: ¥{total_cost:,.0f} / "
+        f"純利益: ¥{total_profit:,.0f} (ROI {roi_overall:.1f}%)\n"
+        f"🏢 稼働事業: {kpi.get('business_count',0)}/{MAX_BUSINESSES}件\n"
+        f"🏦 累積収益プール: ¥{revenue_pool.get('total_earned',0):,.0f} / "
+        f"残高: ¥{revenue_pool.get('available_budget',0):,.0f}\n"
+        f"🎯 {target_line}\n\n"
+        f"【事業別】\n{biz_lines}\n\n"
+        f"📈 ダッシュボード: {pages_url}"
     )
     logger.info(f"週次レポート\n{msg}")
     if slack_fn:

@@ -1,0 +1,118 @@
+name: Dashboard Generator & GitHub Pages Deploy
+
+on:
+  schedule:
+    # 毎日 07:30 JST = 22:30 UTC（collector: KPIデータ更新）
+    - cron: '30 22 * * *'
+    # 毎月1日 10:30 JST = 01:30 UTC（generator: フルHTML再生成）
+    - cron: '30 1 1 * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '実行モード'
+        required: true
+        default: 'collect_and_generate'
+        type: choice
+        options:
+          - collect_only       # KPIデータ収集のみ
+          - generate_only      # HTMLのみ再生成（データは最新JSONから）
+          - collect_and_generate  # 両方実行
+
+# GitHub Pages デプロイに必要な権限
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Job 1: KPIデータ収集 & HTML生成
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  build-dashboard:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "run_collect=${{ inputs.mode != 'generate_only' }}" >> $GITHUB_OUTPUT
+            echo "run_generate=${{ inputs.mode != 'collect_only' }}" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "01" ]; then
+            # 毎月1日 → フルHTML再生成
+            echo "run_collect=true" >> $GITHUB_OUTPUT
+            echo "run_generate=true" >> $GITHUB_OUTPUT
+          else
+            # 毎日 → KPI収集 + 部分更新
+            echo "run_collect=true" >> $GITHUB_OUTPUT
+            echo "run_generate=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Collect KPI data
+        if: steps.mode.outputs.run_collect == 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python dashboard/collector.py
+
+      - name: Generate dashboard HTML
+        if: steps.mode.outputs.run_generate == 'true'
+        run: python dashboard/generator.py
+
+      - name: Commit KPI data & HTML
+        run: |
+          git config --global user.email "dashboard-bot@auto-revenue.bot"
+          git config --global user.name "Dashboard Bot"
+          git add dashboard/data/ dashboard/output/ 2>/dev/null || true
+          git diff --staged --quiet && echo "変更なし" || \
+            git commit -m "dashboard: auto update $(date +%Y-%m-%d) [skip ci]"
+          git push
+
+      # ── GitHub Pages へのデプロイ準備 ───────────────────────────────────────
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p _site
+          # dashboard.html を index.html としてルートに配置
+          cp dashboard/output/dashboard.html _site/index.html
+          # KPIデータ（JSON）も公開（任意で参照可能に）
+          mkdir -p _site/data
+          cp dashboard/data/kpi_*.json _site/data/ 2>/dev/null || true
+          echo "Pages artifact prepared:"
+          ls -la _site/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '_site'
+
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # Job 2: GitHub Pages デプロイ
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  deploy-pages:
+    needs: build-dashboard
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

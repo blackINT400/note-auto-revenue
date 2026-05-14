@@ -183,13 +183,32 @@ def run_monthly_summary(portfolio: dict):
     output_path.write_text(report, encoding="utf-8")
     logger.info(f"[帝国] 月次サマリー保存: {output_path}")
 
-    # Slack通知
+    # 月次Slackレポート（先月比 + トップ3 + 収益目標進捗）
+    total_rev = float(empire_kpi.get("total_monthly_revenue", 0))
+    total_cost = float(empire_kpi.get("total_monthly_cost", 0))
+    total_profit = total_rev - total_cost
+
+    # 事業トップ3（収益順）
+    sorted_biz = sorted(businesses, key=lambda b: float(b.get("monthly_revenue", 0)), reverse=True)
+    top3_lines = "\n".join(
+        f"  {i+1}. {b['id']}: ¥{float(b.get('monthly_revenue',0)):,.0f} (ROI {float(b.get('roi',0)):.1f}%)"
+        for i, b in enumerate(sorted_biz[:3])
+    ) or "  （データなし）"
+
+    # 来月の目標（3ヶ月目標: 30,000円 / 6ヶ月: 100,000円）
+    next_target = 30000  # デフォルト3ヶ月目標
+    pages_url = "https://blackINT400.github.io/note-auto-revenue/"
+
     slack_msg = (
-        f"📅 *{target_year}年{target_month}月 帝国月次レポート*\n"
-        f"月間総収益: {empire_kpi.get('total_monthly_revenue', 0):,.0f}円\n"
-        f"月間総コスト: {empire_kpi.get('total_monthly_cost', 0):,.0f}円\n"
-        f"稼働事業数: {empire_kpi.get('business_count', 0)}件\n"
-        f"詳細: `{output_path.name}`"
+        f"📅 *{target_year}年{target_month}月 帝国月次レポート*\n\n"
+        f"📊 *今月の実績*\n"
+        f"  収益: ¥{total_rev:,.0f} / コスト: ¥{total_cost:,.0f} / 純利益: ¥{total_profit:,.0f}\n"
+        f"  稼働事業数: {empire_kpi.get('business_count', 0)}件\n\n"
+        f"🏆 *パフォーマンストップ3*\n{top3_lines}\n\n"
+        f"🎯 *来月の目標*: ¥{next_target:,.0f} "
+        f"（あと ¥{max(0, next_target - total_rev):,.0f}）\n\n"
+        f"📈 ダッシュボード: {pages_url}\n"
+        f"📄 詳細ログ: `{output_path.name}`"
     )
     _slack(slack_msg)
 
@@ -219,7 +238,29 @@ def run_daily():
         from empire import ceo_agent
         _run(lambda: ceo_agent.run(slack_fn=_slack, weekly_report=False), "CEO（日次判断）")
 
-    _slack(f"✅ *[帝国] 日次処理完了* ({date.today()})")
+    # ── KPIデータ収集 & ダッシュボード更新 ──────────────────────────────────
+    snapshot = {}
+    try:
+        from dashboard.collector import collect as collect_kpi
+        from dashboard.generator import generate as generate_dashboard
+        snapshot = collect_kpi()
+        generate_dashboard(snapshot)
+        logger.info("[帝国] ダッシュボード更新完了")
+    except Exception as e:
+        logger.warning(f"[帝国] ダッシュボード更新スキップ: {e}")
+
+    # ── Slack日次サマリー（KPI + ダッシュボードURL）──────────────────────────
+    total = snapshot.get("total", {})
+    rev = float(total.get("revenue", 0))
+    cost = float(total.get("cost", 0))
+    profit = float(total.get("profit", 0))
+    roi = float(total.get("roi", 0))
+    pages_url = "https://blackINT400.github.io/note-auto-revenue/"
+    _slack(
+        f"✅ *[帝国] 日次処理完了* ({date.today()})\n"
+        f"今月の収益: ¥{rev:,.0f} / コスト: ¥{cost:,.0f} / 純利益: ¥{profit:,.0f} (ROI {roi:.1f}%)\n"
+        f"ダッシュボード: {pages_url}"
+    )
     logger.info("帝国 日次処理 完了")
 
 
@@ -259,6 +300,16 @@ def run_monthly():
 
     portfolio = load_portfolio()
     _run(lambda: run_monthly_summary(portfolio), "月次総括")
+
+    # ── 月次ダッシュボード再生成（フルリビルド）───────────────────────────────
+    try:
+        from dashboard.collector import collect as collect_kpi
+        from dashboard.generator import generate as generate_dashboard
+        snapshot = collect_kpi()
+        generate_dashboard(snapshot)
+        logger.info("[帝国] 月次ダッシュボード再生成完了")
+    except Exception as e:
+        logger.warning(f"[帝国] 月次ダッシュボード生成スキップ: {e}")
 
     logger.info("帝国 月次総括 完了")
 

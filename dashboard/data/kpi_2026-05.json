@@ -1,0 +1,31 @@
+{
+  "year_month": "2026-05",
+  "snapshots": [
+    {
+      "date": "2026-05-15",
+      "total": {
+        "revenue": 0.0,
+        "cost": 0.0,
+        "profit": 0.0,
+        "roi": 0.0,
+        "cost_limit": 5000.0,
+        "cost_usage_pct": 0.0,
+        "monthly_target": 30000.0,
+        "available_budget": 0.0
+      },
+      "businesses": [
+        {
+          "id": "zenn_副業節税",
+          "name": "zenn_副業節税",
+          "type": "zenn_article",
+          "revenue": 0.0,
+          "cost": 0.0,
+          "profit": 0.0,
+          "roi": 0.0,
+          "status": "active"
+        }
+      ]
+    }
+  ],
+  "history": []
+}
