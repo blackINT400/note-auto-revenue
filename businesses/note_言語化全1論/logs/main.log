@@ -1,0 +1,19 @@
+2026-05-15 09:21:37,836 [INFO] __main__: [note] 起動 mode=daily genre=恋愛・好きな人への気持ちの伝え方
+2026-05-15 09:21:39,630 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-15 09:21:40,686 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-15 09:21:41,662 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-15 09:21:43,269 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-15 09:21:44,605 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-15 09:21:44,931 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-15 09:21:45,065 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-15 09:21:45,214 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-15 09:21:45,215 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-15 09:21:57,516 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 09:21:57,535 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2094, output: 602 tokens
+2026-05-15 09:21:57,536 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-15.json
+2026-05-15 09:22:51,642 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 09:22:51,643 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 647, output: 3000 tokens
+2026-05-15 09:22:51,643 [ERROR] empire.playbooks.note_magazine.creator: Article generation failed for topic '「疲れた脳を7秒でリセット」科学が証明する最速回復法と自己ケアの哲学': Expecting value: line 1 column 1 (char 0)
+2026-05-15 09:22:51,893 [WARNING] empire.playbooks.note_magazine.distributor: note.com login failed: 404 
+2026-05-15 09:22:51,894 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 0 articles processed
+2026-05-15 09:22:51,894 [INFO] __main__: [note] 完了: {'published': [], 'mode': 'daily'}
