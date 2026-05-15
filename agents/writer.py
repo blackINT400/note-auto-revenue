@@ -99,33 +99,71 @@ def _call_claude(client: anthropic.Anthropic, prompt: str, model: str) -> tuple:
 
 # ── 記事生成 ──────────────────────────────────────────────────────────────────
 
+def _load_voice_os() -> str:
+    """著者の思考OS（全1哲学）を読み込む"""
+    voice_path = Path(__file__).parent.parent / "thoughts" / "voice_os.md"
+    if voice_path.exists():
+        return voice_path.read_text(encoding="utf-8")
+    return ""
+
+
+def _load_thought_seeds() -> str:
+    """今日の思考シード（inbox.md）を読み込む"""
+    inbox_path = Path(__file__).parent.parent / "thoughts" / "inbox.md"
+    if inbox_path.exists():
+        content = inbox_path.read_text(encoding="utf-8").strip()
+        if content:
+            return content
+    return ""
+
+
 def _build_prompt(topic: str, niche: str, strategy: dict) -> str:
     style_hint = strategy.get("best_style", "")
     keywords = strategy.get("top_keywords", [])
     keyword_str = "、".join(keywords[:5]) if keywords else niche
 
-    return f"""あなたはZennで月間10万PVを誇る{niche}専門ライターです。
-以下の条件でZenn記事を執筆してください。
+    voice_os = _load_voice_os()
+    thought_seeds = _load_thought_seeds()
 
-【テーマ】{topic}
+    voice_section = f"""
+【著者の思考OS（必ずこれを土台にして書くこと）】
+{voice_os}
+""" if voice_os else ""
+
+    seed_section = f"""
+【著者の思考シード（今日のインプット・これを起点に展開せよ）】
+{thought_seeds}
+""" if thought_seeds else ""
+
+    return f"""あなたは「ミリテク」というペンネームで活動する著者の代筆AIです。
+著者の哲学と文体を完全に再現してZenn記事を執筆してください。
+{voice_section}{seed_section}
+【今回のテーマ】{topic}
+【ジャンル】{niche}
 【重点キーワード】{keyword_str}
 【文字数】2000〜4000字
 {f"【推奨文体】{style_hint}" if style_hint else ""}
 
+【執筆の原則】
+- 著者の「全1論」の視点を記事の骨格に使うこと
+- 読者が既にやっている「日常の当たり前の動作」を冒頭で提示し、それをテーマの成功と等価であることを論理的に示す
+- 「励ます・応援する」文体は禁止。「世界の構造がそうなっている」という断定的な物理的事実として書く
+- 汎用的なハウツー記事にしない。著者の哲学を通したときだけ見える独自の切り口を使う
+
 【必須構成】
-1. はじめに（読者の悩みへの共感・100字程度）
-2. 第1章: 問題の本質を解説
-3. 第2章: 具体的な解決策（数字・事例を含む）
-4. 第3章: 今日から使える実践ステップ（番号付きリスト）
-5. 第4章: よくある失敗と回避法
-6. まとめ（行動を促すCTA付き）
+1. つかみ（読者が無意識にやっている「日常の1」の提示・100字程度）
+2. 第1章: その「1」とテーマの成功が構造的に同じである理由
+3. 第2章: ジャンル特有の言葉に「翻訳」した具体的な展開（数字・事例を含む）
+4. 第3章: 100%再現できる理由と実践ステップ（番号付きリスト）
+5. 第4章: よくある誤解と正しい構造の見方
+6. まとめ（著者の断定的な締め・行動の背中を押すのではなく「既にできている」と伝える）
 
 【出力フォーマット】
 以下のセクション区切りで厳密に出力してください（JSONではありません）:
 
 ---META_START---
 TITLE_A: タイトル案A（数字・具体的情報型・30字以内）
-TITLE_B: タイトル案B（問いかけ・感情訴求型・30字以内）
+TITLE_B: タイトル案B（問いかけ・哲学的示唆型・30字以内）
 EMOJI: ここに絵文字1文字
 TOPICS: ここにZennトピック3つをカンマ区切りで英語表記（例: money,sidejob,tax）
 QUALITY_SCORE: ここに自己採点（0-100の整数）
@@ -136,9 +174,9 @@ QUALITY_REASON: ここにスコアの根拠（30字以内）
 ---BODY_END---
 
 【品質自己採点基準】
-- 独自性・具体的な数字や事例: 40点
-- 読みやすさ・論理的な構成: 30点
-- 実用性・読後の行動喚起: 30点"""
+- 著者の哲学（全1論）が記事の骨格として機能しているか: 40点
+- 読者の「日常の1」から論理的に展開できているか: 30点
+- 断定的な文体・著者らしい独自の切り口: 30点"""
 
 
 def _parse_response(content: str) -> dict:
