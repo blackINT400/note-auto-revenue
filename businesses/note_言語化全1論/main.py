@@ -26,6 +26,9 @@ CONFIG_PATH = BUSINESS_DIR / "config.yaml"
 VOICE_OS_PATH = _PROJECT_ROOT / "thoughts" / "voice_os.md"
 INBOX_PATH = _PROJECT_ROOT / "thoughts" / "inbox.md"
 
+# logs ディレクトリが存在しない場合（GitHub Actions 等）に自動作成
+(BUSINESS_DIR / "logs").mkdir(parents=True, exist_ok=True)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
