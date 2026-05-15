@@ -446,6 +446,92 @@ def generate_monthly_summary():
     return str(output_path)
 
 
+# ── E. オーナー思考学習 ───────────────────────────────────────────────────────
+
+OWNER_DIR = Path("owner")
+OWNER_THOUGHTS_PATH = OWNER_DIR / "thoughts.md"
+OWNER_LEARNINGS_PATH = OWNER_DIR / "learnings.md"
+OWNER_CONTEXT_PATH = OWNER_DIR / "context_prompt.md"
+
+
+def _learn_owner_thoughts(client: anthropic.Anthropic, model: str):
+    """
+    owner/thoughts.md を読み、オーナーの思考傾向をJSON抽出して
+    owner/learnings.md と owner/context_prompt.md を自動更新する。
+    """
+    if not OWNER_THOUGHTS_PATH.exists():
+        logger.info("[オーナー学習] thoughts.md が見つかりません。スキップします。")
+        return
+
+    thoughts = OWNER_THOUGHTS_PATH.read_text(encoding="utf-8").strip()
+    if not thoughts:
+        return
+
+    prompt = f"""以下はシステムオーナーの思考メモです。
+
+{thoughts}
+
+このメモから読み取れるオーナーの特徴を、以下のJSON形式で抽出してください。
+
+{{
+  "priorities": ["最も優先していること（3〜5項目）"],
+  "decision_criteria": ["判断基準（3〜5項目）"],
+  "avoid": ["避けていること・嫌いなこと（2〜4項目）"],
+  "values": ["大事にしていること（3〜5項目）"],
+  "context_summary": "AIへの注入プロンプト用まとめ（150字以内）"
+}}
+
+JSONのみ出力してください。説明や前置きは不要です。"""
+
+    try:
+        content, inp, out = _call_claude(client, prompt, model, max_tokens=800)
+        _record_cost(inp, out)
+
+        json_match = re.search(r"\{.*\}", content, re.DOTALL)
+        if not json_match:
+            raise ValueError("JSON抽出失敗")
+        profile = json.loads(json_match.group())
+        today_str = str(date.today())
+
+        # owner/learnings.md に週次エントリを追記
+        OWNER_DIR.mkdir(exist_ok=True)
+        existing = OWNER_LEARNINGS_PATH.read_text(encoding="utf-8") if OWNER_LEARNINGS_PATH.exists() else ""
+        lines = []
+        lines.append(f"\n## {today_str} 週次学習\n")
+        lines.append("**優先順位**")
+        lines.extend(f"- {p}" for p in profile.get("priorities", []))
+        lines.append("\n**判断基準**")
+        lines.extend(f"- {c}" for c in profile.get("decision_criteria", []))
+        lines.append("\n**避けること**")
+        lines.extend(f"- {a}" for a in profile.get("avoid", []))
+        lines.append("\n**大事にしていること**")
+        lines.extend(f"- {v}" for v in profile.get("values", []))
+        lines.append("")
+        OWNER_LEARNINGS_PATH.write_text(existing.rstrip() + "\n" + "\n".join(lines), encoding="utf-8")
+
+        # owner/context_prompt.md を上書き更新
+        priorities_md = "\n".join(f"- {p}" for p in profile.get("priorities", []))
+        criteria_md = "\n".join(f"- {c}" for c in profile.get("decision_criteria", []))
+        values_md = "\n".join(f"- {v}" for v in profile.get("values", []))
+        summary = profile.get("context_summary", "")
+
+        OWNER_CONTEXT_PATH.write_text(
+            f"# オーナーコンテキスト（AIへの自動注入プロンプト）\n\n"
+            f"<!-- analyst.py が週次で自動更新。最終更新: {today_str} -->\n\n"
+            f"このシステムのオーナーの特徴:\n"
+            f"{priorities_md}\n"
+            f"{criteria_md}\n"
+            f"{values_md}\n\n"
+            f"{summary}\n\n"
+            f"これらを常に考慮して判断・実行してください。\n",
+            encoding="utf-8",
+        )
+        logger.info("[オーナー学習] learnings.md と context_prompt.md を更新しました")
+
+    except Exception as e:
+        logger.error("[オーナー学習] エラー: %s", e)
+
+
 # ── 週次メイン処理 ────────────────────────────────────────────────────────────
 
 def run():
@@ -557,3 +643,7 @@ WEEKLY_REPORT: 今週の振り返りと来週への提言（200字以内）
         config["auto_strategy"]["top_keywords"] = merged_keywords[:10]
         config["auto_strategy"]["last_updated"] = str(date.today())
         _save_config(config)
+
+    # ── E. オーナー思考学習 ──
+    logger.info("=== E. オーナー思考学習 ===")
+    _learn_owner_thoughts(client, model)

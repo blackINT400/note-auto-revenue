@@ -177,7 +177,7 @@ jobs:
           fi
 
           # ── その他ファイル（logs/, data/, config.yaml）をまとめてコミット ──
-          git add logs/ data/ config.yaml 2>/dev/null || true
+          git add logs/ data/ config.yaml owner/ 2>/dev/null || true
           git diff --staged --quiet && echo "その他変更なし" || \
             git commit -m "chore: auto update $(date +%Y-%m-%d) [skip ci]"
           git push

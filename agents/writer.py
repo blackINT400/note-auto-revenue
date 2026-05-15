@@ -133,10 +133,25 @@ def _load_thought_seeds() -> str:
     return ""
 
 
+def _load_owner_context() -> str:
+    """owner/context_prompt.md からオーナープロファイルを読み込む"""
+    context_path = Path("owner/context_prompt.md")
+    if not context_path.exists():
+        return ""
+    content = context_path.read_text(encoding="utf-8")
+    # コメント行（<!--...-->）と見出し行を除去して本文のみ返す
+    lines = [
+        l for l in content.splitlines()
+        if not l.startswith("#") and not l.startswith("<!--") and not l.strip() == "-->"
+    ]
+    return "\n".join(lines).strip()
+
+
 def _build_system_prompt() -> str:
-    """systemパラメータ用: 著者OSと文体OSを合成する"""
+    """systemパラメータ用: 著者OS + 文体OS + オーナーコンテキストを合成する"""
     voice_os = _load_voice_os()
     human_writing_os = _load_human_writing_os()
+    owner_context = _load_owner_context()
 
     parts = [
         "あなたは「ミリテク」のゴーストライターAIです。",
@@ -155,6 +170,13 @@ def _build_system_prompt() -> str:
             "## [OS-2] 文体OS（生活の解像度が高い個人ブロガー）",
             "※ 記事の皮膚感覚。OS-1の思想をこの文体で表現する。AI臭を完全に排除する。",
             human_writing_os.strip(),
+            "",
+        ]
+    if owner_context:
+        parts += [
+            "## [OS-3] オーナーコンテキスト",
+            "※ このシステムのオーナーの方針・価値観。記事の方向性と優先順位に反映する。",
+            owner_context,
             "",
         ]
     return "\n".join(parts)
