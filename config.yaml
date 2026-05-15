@@ -7,8 +7,14 @@ platform: "zenn"
 # 記事のジャンル（例: "副業・節税" "投資入門" "AI活用術"）
 niche: "副業・節税"
 
-# 1日に生成・投稿する記事数（GitHub Actions無料枠では2記事まで推奨）
+# 1日に生成・投稿する記事数
+# ⚠️ Zennデプロイ制限: 1pushあたり新規記事は最大5本まで（超過分は同期されない）
+# → 5を超える値を設定しても自動的に5に修正されます
 articles_per_day: 2
+
+# Zennのユーザー名（デプロイ後の同期確認に使用。未設定でも動作します）
+# 例: zenn_username: "your_zenn_username"
+zenn_username: ""
 
 # 月間APIコスト上限（円）。超えたら即停止
 monthly_cost_limit: 2000

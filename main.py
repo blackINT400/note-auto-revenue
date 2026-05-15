@@ -137,11 +137,43 @@ def run_weekly():
 
 # ── エントリーポイント ────────────────────────────────────────────────────────
 
+def _validate_config() -> None:
+    """起動時にconfig.yamlの制約違反を自動修正する"""
+    config_path = Path("config.yaml")
+    if not config_path.exists():
+        return
+    try:
+        config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    except Exception:
+        return
+
+    changed = False
+
+    # Zennデプロイ制限: articles_per_day は最大5本
+    apd = config.get("articles_per_day", 2)
+    if isinstance(apd, int) and apd > 5:
+        logger.warning(
+            f"[config.yaml] articles_per_day={apd} はZennデプロイ制限(5本)を超えています → 5に自動修正"
+        )
+        config["articles_per_day"] = 5
+        changed = True
+
+    if changed:
+        config_path.write_text(
+            yaml.dump(config, allow_unicode=True, default_flow_style=False, sort_keys=False),
+            encoding="utf-8",
+        )
+        notify("⚙️ config.yaml自動修正", "articles_per_day がZennデプロイ制限(5本)を超えていたため5に修正しました。")
+        logger.info("[config.yaml] 自動修正完了")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Zenn自動投稿システム")
     parser.add_argument("--mode", choices=["daily", "weekly"], required=True,
                         help="daily: 日次処理 / weekly: 週次分析")
     args = parser.parse_args()
+
+    _validate_config()
 
     try:
         if args.mode == "daily":

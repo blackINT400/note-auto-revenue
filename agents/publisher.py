@@ -13,6 +13,10 @@ logger = logging.getLogger(__name__)
 ARTICLES_DIR = Path("articles")
 PUBLISHED_LOG_PATH = Path("logs/published.jsonl")
 
+# Zennのデプロイ制限: 1pushあたり新規記事は最大5本まで
+# これを超えると超過分が「同期されていません」状態になる
+ZENN_DEPLOY_LIMIT = 5
+
 
 def _make_slug(title: str) -> str:
     """Zennのスラグ: 日付 + タイトルのハッシュ（12文字以上の英数字・ハイフン）"""
@@ -46,6 +50,14 @@ def _build_zenn_markdown(article: dict) -> str:
 def run(articles: list) -> list:
     ARTICLES_DIR.mkdir(exist_ok=True)
     PUBLISHED_LOG_PATH.parent.mkdir(exist_ok=True)
+
+    # Zennデプロイ制限: 1回のpushで新規記事は最大5本まで
+    if len(articles) > ZENN_DEPLOY_LIMIT:
+        logger.warning(
+            f"Zennデプロイ制限: {len(articles)}本 → {ZENN_DEPLOY_LIMIT}本に自動カット"
+            f"（超過分 {len(articles) - ZENN_DEPLOY_LIMIT}本は次回以降に持ち越し）"
+        )
+        articles = articles[:ZENN_DEPLOY_LIMIT]
 
     results = []
     for article in articles:

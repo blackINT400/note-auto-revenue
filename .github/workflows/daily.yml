@@ -59,11 +59,125 @@ jobs:
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
         run: python main.py --mode ${{ steps.mode.outputs.mode }}
 
-      - name: Commit and push articles
+      # ──────────────────────────────────────────────────────────────────
+      # Zennデプロイ制限対応: 記事を1本ずつ個別pushする
+      # 1回のpushで新規記事が5本を超えると超過分が「同期されていません」になるため
+      # 新規記事だけを1本ずつpushし、各pushの後にZenn同期を確認する
+      # ──────────────────────────────────────────────────────────────────
+      - name: Push articles individually (Zennデプロイ制限対応)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           git config --global user.email "auto-publisher@zenn-revenue.bot"
           git config --global user.name "Zenn Auto Publisher"
-          git add articles/ logs/ data/ config.yaml 2>/dev/null || true
-          git diff --staged --quiet && echo "変更なし、コミットをスキップします" || \
-            git commit -m "chore: auto publish $(date +%Y-%m-%d) [skip ci]"
+
+          # config.yaml から zenn_username を取得
+          ZENN_USERNAME=$(python3 -c "
+          import yaml
+          cfg = yaml.safe_load(open('config.yaml'))
+          print(cfg.get('zenn_username', '') or '')
+          " 2>/dev/null || echo "")
+
+          # 新規・変更された記事ファイルを最大5本取得（Zennデプロイ制限）
+          ARTICLE_FILES=$(git status --porcelain -- 'articles/*.md' | awk '{print $2}' | head -5)
+
+          if [ -z "$ARTICLE_FILES" ]; then
+            echo "新規記事なし。スキップします。"
+          else
+            ARTICLE_COUNT=$(echo "$ARTICLE_FILES" | wc -l | tr -d ' ')
+            echo "=== 投稿予定: ${ARTICLE_COUNT}本（Zennデプロイ制限5本以内） ==="
+
+            DEPLOYED=0
+            for f in $ARTICLE_FILES; do
+              [ -z "$f" ] && continue
+              SLUG=$(basename "$f" .md)
+
+              # タイトルをfrontmatterから抽出
+              TITLE=$(python3 -c "
+          import re, sys
+          try:
+              content = open('$f').read()
+              m = re.search(r'^title:\s*[\"\'](.*?)[\"\']\s*$', content, re.MULTILINE)
+              print(m.group(1) if m else '$SLUG')
+          except Exception:
+              print('$SLUG')
+          " 2>/dev/null || echo "$SLUG")
+
+              echo ""
+              echo "▶ [${DEPLOYED}/$ARTICLE_COUNT] プッシュ: $TITLE"
+
+              git add "$f"
+              git commit -m "chore: publish ${SLUG} $(date +%Y-%m-%d_%H:%M) [skip ci]"
+              git push
+
+              DEPLOYED=$((DEPLOYED + 1))
+              SYNC_STATUS="確認スキップ（zenn_username未設定）"
+
+              # ── Zennデプロイ確認（zenn_usernameが設定されている場合）──────────
+              if [ -n "$ZENN_USERNAME" ]; then
+                echo "⏳ Zennデプロイ確認中（最大90秒）..."
+                SYNC_STATUS="⚠️ タイムアウト（Zennで手動確認してください）"
+                for attempt in $(seq 1 9); do
+                  sleep 10
+                  # Zenn記事APIでスラグが存在するか確認
+                  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+                    "https://zenn.dev/api/articles?username=${ZENN_USERNAME}&order=latest&count=96" \
+                    --max-time 10)
+                  if [ "$HTTP_CODE" = "200" ]; then
+                    IN_ZENN=$(curl -s \
+                      "https://zenn.dev/api/articles?username=${ZENN_USERNAME}&order=latest&count=96" \
+                      --max-time 10 | \
+                      python3 -c "
+          import json, sys
+          try:
+              data = json.load(sys.stdin)
+              slugs = [a.get('slug','') for a in data.get('articles', [])]
+              print('synced' if '$SLUG' in slugs else 'pending')
+          except Exception:
+              print('pending')
+          " 2>/dev/null || echo "pending")
+                    echo "  確認中... ($((attempt * 10))秒) → $IN_ZENN"
+                    if [ "$IN_ZENN" = "synced" ]; then
+                      SYNC_STATUS="✅ 同期確認済み"
+                      echo "✅ Zenn同期確認: $SLUG"
+                      break
+                    fi
+                  else
+                    echo "  Zenn API応答なし（HTTPコード: $HTTP_CODE）"
+                  fi
+                done
+              else
+                echo "⏳ 次の記事まで90秒待機中..."
+                sleep 90
+              fi
+
+              # ── Discord通知 ───────────────────────────────────────────────────
+              if [ -n "$DISCORD_WEBHOOK_URL" ]; then
+                ZENN_URL=""
+                [ -n "$ZENN_USERNAME" ] && ZENN_URL="\nhttps://zenn.dev/${ZENN_USERNAME}/articles/${SLUG}"
+                PAYLOAD=$(python3 -c "
+          import json
+          title = '$TITLE'.replace(\"'\", \"'\")
+          desc = '**{}**\n\nスラグ: \`{}\`\nステータス: {}{}'.format(
+              title, '$SLUG', '$SYNC_STATUS', '$ZENN_URL'
+          )
+          print(json.dumps({'embeds': [{'title': '📝 Zenn記事デプロイ', 'description': desc[:4000], 'color': 1939317}]}))
+          " 2>/dev/null)
+                [ -n "$PAYLOAD" ] && curl -s -X POST "$DISCORD_WEBHOOK_URL" \
+                  -H "Content-Type: application/json" \
+                  -d "$PAYLOAD" > /dev/null
+              fi
+
+              echo "✅ 完了: $TITLE ($SYNC_STATUS)"
+            done
+
+            echo ""
+            echo "=== 記事デプロイ完了: ${DEPLOYED}本 ==="
+          fi
+
+          # ── その他ファイル（logs/, data/, config.yaml）をまとめてコミット ──
+          git add logs/ data/ config.yaml 2>/dev/null || true
+          git diff --staged --quiet && echo "その他変更なし" || \
+            git commit -m "chore: auto update $(date +%Y-%m-%d) [skip ci]"
           git push
