@@ -43,20 +43,17 @@ jobs:
           NOTE_EMAIL: ${{ secrets.NOTE_EMAIL }}
           NOTE_PASSWORD: ${{ secrets.NOTE_PASSWORD }}
         run: |
-          BIZ_ID="${{ inputs.business_id }}"
+          # スケジュール実行はデフォルト事業を使用
+          BIZ_ID="${{ inputs.business_id || 'note_言語化全1論' }}"
           MODE="${{ inputs.mode || 'daily' }}"
-          if [ -z "$BIZ_ID" ]; then
-            echo "business_id が指定されていません"
-            exit 1
-          fi
           python "businesses/${BIZ_ID}/main.py" --mode "${MODE}"
 
       - name: Commit results
         run: |
           git config --global user.email "empire-bot@auto-revenue.bot"
           git config --global user.name "Empire Bot"
-          BIZ_ID="${{ inputs.business_id }}"
-          git add "businesses/${BIZ_ID}/" || true
+          BIZ_ID="${{ inputs.business_id || 'note_言語化全1論' }}"
+          git add "businesses/${BIZ_ID}/" thoughts/ || true
           git diff --staged --quiet || \
             git commit -m "note_magazine: auto update $(date +%Y-%m-%d) [skip ci]"
           git push
