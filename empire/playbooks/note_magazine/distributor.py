@@ -18,7 +18,7 @@ TEXT_NOTES_PATH = NOTE_API_BASE + "/text_notes"
 def _note_session() -> requests.Session | None:
     """
     _note_session_v5 Cookie を使ってセッションを返す。
-    Cookie認証方式（メール/パスワードログインは廃止済み）。
+    トップページにアクセスしてCSRFトークンも取得する。
     """
     cookie_value = os.environ.get("NOTE_SESSION_COOKIE", "")
     if not cookie_value:
@@ -27,7 +27,6 @@ def _note_session() -> requests.Session | None:
 
     session = requests.Session()
     session.headers.update({
-        "Content-Type": "application/json",
         "User-Agent": (
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
             "AppleWebKit/537.36 (KHTML, like Gecko) "
@@ -39,6 +38,22 @@ def _note_session() -> requests.Session | None:
         "Referer": "https://note.com/",
     })
     session.cookies.set("_note_session_v5", cookie_value, domain="note.com")
+
+    # CSRFトークンをトップページから取得
+    try:
+        resp = session.get("https://note.com/", timeout=15)
+        # meta[name="csrf-token"] または X-CSRF-Token を探す
+        import re as _re
+        csrf_match = _re.search(r'<meta name="csrf-token" content="([^"]+)"', resp.text)
+        if csrf_match:
+            csrf_token = csrf_match.group(1)
+            session.headers.update({"X-CSRF-Token": csrf_token})
+            logger.info("note.com: CSRFトークン取得成功")
+        else:
+            logger.warning("note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）")
+    except Exception as exc:
+        logger.warning("note.com: トップページ取得エラー: %s", exc)
+
     logger.info("note.com: Cookie認証セッションを初期化しました")
     return session
 
@@ -61,7 +76,12 @@ def _post_note(session: requests.Session, draft: dict, magazine_id: str = "") ->
 
     payload = {"note": note_payload}
     try:
-        resp = session.post(TEXT_NOTES_PATH, json=payload, timeout=20)
+        resp = session.post(
+            TEXT_NOTES_PATH,
+            json=payload,
+            timeout=20,
+            headers={"Content-Type": "application/json"},
+        )
         if resp.status_code in (200, 201):
             data = resp.json()
             note_id = data.get("data", {}).get("id") or data.get("id", "unknown")
@@ -69,7 +89,7 @@ def _post_note(session: requests.Session, draft: dict, magazine_id: str = "") ->
             url = f"https://note.com/n/{note_key}" if note_key else ""
             logger.info("Posted note id=%s url=%s magazine=%s", note_id, url, magazine_id or "none")
             return {"id": note_id, "url": url}
-        logger.warning("Post failed: %d %s", resp.status_code, resp.text[:200])
+        logger.warning("Post failed: %d %s", resp.status_code, resp.text[:500])
     except Exception as exc:
         logger.warning("Post error: %s", exc)
     return None
