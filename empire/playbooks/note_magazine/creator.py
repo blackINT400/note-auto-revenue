@@ -22,48 +22,85 @@ def _slugify(text: str) -> str:
     return text[:40] or "article"
 
 
+def _build_prompt(niche: str, topic: dict, config: dict) -> str:
+    """著者の思考OSを注入したプロンプトを構築する"""
+    title_hint = topic.get("title", "")
+    keywords = ", ".join(topic.get("keywords", []))
+    today_genre = config.get("today_genre", niche)
+    voice_os = config.get("voice_os", "")
+    thought_seeds = config.get("thought_seeds", "")
+    magazine_url = f"https://note.com/{config.get('note_user_id','militech_2077')}/m/{config.get('magazine_id','')}"
+    author = config.get("author_pen_name", "ミリテク")
+
+    parts = [
+        f"あなたは「{author}」のゴーストライターAIです。",
+        f"以下の「著者の思考OS」を完全に体現した記事を書いてください。",
+        "",
+    ]
+
+    if voice_os:
+        parts += [
+            "## 著者の思考OS（全1論・一即全・100%再現論）",
+            voice_os.strip(),
+            "",
+        ]
+
+    if thought_seeds:
+        parts += [
+            "## 著者の思考シード（本日のインプット）",
+            thought_seeds.strip(),
+            "",
+        ]
+
+    parts += [
+        f"## 本日のジャンル",
+        f"{today_genre}",
+        "",
+        f"## トピック",
+        f"{title_hint}",
+        f"キーワード: {keywords}",
+        "",
+        "## 執筆ルール",
+        "- 感情的な励ましを一切排する。「構造がそうなっている」という物理的事実として断定的に書く",
+        "- 読者に無駄な努力を求めない。「既に持っている」ことを確信させる",
+        "- 全1論の視点でジャンルを切り取り、そのジャンル特有の言葉に翻訳する",
+        "- FXトレーダーとしての背景は「言語化を学んだ」という事実のみ、さらっと添える程度",
+        "- 2000〜2500文字を厳守（body文字数を管理すること）",
+        "",
+        "## 出力形式（JSONのみ・コードブロック・前置き一切不要）",
+        "{",
+        '  "title_a": "全1論の視点を込めた断定的タイトル",',
+        '  "title_b": "読者の悩みを直撃する疑問形タイトル",',
+        '  "hashtags": ["タグ1", "タグ2", "タグ3", "タグ4", "タグ5"],',
+        '  "body": "記事本文（note Markdown形式、2000〜2500文字）"',
+        "}",
+        "",
+        "## bodyの構成",
+        "1. イントロ: 読者の現実を物理的事実として描写（励まさない）",
+        "2. ## 構造: [ジャンル]における「全と1」の法則",
+        "3. ## 翻訳: その法則が[ジャンル]で働いている具体的な証拠",
+        "4. ## 実装: 今この瞬間からできる「1つの動作」",
+        "5. ## まとめ: 読者がすでに持っている能力の確認",
+        "",
+        f"まとめの末尾に必ず追加:\n---\nこのマガジンでは、全ジャンルに通底する「再現の法則」を毎日翻訳しています。\n→ {magazine_url}\n---",
+    ]
+
+    return "\n".join(parts)
+
+
 def _generate_article(
     client: anthropic.Anthropic,
     model: str,
     niche: str,
     topic: dict,
+    config: dict,
 ) -> dict:
     """1記事分のコンテンツを Claude で生成する"""
-    title_hint = topic.get("title", "")
-    keywords = ", ".join(topic.get("keywords", []))
-    reason = topic.get("reason", "")
-
-    prompt = (
-        f"あなたはnote.comの人気有料マガジン編集者です。\n"
-        f"ニッチ: {niche}\n"
-        f"トピック: {title_hint}\n"
-        f"キーワード: {keywords}\n"
-        f"選定理由: {reason}\n\n"
-        f"以下の形式でJSON を返してください。コードブロックや説明は不要です。\n\n"
-        f"{{\n"
-        f'  "title_a": "具体的な数字や実績を含むタイトル（例: 年収300万円サラリーマンが節税で手取り30万増やした5つの方法）",\n'
-        f'  "title_b": "疑問形・感情訴求タイトル（例: あなたはまだ損してる？知らないと怖い節税の落とし穴）",\n'
-        f'  "hashtags": ["ハッシュタグ1", "ハッシュタグ2", "ハッシュタグ3", "ハッシュタグ4", "ハッシュタグ5"],\n'
-        f'  "body": "記事本文（2000〜3000文字、note.com Markdown形式）"\n'
-        f"}}\n\n"
-        f"## 記事本文の構成\n"
-        f"1. キャッチーなイントロ（読者の悩みに共感）\n"
-        f"2. ## セクション1: 背景・問題提起\n"
-        f"3. ## セクション2: 具体的な方法1\n"
-        f"4. ## セクション3: 具体的な方法2\n"
-        f"5. ## セクション4: 実践のコツ・注意点\n"
-        f"6. ## まとめ: 行動を促すクロージング\n\n"
-        f"記事は読者が実際に行動できる具体的な内容にしてください。\n\n"
-        f"## CTAブロック（まとめの末尾に必ず追加すること）\n"
-        f"まとめセクションの末尾に以下のCTAブロックを必ず含めること（ZennのURLが存在しない場合は省略）:\n\n"
-        f"---\n"
-        f"より深い考察はZennでも発信しています → https://zenn.dev/militech_2077\n"
-        f"---"
-    )
+    prompt = _build_prompt(niche, topic, config)
 
     response = client.messages.create(
         model=model,
-        max_tokens=3000,
+        max_tokens=4096,
         messages=[{"role": "user", "content": prompt}],
     )
     raw = response.content[0].text.strip()
@@ -77,11 +114,39 @@ def _generate_article(
     except Exception:
         pass
 
-    # JSON 部分を抽出
+    if not raw:
+        raise ValueError("Empty response from Claude API")
+
+    # JSON 部分を抽出（コードブロック対応）
+    # ```json ... ``` または ```...``` を除去
+    raw = re.sub(r"^```(?:json)?\s*", "", raw, flags=re.MULTILINE)
+    raw = re.sub(r"\s*```\s*$", "", raw, flags=re.MULTILINE)
+    raw = raw.strip()
+
+    # { ... } を抽出
     match = re.search(r"\{.*\}", raw, re.DOTALL)
     if match:
         raw = match.group(0)
-    article = json.loads(raw)
+
+    if not raw:
+        raise ValueError("No JSON found in Claude response")
+
+    try:
+        article = json.loads(raw)
+    except json.JSONDecodeError as e:
+        # 末尾が切れている場合の簡易補完
+        logger.warning("JSON parse failed (%s), attempting repair", e)
+        # bodyが途中で切れた場合に閉じる
+        repaired = raw
+        if repaired.count('"') % 2 != 0:
+            repaired += '"'
+        # 未閉の配列
+        open_brackets = repaired.count("[") - repaired.count("]")
+        repaired += "]" * max(0, open_brackets)
+        # 未閉のオブジェクト
+        open_braces = repaired.count("{") - repaired.count("}")
+        repaired += "}" * max(0, open_braces)
+        article = json.loads(repaired)
 
     # 必須キーの保証
     article.setdefault("title_a", title_hint)
@@ -108,7 +173,7 @@ def run_creator(config: dict, data_dir: Path, topics: list) -> list[dict]:
 
     for topic in topics[:articles_per_day]:
         try:
-            article = _generate_article(client, model, niche, topic)
+            article = _generate_article(client, model, niche, topic, config)
         except Exception as exc:
             logger.error("Article generation failed for topic '%s': %s", topic.get("title"), exc)
             continue

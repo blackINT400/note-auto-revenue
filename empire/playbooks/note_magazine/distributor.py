@@ -12,7 +12,8 @@ import requests
 logger = logging.getLogger(__name__)
 
 NOTE_API_BASE = "https://note.com/api/v1"
-SESSION_PATH = NOTE_API_BASE + "/sessions"
+NOTE_API_BASE_V2 = "https://note.com/api/v2"
+SESSION_PATH = NOTE_API_BASE_V2 + "/sessions"
 TEXT_NOTES_PATH = NOTE_API_BASE + "/text_notes"
 
 
@@ -21,21 +22,27 @@ def _note_login(email: str, password: str) -> requests.Session | None:
     session = requests.Session()
     session.headers.update({
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (compatible; note-magazine-bot/1.0)",
-        "Accept": "application/json",
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "ja,en;q=0.9",
+        "Origin": "https://note.com",
+        "Referer": "https://note.com/login",
     })
-    try:
-        resp = session.post(
-            SESSION_PATH,
-            json={"login": email, "password": password},
-            timeout=15,
-        )
-        if resp.status_code in (200, 201):
-            logger.info("note.com login succeeded")
-            return session
-        logger.warning("note.com login failed: %d %s", resp.status_code, resp.text[:200])
-    except Exception as exc:
-        logger.warning("note.com login error: %s", exc)
+
+    # まず v2 エンドポイントを試す
+    for endpoint, payload in [
+        (SESSION_PATH, {"login": email, "password": password}),
+        (NOTE_API_BASE + "/sessions", {"login": email, "password": password}),
+    ]:
+        try:
+            resp = session.post(endpoint, json=payload, timeout=15)
+            if resp.status_code in (200, 201):
+                logger.info("note.com login succeeded via %s", endpoint)
+                return session
+            logger.warning("note.com login attempt %s failed: %d %s", endpoint, resp.status_code, resp.text[:200])
+        except Exception as exc:
+            logger.warning("note.com login error at %s: %s", endpoint, exc)
+
     return None
 
 
