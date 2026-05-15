@@ -39,7 +39,7 @@ def _note_login(email: str, password: str) -> requests.Session | None:
     return None
 
 
-def _post_note(session: requests.Session, draft: dict) -> dict | None:
+def _post_note(session: requests.Session, draft: dict, magazine_id: str = "") -> dict | None:
     """note.com に記事を投稿する。成功時はレスポンス dict を返す。"""
     title = draft.get("title_a", "無題")
     body = draft.get("body", "")
@@ -47,13 +47,15 @@ def _post_note(session: requests.Session, draft: dict) -> dict | None:
     tag_str = " ".join(f"#{t}" for t in hashtags)
     full_body = f"{body}\n\n{tag_str}".strip()
 
-    payload = {
-        "note": {
-            "name": title,
-            "body": full_body,
-            "status": "draft",  # 安全のため下書き投稿
-        }
+    note_payload: dict = {
+        "name": title,
+        "body": full_body,
+        "status": "draft",  # 安全のため下書き投稿
     }
+    if magazine_id:
+        note_payload["magazine_id"] = magazine_id
+
+    payload = {"note": note_payload}
     try:
         resp = session.post(TEXT_NOTES_PATH, json=payload, timeout=20)
         if resp.status_code in (200, 201):
@@ -61,7 +63,7 @@ def _post_note(session: requests.Session, draft: dict) -> dict | None:
             note_id = data.get("data", {}).get("id") or data.get("id", "unknown")
             note_key = data.get("data", {}).get("key") or data.get("key", "")
             url = f"https://note.com/n/{note_key}" if note_key else ""
-            logger.info("Posted note id=%s url=%s", note_id, url)
+            logger.info("Posted note id=%s url=%s magazine=%s", note_id, url, magazine_id or "none")
             return {"id": note_id, "url": url}
         logger.warning("Post failed: %d %s", resp.status_code, resp.text[:200])
     except Exception as exc:
@@ -132,6 +134,7 @@ def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
     # note.com 認証情報
     email = os.environ.get("NOTE_EMAIL", "")
     password = os.environ.get("NOTE_PASSWORD", "")
+    magazine_id = config.get("magazine_id", "")
     note_session = None
     if email and password:
         note_session = _note_login(email, password)
@@ -150,7 +153,7 @@ def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
         now_iso = datetime.now(timezone.utc).isoformat()
 
         if note_session:
-            post_result = _post_note(note_session, draft)
+            post_result = _post_note(note_session, draft, magazine_id=magazine_id)
             if post_result:
                 record = {
                     "title": title,

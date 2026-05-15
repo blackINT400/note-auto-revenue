@@ -8,7 +8,8 @@ note_profile_url: https://note.com/militech_2077
 # マガジン設定（作成後に更新）
 magazine_name: "言語化の技術 — 全1論で世界を翻訳する"
 magazine_price: 980        # 月額（円）
-magazine_id: ""            # note側で作成後に記入
+magazine_id: "mf82e085b93c9"
+magazine_url: "https://note.com/militech_2077/m/mf82e085b93c9"
 
 # コンテンツ設定
 niche: "言語化・全1論・再現性"
