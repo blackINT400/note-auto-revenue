@@ -74,31 +74,51 @@ def run_daily():
     logger.info("日次処理 開始")
     logger.info("=" * 60)
 
-    from agents import scout, writer, publisher
+    from empire.report_generator import ReportCollector
+    with ReportCollector("daily") as rc:
+        rc.add_action("Zenn自動投稿システム 日次処理 開始")
 
-    _run(scout.run, "Scout（トレンド収集）")
+        from agents import scout, writer, publisher
 
-    articles = _run(writer.run, "Writer（記事生成）")
+        try:
+            _run(scout.run, "Scout（トレンド収集）")
+            rc.add_success("トレンドスキャン完了")
+        except Exception as e:
+            rc.add_failure("トレンドスキャン失敗", cause=str(e)[:100])
 
-    if not articles:
-        msg = "⚠️ 今日は記事を生成できませんでした（コスト上限または品質基準未達）"
-        logger.warning(msg)
-        _slack(msg)
-        return
+        try:
+            articles = _run(writer.run, "Writer（記事生成）")
+        except Exception as e:
+            rc.add_failure("記事生成失敗", cause=str(e)[:100])
+            articles = []
 
-    results = _run(lambda: publisher.run(articles), "Publisher（Zenn投稿）")
+        if not articles:
+            msg = "⚠️ 今日は記事を生成できませんでした（コスト上限または品質基準未達）"
+            logger.warning(msg)
+            _slack(msg)
+            rc.add_failure("記事生成なし", cause="コスト上限または品質基準未達")
+        else:
+            try:
+                results = _run(lambda: publisher.run(articles), "Publisher（Zenn投稿）")
+                title_list = "\n".join(f"• {r.get('title', '')}" for r in results)
+                _slack(f"✅ *本日の記事投稿完了* ({len(results)}件)\n{title_list}")
+                logger.info(f"日次処理 完了: {len(results)}件の記事を投稿")
+                for r in results:
+                    rc.add_success(f"Zenn投稿完了: {r.get('title', '')[:40]}")
+            except Exception as e:
+                rc.add_failure("Zenn投稿失敗", cause=str(e)[:100], needs_action=True)
 
-    title_list = "\n".join(f"• {r.get('title', '')}" for r in results)
-    _slack(f"✅ *本日の記事投稿完了* ({len(results)}件)\n{title_list}")
-    logger.info(f"日次処理 完了: {len(results)}件の記事を投稿")
-
-    # 毎月1日に月次サマリーを生成
-    if date.today().day == 1:
-        logger.info("月初のため月次サマリーを生成します")
-        from agents import analyst
-        path = _run(analyst.generate_monthly_summary, "MonthlyReport（月次サマリー）")
-        if path:
-            _slack(f"📅 *月次サマリーを生成しました*\n`{path}`")
+        # 毎月1日に月次サマリーを生成
+        if date.today().day == 1:
+            logger.info("月初のため月次サマリーを生成します")
+            from agents import analyst
+            try:
+                path = _run(analyst.generate_monthly_summary, "MonthlyReport（月次サマリー）")
+                if path:
+                    _slack(f"📅 *月次サマリーを生成しました*\n`{path}`")
+                    rc.add_success(f"月次サマリー生成: {path}")
+            except Exception as e:
+                rc.add_failure("月次サマリー生成失敗", cause=str(e)[:100])
 
 
 # ── 週次処理 ──────────────────────────────────────────────────────────────────
@@ -108,16 +128,23 @@ def run_weekly():
     logger.info("週次分析 開始")
     logger.info("=" * 60)
 
-    from agents import analyst
+    from empire.report_generator import ReportCollector
+    with ReportCollector("weekly") as rc:
+        rc.add_action("Zenn自動投稿システム 週次分析 開始")
 
-    _run(analyst.run, "Analyst（戦略分析）")
+        from agents import analyst
+        try:
+            _run(analyst.run, "Analyst（戦略分析）")
+            rc.add_success("週次戦略分析完了")
+        except Exception as e:
+            rc.add_failure("週次分析失敗", cause=str(e)[:100])
 
-    config = yaml.safe_load(Path("config.yaml").read_text(encoding="utf-8"))
-    keywords = config.get("auto_strategy", {}).get("top_keywords", [])
-    report = config.get("auto_strategy", {}).get("weekly_report", "")
-    kw_str = ", ".join(keywords[:5]) if keywords else "なし"
-    _slack(f"📊 *週次分析完了*\n戦略キーワード: {kw_str}\n{report}")
-    logger.info("週次分析 完了")
+        config = yaml.safe_load(Path("config.yaml").read_text(encoding="utf-8"))
+        keywords = config.get("auto_strategy", {}).get("top_keywords", [])
+        report = config.get("auto_strategy", {}).get("weekly_report", "")
+        kw_str = ", ".join(keywords[:5]) if keywords else "なし"
+        _slack(f"📊 *週次分析完了*\n戦略キーワード: {kw_str}\n{report}")
+        logger.info("週次分析 完了")
 
 
 # ── エントリーポイント ────────────────────────────────────────────────────────

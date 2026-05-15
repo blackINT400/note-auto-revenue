@@ -79,12 +79,30 @@ def main():
 
     setup(config, BUSINESS_DIR)
 
-    if args.mode == "report":
-        result = report(config, BUSINESS_DIR)
-    else:
-        result = run(config, BUSINESS_DIR, mode=args.mode)
+    from empire.report_generator import ReportCollector
+    with ReportCollector(args.mode) as rc:
+        rc.add_action(f"note有料マガジン事業 起動 mode={args.mode} genre={config.get('today_genre','')}")
 
-    logger.info(f"[note] 完了: {result}")
+        if args.mode == "report":
+            result = report(config, BUSINESS_DIR)
+            rc.add_success("パフォーマンスレポート生成完了")
+        else:
+            result = run(config, BUSINESS_DIR, mode=args.mode)
+
+            published = result.get("published", [])
+            for rec in published:
+                status = rec.get("status", "")
+                title = rec.get("title", "")
+                if status == "published":
+                    rc.add_success(f"note投稿成功: {title}")
+                elif status == "draft_ready":
+                    rc.add_failure(
+                        f"note投稿失敗→メール通知: {title}",
+                        cause="note.com API エラー（CSRF/認証）。メールで記事全文を送信済み。",
+                        needs_action=False,
+                    )
+
+        logger.info(f"[note] 完了: {result}")
 
 
 if __name__ == "__main__":

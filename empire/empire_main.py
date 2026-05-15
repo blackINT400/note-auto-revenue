@@ -220,65 +220,88 @@ def run_daily():
     logger.info("帝国 日次処理 開始")
     logger.info("=" * 60)
 
-    portfolio = load_portfolio()
+    from empire.report_generator import ReportCollector
+    with ReportCollector("daily") as rc:
+        rc.add_action("帝国オーケストレーター 日次処理 開始")
 
-    # ── フェーズ自動判定 ──────────────────────────────────────────────────────
-    from empire.phase_manager import detect_phase, phase_report
-    phase_info = detect_phase(portfolio, PROJECT_ROOT)
-    logger.info(phase_info["message"])
+        portfolio = load_portfolio()
 
-    # フェーズ0のとき: 有料機能ブロックをSlackで通知
-    if phase_info["phase"] == 0:
-        logger.info(
-            "[帝国] %s — 無料コンテンツ量産フェーズ。有料機能はブロック済み。",
-            phase_info["name"],
+        # ── フェーズ自動判定 ──────────────────────────────────────────────────────
+        from empire.phase_manager import detect_phase, phase_report
+        phase_info = detect_phase(portfolio, PROJECT_ROOT)
+        logger.info(phase_info["message"])
+        rc.add_action(f"フェーズ判定: {phase_info['name']} "
+                      f"（記事{phase_info['article_count']}本 / 月収¥{phase_info['monthly_revenue']:.0f}）")
+
+        if phase_info["phase"] == 0:
+            logger.info(
+                "[帝国] %s — 無料コンテンツ量産フェーズ。有料機能はブロック済み。",
+                phase_info["name"],
+            )
+        _slack(
+            f"[帝国] {phase_info['name']}\n"
+            f"記事: {phase_info['article_count']} 本 | 月収: ¥{phase_info['monthly_revenue']:.0f}\n"
+            f"{phase_info['next_hint']}"
         )
-    _slack(
-        f"[帝国] {phase_info['name']}\n"
-        f"記事: {phase_info['article_count']} 本 | 月収: ¥{phase_info['monthly_revenue']:.0f}\n"
-        f"{phase_info['next_hint']}"
-    )
 
-    # 安全装置: コスト上限チェック（全事業合計）
-    cost_limit = get_empire_cost_limit()
-    total_biz_cost = sum(float(b.get("monthly_cost", 0)) for b in portfolio.get("businesses", []))
-    if total_biz_cost >= cost_limit:
-        _slack(f"🛑 *[帝国]* 全事業の月間コスト合計({total_biz_cost:,.0f}円)が上限({cost_limit:,.0f}円)に達しました。日次処理を停止します。")
-        logger.error("帝国コスト上限超過。日次処理を中断します。")
-        return
+        # 安全装置: コスト上限チェック（全事業合計）
+        cost_limit = get_empire_cost_limit()
+        total_biz_cost = sum(float(b.get("monthly_cost", 0)) for b in portfolio.get("businesses", []))
+        if total_biz_cost >= cost_limit:
+            _slack(f"🛑 *[帝国]* 全事業の月間コスト合計({total_biz_cost:,.0f}円)が上限({cost_limit:,.0f}円)に達しました。日次処理を停止します。")
+            logger.error("帝国コスト上限超過。日次処理を中断します。")
+            rc.add_failure(
+                f"コスト上限超過で日次処理を停止",
+                cause=f"累計コスト ¥{total_biz_cost:,.0f} ≥ 上限 ¥{cost_limit:,.0f}",
+                needs_action=True,
+            )
+            rc.add_confirmation(f"月間APIコストが上限（¥{cost_limit:,.0f}）に達しました。上限引き上げまたは処理削減を検討してください。")
+            return
 
-    # 全アクティブ事業を実行（フェーズに関係なく日次生成は常に実行）
-    _run_all_businesses_daily(portfolio)
+        # 全アクティブ事業を実行（フェーズに関係なく日次生成は常に実行）
+        rc.add_action("全アクティブ事業の日次処理を実行")
+        _run_all_businesses_daily(portfolio)
+        active_biz = [b["id"] for b in portfolio.get("businesses", []) if b.get("status") == "active"]
+        rc.add_success(f"事業日次処理完了: {', '.join(active_biz)}")
 
-    # CEO判断
-    if not _empire_cost_guard():
-        from empire import ceo_agent
-        _run(lambda: ceo_agent.run(slack_fn=_slack, weekly_report=False), "CEO（日次判断）")
+        # CEO判断
+        if not _empire_cost_guard():
+            rc.add_action("CEO エージェント 日次判断")
+            try:
+                from empire import ceo_agent
+                _run(lambda: ceo_agent.run(slack_fn=_slack, weekly_report=False), "CEO（日次判断）")
+                rc.add_success("CEO 日次判断完了")
+            except Exception as e:
+                rc.add_failure("CEO 日次判断エラー", cause=str(e)[:100])
 
-    # ── KPIデータ収集 & ダッシュボード更新 ──────────────────────────────────
-    snapshot = {}
-    try:
-        from dashboard.collector import collect as collect_kpi
-        from dashboard.generator import generate as generate_dashboard
-        snapshot = collect_kpi()
-        generate_dashboard(snapshot)
-        logger.info("[帝国] ダッシュボード更新完了")
-    except Exception as e:
-        logger.warning(f"[帝国] ダッシュボード更新スキップ: {e}")
+        # ── KPIデータ収集 & ダッシュボード更新 ──────────────────────────────────
+        snapshot = {}
+        try:
+            from dashboard.collector import collect as collect_kpi
+            from dashboard.generator import generate as generate_dashboard
+            rc.add_action("KPI収集 & ダッシュボード更新")
+            snapshot = collect_kpi()
+            generate_dashboard(snapshot)
+            logger.info("[帝国] ダッシュボード更新完了")
+            rc.add_success("ダッシュボード更新完了")
+        except Exception as e:
+            logger.warning(f"[帝国] ダッシュボード更新スキップ: {e}")
+            rc.add_failure("ダッシュボード更新スキップ", cause=str(e)[:100])
 
-    # ── Slack日次サマリー（KPI + ダッシュボードURL）──────────────────────────
-    total = snapshot.get("total", {})
-    rev = float(total.get("revenue", 0))
-    cost = float(total.get("cost", 0))
-    profit = float(total.get("profit", 0))
-    roi = float(total.get("roi", 0))
-    pages_url = "https://blackINT400.github.io/note-auto-revenue/"
-    _slack(
-        f"✅ *[帝国] 日次処理完了* ({date.today()})\n"
-        f"今月の収益: ¥{rev:,.0f} / コスト: ¥{cost:,.0f} / 純利益: ¥{profit:,.0f} (ROI {roi:.1f}%)\n"
-        f"ダッシュボード: {pages_url}"
-    )
-    logger.info("帝国 日次処理 完了")
+        # ── Slack日次サマリー（KPI + ダッシュボードURL）──────────────────────────
+        total = snapshot.get("total", {})
+        rev = float(total.get("revenue", 0))
+        cost = float(total.get("cost", 0))
+        profit = float(total.get("profit", 0))
+        roi = float(total.get("roi", 0))
+        pages_url = "https://blackINT400.github.io/note-auto-revenue/"
+        _slack(
+            f"✅ *[帝国] 日次処理完了* ({date.today()})\n"
+            f"今月の収益: ¥{rev:,.0f} / コスト: ¥{cost:,.0f} / 純利益: ¥{profit:,.0f} (ROI {roi:.1f}%)\n"
+            f"ダッシュボード: {pages_url}"
+        )
+        logger.info("帝国 日次処理 完了")
+        rc.add_action("日次処理完了")
 
 
 def run_weekly():
@@ -286,28 +309,51 @@ def run_weekly():
     logger.info("帝国 週次処理 開始")
     logger.info("=" * 60)
 
-    if _empire_cost_guard():
-        logger.warning("帝国エージェントのコスト上限により週次処理をスキップします")
-        return
+    from empire.report_generator import ReportCollector
+    with ReportCollector("weekly") as rc:
+        rc.add_action("帝国オーケストレーター 週次処理 開始")
 
-    portfolio = load_portfolio()
+        if _empire_cost_guard():
+            logger.warning("帝国エージェントのコスト上限により週次処理をスキップします")
+            rc.add_failure("週次処理スキップ", cause="帝国エージェントのAPIコスト上限超過", needs_action=True)
+            rc.add_confirmation("帝国エージェントのAPIコストが上限の20%を超えています。週次スカウト・CEO判断を手動で確認してください。")
+            return
 
-    # Scout: 新市場スキャン
-    from empire import scout_agent
-    opportunities = _run(scout_agent.run, "Scout（新市場スキャン）")
+        portfolio = load_portfolio()
 
-    # Launcher: 新事業準備（候補があれば）
-    if opportunities:
-        from empire import launcher_agent
-        new_bid = _run(lambda: launcher_agent.run(opportunities, slack_fn=_slack), "Launcher（新事業準備）")
-        if new_bid:
-            logger.info(f"[帝国] 新事業「{new_bid}」の準備完了。Slackで承認を確認してください。")
+        # Scout: 新市場スキャン
+        rc.add_action("Scout エージェント: 新市場スキャン")
+        try:
+            from empire import scout_agent
+            opportunities = _run(scout_agent.run, "Scout（新市場スキャン）")
+            rc.add_success(f"市場スキャン完了: {len(opportunities or [])} 件の機会を発見")
+        except Exception as e:
+            rc.add_failure("市場スキャン失敗", cause=str(e)[:100])
+            opportunities = []
 
-    # CEO: 週次レポート付き判断
-    from empire import ceo_agent
-    _run(lambda: ceo_agent.run(slack_fn=_slack, weekly_report=True), "CEO（週次判断 + レポート）")
+        # Launcher: 新事業準備（候補があれば）
+        if opportunities:
+            rc.add_action("Launcher エージェント: 新事業準備")
+            try:
+                from empire import launcher_agent
+                new_bid = _run(lambda: launcher_agent.run(opportunities, slack_fn=_slack), "Launcher（新事業準備）")
+                if new_bid:
+                    logger.info(f"[帝国] 新事業「{new_bid}」の準備完了。Slackで承認を確認してください。")
+                    rc.add_success(f"新事業準備完了: {new_bid}")
+                    rc.add_confirmation(f"新事業「{new_bid}」の起動承認が必要です。portfolio.yaml の status を 'active' に変更してください。")
+            except Exception as e:
+                rc.add_failure("新事業準備失敗", cause=str(e)[:100])
 
-    logger.info("帝国 週次処理 完了")
+        # CEO: 週次レポート付き判断
+        rc.add_action("CEO エージェント: 週次判断 + レポート")
+        try:
+            from empire import ceo_agent
+            _run(lambda: ceo_agent.run(slack_fn=_slack, weekly_report=True), "CEO（週次判断 + レポート）")
+            rc.add_success("CEO 週次判断完了")
+        except Exception as e:
+            rc.add_failure("CEO 週次判断エラー", cause=str(e)[:100])
+
+        logger.info("帝国 週次処理 完了")
 
 
 def run_monthly():
@@ -315,20 +361,32 @@ def run_monthly():
     logger.info("帝国 月次総括 開始")
     logger.info("=" * 60)
 
-    portfolio = load_portfolio()
-    _run(lambda: run_monthly_summary(portfolio), "月次総括")
+    from empire.report_generator import ReportCollector
+    with ReportCollector("monthly") as rc:
+        rc.add_action("帝国オーケストレーター 月次総括 開始")
 
-    # ── 月次ダッシュボード再生成（フルリビルド）───────────────────────────────
-    try:
-        from dashboard.collector import collect as collect_kpi
-        from dashboard.generator import generate as generate_dashboard
-        snapshot = collect_kpi()
-        generate_dashboard(snapshot)
-        logger.info("[帝国] 月次ダッシュボード再生成完了")
-    except Exception as e:
-        logger.warning(f"[帝国] 月次ダッシュボード生成スキップ: {e}")
+        portfolio = load_portfolio()
 
-    logger.info("帝国 月次総括 完了")
+        try:
+            _run(lambda: run_monthly_summary(portfolio), "月次総括")
+            rc.add_success("月次サマリー生成・Slack送信完了")
+        except Exception as e:
+            rc.add_failure("月次サマリー生成失敗", cause=str(e)[:100])
+
+        # ── 月次ダッシュボード再生成（フルリビルド）───────────────────────────────
+        try:
+            from dashboard.collector import collect as collect_kpi
+            from dashboard.generator import generate as generate_dashboard
+            rc.add_action("月次ダッシュボード再生成")
+            snapshot = collect_kpi()
+            generate_dashboard(snapshot)
+            logger.info("[帝国] 月次ダッシュボード再生成完了")
+            rc.add_success("月次ダッシュボード再生成完了")
+        except Exception as e:
+            logger.warning(f"[帝国] 月次ダッシュボード生成スキップ: {e}")
+            rc.add_failure("月次ダッシュボード生成スキップ", cause=str(e)[:100])
+
+        logger.info("帝国 月次総括 完了")
 
 
 # ── エントリーポイント ────────────────────────────────────────────────────────
