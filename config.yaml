@@ -14,7 +14,7 @@ articles_per_day: 2
 
 # Zennのユーザー名（デプロイ後の同期確認に使用。未設定でも動作します）
 # 例: zenn_username: "your_zenn_username"
-zenn_username: ""
+zenn_username: "militech"
 
 # 月間APIコスト上限（円）。超えたら即停止
 monthly_cost_limit: 2000
