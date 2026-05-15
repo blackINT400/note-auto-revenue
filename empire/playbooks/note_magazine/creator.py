@@ -149,8 +149,9 @@ def _generate_article(
         article = json.loads(repaired)
 
     # 必須キーの保証
-    article.setdefault("title_a", title_hint)
-    article.setdefault("title_b", title_hint)
+    title_fallback = topic.get("title", "無題")
+    article.setdefault("title_a", title_fallback)
+    article.setdefault("title_b", title_fallback)
     article.setdefault("hashtags", [])
     article.setdefault("body", "")
     return article
