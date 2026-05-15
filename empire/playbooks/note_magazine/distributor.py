@@ -118,7 +118,10 @@ def _save_markdown(ready_dir: Path, draft: dict) -> str:
 
 
 def _already_posted_today(published_path: Path) -> bool:
-    """published.jsonl を確認し、今日すでに投稿済みかチェックする。"""
+    """
+    published.jsonl を確認し、今日すでに note.com への投稿が成功済みかチェックする。
+    draft_ready（マークダウン保存のみ）は投稿済みとみなさない。
+    """
     if not published_path.exists():
         return False
     today = date.today().isoformat()
@@ -130,7 +133,9 @@ def _already_posted_today(published_path: Path) -> bool:
             try:
                 rec = json.loads(line)
                 pub_at = rec.get("published_at", "")
-                if pub_at.startswith(today):
+                status = rec.get("status", "")
+                # draft_ready は「投稿失敗してローカル保存した」状態なので除外
+                if pub_at.startswith(today) and status == "published":
                     return True
             except Exception:
                 continue
