@@ -17,17 +17,16 @@ PORTFOLIO_PATH = EMPIRE_DIR / "portfolio.yaml"
 EMPIRE_COST_PATH = EMPIRE_DIR / "data" / "empire_cost.json"
 
 # ── Discord通知 ────────────────────────────────────────────────────────────────
-DISCORD_WEBHOOK_URL = os.environ.get(
-    "DISCORD_WEBHOOK_URL",
-    "https://discord.com/api/webhooks/1504810050194247742/"
-    "LdfwEGOffRL9WCBR2Z0FrEK3Y3OFkuUbBddFJiXhIJQ2feoBqZgzZIaFS1U1K82c5ot5",
-)
+DISCORD_WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL", "")
 
 logger = logging.getLogger(__name__)
 
 
 def notify(title: str, body: str, urgent: bool = False) -> None:
     """Discord embed で通知する。urgent=True で赤色表示。"""
+    if not DISCORD_WEBHOOK_URL:
+        logger.debug("DISCORD_WEBHOOK_URL 未設定 — 通知をスキップします")
+        return
     color = 0xFF4444 if urgent else 0x1D9E75
     # Discord embed の description は 4096 文字上限
     desc = body[:4000] + "\n…（省略）" if len(body) > 4000 else body
