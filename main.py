@@ -93,6 +93,16 @@ def run_daily():
                 logger.info(f"日次処理 完了: {len(results)}件の記事を投稿")
                 for r in results:
                     rc.add_success(f"Zenn投稿完了: {r.get('title', '')[:40]}")
+
+                # Threads投稿文生成・配信（ACCESS_TOKEN未設定時はDiscord通知のみ）
+                try:
+                    from agents import social
+                    social.run(results)
+                    rc.add_success(f"Threads投稿文生成完了: {len(results)}件")
+                except Exception as e:
+                    logger.warning("Threads投稿文生成失敗（続行）: %s", e)
+                    rc.add_failure("Threads投稿文生成失敗", cause=str(e)[:100], needs_action=False)
+
             except Exception as e:
                 rc.add_failure("Zenn投稿失敗", cause=str(e)[:100], needs_action=True)
 
