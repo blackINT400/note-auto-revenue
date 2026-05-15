@@ -13,6 +13,15 @@ import yaml
 
 EMPIRE_DIR = Path(__file__).parent
 PROJECT_ROOT = EMPIRE_DIR.parent
+
+# ── .env 自動読み込み（ローカル開発用）────────────────────────────────────────
+try:
+    from dotenv import load_dotenv
+    _env_path = PROJECT_ROOT / ".env"
+    if _env_path.exists():
+        load_dotenv(_env_path)
+except ImportError:
+    pass
 PORTFOLIO_PATH = EMPIRE_DIR / "portfolio.yaml"
 EMPIRE_COST_PATH = EMPIRE_DIR / "data" / "empire_cost.json"
 
