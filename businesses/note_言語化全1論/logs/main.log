@@ -58,3 +58,21 @@
 2026-05-15 09:32:34,162 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_嫌悪感は境界線の言語である__他者の身体が不快なとき_あなたは何を守っている.md
 2026-05-15 09:32:34,162 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
 2026-05-15 09:32:34,162 [INFO] __main__: [note] 完了: {'published': [{'title': '嫌悪感は境界線の言語である——他者の身体が不快なとき、あなたは何を守っている', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_嫌悪感は境界線の言語である__他者の身体が不快なとき_あなたは何を守っている.md', 'published_at': '2026-05-15T09:32:34.162640+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_嫌悪感は境界線の言語である他者の身体が不快なときあなたは何を守っている.json'}], 'mode': 'daily'}
+2026-05-15 09:37:37,885 [INFO] __main__: [note] 起動 mode=daily genre=自己肯定感・自信のつくり方
+2026-05-15 09:37:39,885 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-15 09:37:40,992 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-15 09:37:41,826 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-15 09:37:43,212 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-15 09:37:44,551 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-15 09:37:44,702 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-15 09:37:44,818 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-15 09:37:45,474 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-15 09:37:45,474 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-15 09:37:56,022 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 09:37:56,045 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2094, output: 613 tokens
+2026-05-15 09:37:56,046 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-15.json
+2026-05-15 09:38:31,005 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 09:38:31,006 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3106, output: 1775 tokens
+2026-05-15 09:38:31,007 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_死ぬ前に後悔するのは言わなかった言葉だけだ.json
+2026-05-15 09:38:31,007 [INFO] empire.playbooks.note_magazine.distributor: Already posted today, skipping distributor (interval=24h)
+2026-05-15 09:38:31,007 [INFO] __main__: [note] 完了: {'published': [], 'mode': 'daily'}
