@@ -222,6 +222,23 @@ def run_daily():
 
     portfolio = load_portfolio()
 
+    # ── フェーズ自動判定 ──────────────────────────────────────────────────────
+    from empire.phase_manager import detect_phase, phase_report
+    phase_info = detect_phase(portfolio, PROJECT_ROOT)
+    logger.info(phase_info["message"])
+
+    # フェーズ0のとき: 有料機能ブロックをSlackで通知
+    if phase_info["phase"] == 0:
+        logger.info(
+            "[帝国] %s — 無料コンテンツ量産フェーズ。有料機能はブロック済み。",
+            phase_info["name"],
+        )
+    _slack(
+        f"[帝国] {phase_info['name']}\n"
+        f"記事: {phase_info['article_count']} 本 | 月収: ¥{phase_info['monthly_revenue']:.0f}\n"
+        f"{phase_info['next_hint']}"
+    )
+
     # 安全装置: コスト上限チェック（全事業合計）
     cost_limit = get_empire_cost_limit()
     total_biz_cost = sum(float(b.get("monthly_cost", 0)) for b in portfolio.get("businesses", []))
@@ -230,7 +247,7 @@ def run_daily():
         logger.error("帝国コスト上限超過。日次処理を中断します。")
         return
 
-    # 全アクティブ事業を実行
+    # 全アクティブ事業を実行（フェーズに関係なく日次生成は常に実行）
     _run_all_businesses_daily(portfolio)
 
     # CEO判断
