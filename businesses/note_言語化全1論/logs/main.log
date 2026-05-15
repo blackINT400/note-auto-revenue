@@ -76,3 +76,21 @@
 2026-05-15 09:38:31,007 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_死ぬ前に後悔するのは言わなかった言葉だけだ.json
 2026-05-15 09:38:31,007 [INFO] empire.playbooks.note_magazine.distributor: Already posted today, skipping distributor (interval=24h)
 2026-05-15 09:38:31,007 [INFO] __main__: [note] 完了: {'published': [], 'mode': 'daily'}
+2026-05-15 10:37:25,022 [INFO] __main__: [note] 起動 mode=daily genre=恋愛・別れと向き合い方
+2026-05-15 10:37:26,023 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-15 10:37:27,068 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-15 10:37:28,017 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-15 10:37:30,019 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-15 10:37:31,520 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-15 10:37:31,821 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-15 10:37:32,026 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-15 10:37:32,572 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-15 10:37:32,572 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-15 10:37:42,367 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 10:37:42,389 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2068, output: 553 tokens
+2026-05-15 10:37:42,390 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-15.json
+2026-05-15 10:38:17,557 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 10:38:17,558 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3094, output: 1797 tokens
+2026-05-15 10:38:17,559 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_AIに仕事を奪われる前にあなたはもう答えを持っている.json
+2026-05-15 10:38:17,559 [INFO] empire.playbooks.note_magazine.distributor: Already posted today, skipping distributor (interval=24h)
+2026-05-15 10:38:17,559 [INFO] __main__: [note] 完了: {'published': [], 'mode': 'daily'}
