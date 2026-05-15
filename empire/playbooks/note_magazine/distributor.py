@@ -1,10 +1,14 @@
 """
-Distributor: note.com 非公式 API で投稿、失敗時はマークダウン下書きとして保存する
+Distributor: note.com 非公式 API で投稿、失敗時はマークダウン下書きとして保存し、
+             メール通知でオーナーが手動投稿できるようにする
 """
 import json
 import logging
 import os
+import smtplib
 from datetime import date, datetime, timezone
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
 
 import requests
@@ -148,6 +152,69 @@ def _append_published(published_path: Path, record: dict) -> None:
         f.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
+def _send_email_notification(draft: dict, md_path: str) -> bool:
+    """
+    記事をメール本文として送信する（Gmail SMTP使用）。
+    オーナーがそのままnote.comにコピペできる形式。
+    環境変数:
+      GMAIL_ADDRESS   : 送信者のGmailアドレス
+      GMAIL_APP_PASSWORD: Gmailのアプリパスワード（2段階認証必須）
+      NOTIFY_EMAIL    : 通知先メールアドレス（未設定ならGMAIL_ADDRESSと同じ）
+    """
+    gmail_address = os.environ.get("GMAIL_ADDRESS", "")
+    app_password = os.environ.get("GMAIL_APP_PASSWORD", "")
+    notify_email = os.environ.get("NOTIFY_EMAIL", "") or gmail_address
+
+    if not gmail_address or not app_password:
+        logger.warning("GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。")
+        return False
+
+    title = draft.get("title_a", "無題")
+    body = draft.get("body", "")
+    hashtags = draft.get("hashtags", [])
+    tag_str = " ".join(f"#{t}" for t in hashtags)
+    today = date.today().isoformat()
+
+    subject = f"【note記事】{today}: {title}"
+
+    # メール本文（note.comにコピペできる形式）
+    email_body = f"""note.com に投稿する記事が準備できました。
+以下をnote.comのエディタにコピー＆ペーストしてください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+タイトル: {title}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+{body}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ハッシュタグ:
+{tag_str}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+保存先ファイル: {md_path}
+
+このメールは自動送信されました。
+"""
+
+    try:
+        msg = MIMEMultipart()
+        msg["From"] = gmail_address
+        msg["To"] = notify_email
+        msg["Subject"] = subject
+        msg.attach(MIMEText(email_body, "plain", "utf-8"))
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(gmail_address, app_password)
+            server.sendmail(gmail_address, notify_email, msg.as_string())
+
+        logger.info("メール通知送信完了: %s → %s", subject[:50], notify_email)
+        return True
+    except Exception as exc:
+        logger.warning("メール送信エラー: %s", exc)
+        return False
+
+
 def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
     """記事リストを note.com に投稿、または下書きとして保存する。"""
     post_interval_hours = config.get("post_interval_hours", 24)
@@ -194,8 +261,9 @@ def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
             # API 失敗 → フォールバック
             logger.warning("API post failed, falling back to markdown save")
 
-        # フォールバック: マークダウン保存
+        # フォールバック: マークダウン保存 + メール通知
         md_path = _save_markdown(ready_dir, draft)
+        _send_email_notification(draft, md_path)
         record = {
             "title": title,
             "status": "draft_ready",

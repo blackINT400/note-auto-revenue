@@ -1,0 +1,37 @@
+name: Generate Approved 10 Articles
+
+on:
+  workflow_dispatch:
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate 10 approved articles
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/gen_approved_10.py
+
+      - name: Commit and push
+        run: |
+          git config --global user.email "empire-bot@auto-revenue.bot"
+          git config --global user.name "Empire Bot"
+          git add articles/
+          git diff --staged --quiet || \
+            git commit -m "feat: add approved 10 articles (副業・節税) [skip ci]"
+          git push

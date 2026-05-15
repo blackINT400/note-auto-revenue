@@ -43,6 +43,9 @@ jobs:
           NOTE_EMAIL: ${{ secrets.NOTE_EMAIL }}
           NOTE_PASSWORD: ${{ secrets.NOTE_PASSWORD }}
           NOTE_SESSION_COOKIE: ${{ secrets.NOTE_SESSION_COOKIE }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
         run: |
           # スケジュール実行はデフォルト事業を使用
           BIZ_ID="${{ inputs.business_id || 'note_言語化全1論' }}"
