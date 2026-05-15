@@ -24,6 +24,7 @@ from empire.playbooks.note_magazine import setup, run, report
 BUSINESS_DIR = _HERE
 CONFIG_PATH = BUSINESS_DIR / "config.yaml"
 VOICE_OS_PATH = _PROJECT_ROOT / "thoughts" / "voice_os.md"
+HUMAN_WRITING_OS_PATH = _PROJECT_ROOT / "thoughts" / "human_writing_os.md"
 INBOX_PATH = _PROJECT_ROOT / "thoughts" / "inbox.md"
 
 # logs ディレクトリが存在しない場合（GitHub Actions 等）に自動作成
@@ -46,6 +47,8 @@ def load_config() -> dict:
     # 著者OSと思考シードを注入
     if VOICE_OS_PATH.exists():
         cfg["voice_os"] = VOICE_OS_PATH.read_text(encoding="utf-8")
+    if HUMAN_WRITING_OS_PATH.exists():
+        cfg["human_writing_os"] = HUMAN_WRITING_OS_PATH.read_text(encoding="utf-8")
     if INBOX_PATH.exists():
         inbox = INBOX_PATH.read_text(encoding="utf-8").strip()
         if inbox and not inbox.startswith("#"):

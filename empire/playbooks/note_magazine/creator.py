@@ -23,25 +23,35 @@ def _slugify(text: str) -> str:
 
 
 def _build_prompt(niche: str, topic: dict, config: dict) -> str:
-    """著者の思考OSを注入したプロンプトを構築する"""
+    """著者の思考OS + 文体OSを注入したプロンプトを構築する"""
     title_hint = topic.get("title", "")
     keywords = ", ".join(topic.get("keywords", []))
     today_genre = config.get("today_genre", niche)
     voice_os = config.get("voice_os", "")
+    human_writing_os = config.get("human_writing_os", "")
     thought_seeds = config.get("thought_seeds", "")
     magazine_url = f"https://note.com/{config.get('note_user_id','militech_2077')}/m/{config.get('magazine_id','')}"
     author = config.get("author_pen_name", "ミリテク")
 
     parts = [
         f"あなたは「{author}」のゴーストライターAIです。",
-        f"以下の「著者の思考OS」を完全に体現した記事を書いてください。",
+        f"以下の2つのOSを完全に体現した記事を書いてください。",
         "",
     ]
 
     if voice_os:
         parts += [
-            "## 著者の思考OS（全1論・一即全・100%再現論）",
+            "## [OS-1] 著者の思考OS（全1論・一即全・100%再現論）",
+            "※ 記事の「哲学的背骨」。全ての文章がここから派生する。",
             voice_os.strip(),
+            "",
+        ]
+
+    if human_writing_os:
+        parts += [
+            "## [OS-2] 文体OS（生活の解像度が高い個人ブロガー）",
+            "※ 記事の「皮膚感覚」。読者がAI臭を感じない文体を作る。OS-1の思想をOS-2の文体で表現する。",
+            human_writing_os.strip(),
             "",
         ]
 
@@ -53,36 +63,29 @@ def _build_prompt(niche: str, topic: dict, config: dict) -> str:
         ]
 
     parts += [
-        f"## 本日のジャンル",
-        f"{today_genre}",
+        "## 本日のジャンル",
+        today_genre,
         "",
-        f"## トピック",
-        f"{title_hint}",
+        "## トピック",
+        title_hint,
         f"キーワード: {keywords}",
-        "",
-        "## 執筆ルール",
-        "- 感情的な励ましを一切排する。「構造がそうなっている」という物理的事実として断定的に書く",
-        "- 読者に無駄な努力を求めない。「既に持っている」ことを確信させる",
-        "- 全1論の視点でジャンルを切り取り、そのジャンル特有の言葉に翻訳する",
-        "- FXトレーダーとしての背景は「言語化を学んだ」という事実のみ、さらっと添える程度",
-        "- 2000〜2500文字を厳守（body文字数を管理すること）",
         "",
         "## 出力形式（JSONのみ・コードブロック・前置き一切不要）",
         "{",
-        '  "title_a": "全1論の視点を込めた断定的タイトル",',
-        '  "title_b": "読者の悩みを直撃する疑問形タイトル",',
+        '  "title_a": "全1論の視点を込めた断定的タイトル（見出しは問いか断言）",',
+        '  "title_b": "読者の今の感情を直撃するタイトル",',
         '  "hashtags": ["タグ1", "タグ2", "タグ3", "タグ4", "タグ5"],',
         '  "body": "記事本文（note Markdown形式、2000〜2500文字）"',
         "}",
         "",
-        "## bodyの構成",
-        "1. イントロ: 読者の現実を物理的事実として描写（励まさない）",
-        "2. ## 構造: [ジャンル]における「全と1」の法則",
-        "3. ## 翻訳: その法則が[ジャンル]で働いている具体的な証拠",
-        "4. ## 実装: 今この瞬間からできる「1つの動作」",
-        "5. ## まとめ: 読者がすでに持っている能力の確認",
+        "## body執筆の指示",
+        "- 冒頭2〜3文で読者を掴む（「この記事では」禁止・経験か感情から始める）",
+        "- 全1論の構造を、ジャンル固有の言葉に翻訳する（抽象→具体の順）",
+        "- 数字か固有名詞で具体性を担保する",
+        "- FXの背景は1〜2文、さらっと添える程度",
+        "- 最後の一文は「まとめ」ではなく読者の心に余韻を残す断言で終える",
         "",
-        f"まとめの末尾に必ず追加:\n---\nこのマガジンでは、全ジャンルに通底する「再現の法則」を毎日翻訳しています。\n→ {magazine_url}\n---",
+        f"本文末尾（まとめの後）に必ず追加:\n---\nこのマガジンでは、全ジャンルに通底する「再現の法則」を毎日翻訳しています。\n→ {magazine_url}\n---",
     ]
 
     return "\n".join(parts)
