@@ -87,13 +87,21 @@ def _title_hash(title: str) -> str:
 
 # ── Claude API 呼び出し ───────────────────────────────────────────────────────
 
-def _call_claude(client: anthropic.Anthropic, prompt: str, model: str) -> tuple:
+def _call_claude(
+    client: anthropic.Anthropic,
+    prompt: str,
+    model: str,
+    system: str = "",
+) -> tuple:
     """(テキスト, input_tokens, output_tokens) を返す"""
-    response = client.messages.create(
-        model=model,
-        max_tokens=4096,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    kwargs: dict = {
+        "model": model,
+        "max_tokens": 4096,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if system:
+        kwargs["system"] = system
+    response = client.messages.create(**kwargs)
     return response.content[0].text, response.usage.input_tokens, response.usage.output_tokens
 
 
@@ -107,6 +115,14 @@ def _load_voice_os() -> str:
     return ""
 
 
+def _load_human_writing_os() -> str:
+    """文体OS（生活の解像度が高い個人ブロガー）を読み込む"""
+    path = Path(__file__).parent.parent / "thoughts" / "human_writing_os.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8")
+    return ""
+
+
 def _load_thought_seeds() -> str:
     """今日の思考シード（inbox.md）を読み込む"""
     inbox_path = Path(__file__).parent.parent / "thoughts" / "inbox.md"
@@ -117,108 +133,134 @@ def _load_thought_seeds() -> str:
     return ""
 
 
+def _build_system_prompt() -> str:
+    """systemパラメータ用: 著者OSと文体OSを合成する"""
+    voice_os = _load_voice_os()
+    human_writing_os = _load_human_writing_os()
+
+    parts = [
+        "あなたは「ミリテク」のゴーストライターAIです。",
+        "以下の2つのOSを同時に体現して記事を書いてください。",
+        "",
+    ]
+    if voice_os:
+        parts += [
+            "## [OS-1] 著者の思考OS（全1論・一即全・100%再現論）",
+            "※ 記事の哲学的骨格。全ての論理展開はここから派生する。",
+            voice_os.strip(),
+            "",
+        ]
+    if human_writing_os:
+        parts += [
+            "## [OS-2] 文体OS（生活の解像度が高い個人ブロガー）",
+            "※ 記事の皮膚感覚。OS-1の思想をこの文体で表現する。AI臭を完全に排除する。",
+            human_writing_os.strip(),
+            "",
+        ]
+    return "\n".join(parts)
+
+
 def _build_prompt(topic: str, niche: str, strategy: dict) -> str:
-    style_hint = strategy.get("best_style", "")
+    """userメッセージ用: トピック・構成・出力形式を指定する"""
     keywords = strategy.get("top_keywords", [])
     keyword_str = "、".join(keywords[:5]) if keywords else niche
-
-    voice_os = _load_voice_os()
     thought_seeds = _load_thought_seeds()
 
-    voice_section = f"""
-【著者の思考OS（必ずこれを土台にして書くこと）】
-{voice_os}
-""" if voice_os else ""
+    seed_section = (
+        f"\n## 著者の今日の思考シード（記事の起点として使う）\n{thought_seeds.strip()}\n"
+        if thought_seeds else ""
+    )
 
-    seed_section = f"""
-【著者の思考シード（今日のインプット・これを起点に展開せよ）】
-{thought_seeds}
-""" if thought_seeds else ""
+    return f"""以下のトピックでZenn記事を書いてください。
+{seed_section}
+## 執筆条件
+トピック: {topic}
+ジャンル: {niche}
+重点キーワード: {keyword_str}
+文字数: 2500〜4000字
+有料パート: 全体の60%（具体的な数字・手順・体験）
+無料パート: 全体の40%（読者を引き込む・問題提起）
 
-    return f"""あなたは「ミリテク」というペンネームで活動する著者の代筆AIです。
-著者の哲学と文体を完全に再現してZenn記事を執筆してください。
-{voice_section}{seed_section}
-【今回のテーマ】{topic}
-【ジャンル】{niche}
-【重点キーワード】{keyword_str}
-【文字数】2000〜4000字
-{f"【推奨文体】{style_hint}" if style_hint else ""}
+## タイトル3案（最終的に1つ選ぶ）
+以下の型でそれぞれ1案ずつ作る:
+- 「なぜ〇〇は〜なのか」型（構造を暴く）
+- 「〇〇万円〜〜した話」型（数字・実績訴求）
+- 「〇〇をやめたら〜〜が変わった」型（逆張り体験）
 
-【執筆の原則】
-- 著者の「全1論」の視点を記事の骨格に使うこと
-- 読者が既にやっている「日常の当たり前の動作」を冒頭で提示し、それをテーマの成功と等価であることを論理的に示す
-- 「励ます・応援する」文体は禁止。「世界の構造がそうなっている」という断定的な物理的事実として書く
-- 汎用的なハウツー記事にしない。著者の哲学を通したときだけ見える独自の切り口を使う
+## 出力フォーマット（厳守）
+まず以下のJSONを1行で出力（コードブロック不要）:
+{{"title": "選んだタイトル", "title_b": "没タイトル2案目", "emoji": "絵文字1字", "topics": ["zenn_topic1", "zenn_topic2", "zenn_topic3"], "score": 0-100, "reason": "スコアの根拠30字以内"}}
 
-【必須構成】
-1. つかみ（読者が無意識にやっている「日常の1」の提示・100字程度）
-2. 第1章: その「1」とテーマの成功が構造的に同じである理由
-3. 第2章: ジャンル特有の言葉に「翻訳」した具体的な展開（数字・事例を含む）
-4. 第3章: 100%再現できる理由と実践ステップ（番号付きリスト）
-5. 第4章: よくある誤解と正しい構造の見方
-6. まとめ（著者の断定的な締め）＋ noteマガジンへの誘導CTA
-   ※ まとめの末尾に必ず以下を追加すること：
-   ---
-   この記事の「全1論」をより深く学びたい方へ → noteマガジン「言語化の技術」で毎日翻訳しています。
-   https://note.com/militech_2077/m/mf82e085b93c9
+次の行から記事本文（Markdownのみ・フロントマター不要・## 見出しから始める）:
 
-【出力フォーマット】
-以下のセクション区切りで厳密に出力してください（JSONではありません）:
+## 品質自己採点基準
+- OS-1（全1論）が骨格として機能しているか: 40点
+- OS-2（ブロガー文体）で書けているか（絵文字なし・冒頭が経験か感情・断言文体）: 30点
+- 数字か固有名詞で具体性を担保できているか: 30点
 
----META_START---
-TITLE_A: タイトル案A（数字・具体的情報型・30字以内）
-TITLE_B: タイトル案B（問いかけ・哲学的示唆型・30字以内）
-EMOJI: ここに絵文字1文字
-TOPICS: ここにZennトピック3つをカンマ区切りで英語表記（例: money,sidejob,tax）
-QUALITY_SCORE: ここに自己採点（0-100の整数）
-QUALITY_REASON: ここにスコアの根拠（30字以内）
----META_END---
----BODY_START---
-ここに本文マークダウン（フロントマター不要、## 見出しから始める）
-※ 本文の最後（まとめの末尾）には必ず以下のCTAブロックを含めること：
-
+## 必須CTA（本文末尾に必ず挿入）
 ---
 この記事の「全1論」をより深く学びたい方へ → noteマガジン「言語化の技術」で毎日翻訳しています。
 https://note.com/militech_2077/m/mf82e085b93c9
----BODY_END---
-
-【品質自己採点基準】
-- 著者の哲学（全1論）が記事の骨格として機能しているか: 40点
-- 読者の「日常の1」から論理的に展開できているか: 30点
-- 断定的な文体・著者らしい独自の切り口: 30点"""
+---"""
 
 
 def _parse_response(content: str) -> dict:
-    """レスポンスからMETAとBODYを抽出する"""
-    meta_match = re.search(r"---META_START---\s*(.*?)\s*---META_END---", content, re.DOTALL)
-    body_match = re.search(r"---BODY_START---\s*(.*?)\s*---BODY_END---", content, re.DOTALL)
+    """レスポンスからJSON（1行目）と本文（2行目以降）を抽出する"""
+    lines = content.strip().splitlines()
 
-    if not meta_match or not body_match:
-        raise ValueError("APIレスポンスの形式が正しくありません")
+    # JSON行を探す（コードブロック除去も含む）
+    json_line = ""
+    body_start = 0
+    for i, line in enumerate(lines):
+        stripped = line.strip().lstrip("`")
+        if stripped.startswith("{") and stripped.endswith("}"):
+            json_line = stripped
+            body_start = i + 1
+            break
+        # ```json ブロック内の場合
+        if stripped.startswith("{"):
+            # 複数行JSONの可能性: 閉じ括弧まで結合
+            buf = stripped
+            for j in range(i + 1, len(lines)):
+                buf += lines[j].strip()
+                if lines[j].strip().endswith("}"):
+                    json_line = buf
+                    body_start = j + 1
+                    break
+            if json_line:
+                break
 
-    meta_text = meta_match.group(1).strip()
-    body = body_match.group(1).strip()
+    meta: dict = {}
+    if json_line:
+        try:
+            meta = json.loads(json_line)
+        except json.JSONDecodeError:
+            logger.warning("JSONパース失敗、フォールバック処理へ: %s", json_line[:80])
 
-    def extract(key: str) -> str:
-        m = re.search(rf"^{key}:\s*(.+)$", meta_text, re.MULTILINE)
-        return m.group(1).strip() if m else ""
+    body = "\n".join(lines[body_start:]).strip()
 
-    title_a = extract("TITLE_A")
-    title_b = extract("TITLE_B")
-    emoji = extract("EMOJI") or "💡"
-    topics_raw = extract("TOPICS")
-    quality_score_raw = extract("QUALITY_SCORE")
-    quality_reason = extract("QUALITY_REASON")
+    # フォールバック: ---META_START--- 形式にも対応（旧形式互換）
+    if not body:
+        body_match = re.search(r"---BODY_START---\s*(.*?)\s*---BODY_END---", content, re.DOTALL)
+        if body_match:
+            body = body_match.group(1).strip()
 
-    topics = [t.strip() for t in topics_raw.split(",") if t.strip()][:3]
-    try:
-        quality_score = int(re.sub(r"[^\d]", "", quality_score_raw))
-    except (ValueError, TypeError):
-        quality_score = 0
+    title_a = meta.get("title", "")
+    title_b = meta.get("title_b", "")
+    emoji = meta.get("emoji", "📝")
+    topics = meta.get("topics", [])[:3]
+    quality_score = int(meta.get("score", 0))
+    quality_reason = meta.get("reason", "")
+
+    if not title_a:
+        # タイトルが取れない場合は本文の最初の見出しから抽出
+        m = re.search(r"^##?\s+(.+)$", body, re.MULTILINE)
+        title_a = m.group(1).strip() if m else "無題"
 
     return {
-        "title": title_a,   # A案を公開タイトルとして使用
-        "title_b": title_b, # B案はA/Bテスト評価用に保存
+        "title": title_a,
+        "title_b": title_b,
         "emoji": emoji,
         "topics": topics,
         "body": body,
@@ -253,8 +295,9 @@ def _save_ab_variant(article: dict, topic: str):
 def _generate_article(client: anthropic.Anthropic, topic: str, config: dict, strategy: dict) -> dict:
     """記事を生成してパースした辞書を返す（コストも記録）"""
     model = config.get("model", "claude-sonnet-4-6")
-    prompt = _build_prompt(topic, config["niche"], strategy)
-    content, inp, out = _call_claude(client, prompt, model)
+    system_prompt = _build_system_prompt()
+    user_prompt = _build_prompt(topic, config["niche"], strategy)
+    content, inp, out = _call_claude(client, user_prompt, model, system=system_prompt)
     total_cost = _record_cost(inp, out)
     logger.info(f"API呼び出し完了（今月累計: {total_cost:.0f}円）")
     article = _parse_response(content)
