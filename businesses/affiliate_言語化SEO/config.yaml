@@ -1,0 +1,25 @@
+# アフィリエイト×SEO事業 — 言語化×全1論
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+platform: github_pages
+site_url: "https://blackint400.github.io/note-auto-revenue/affiliate/"
+
+niche: "言語化・副業・節税・資産形成"
+articles_per_week: 3
+quality_threshold: 75
+
+# A8.net登録後にリンクを追加
+affiliate_links:
+  - name: "freee（確定申告）"
+    url: ""          # A8.net登録後に記入
+    keyword: "確定申告 フリーランス"
+  - name: "マネーフォワード"
+    url: ""
+    keyword: "家計簿 副業"
+  - name: "SBI証券"
+    url: ""
+    keyword: "投資 初心者"
+
+author_pen_name: "ミリテク"
+model: "claude-sonnet-4-6"
+monthly_cost_limit: 500

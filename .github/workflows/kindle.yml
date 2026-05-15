@@ -1,0 +1,42 @@
+name: Kindle Monthly Bundler
+
+on:
+  schedule:
+    # 毎月2日 10:00 JST = 01:00 UTC
+    - cron: '0 1 2 * *'
+  workflow_dispatch:
+
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Kindle bundler
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python kindle/bundler.py
+
+      - name: Commit and push generated bundle
+        run: |
+          git config --global user.email "kindle-bundler@note-auto-revenue.bot"
+          git config --global user.name "Kindle Monthly Bundler"
+          git add kindle/output/
+          git diff --staged --quiet && echo "変更なし、コミットをスキップします" || \
+            git commit -m "chore: kindle bundle $(date +%Y-%m) [skip ci]"
+          git push

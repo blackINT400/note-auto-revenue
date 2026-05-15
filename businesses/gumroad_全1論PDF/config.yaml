@@ -1,0 +1,22 @@
+# Gumroadデジタル商品事業 — 言語化×全1論PDF
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+platform: gumroad
+niche: "言語化・全1論・再現性"
+
+# Gumroadアカウント登録後に記入
+gumroad_api_token: ""   # GitHub Secretsに GUMROAD_API_TOKEN として登録
+
+# 商品ラインナップ（月1〜2商品）
+product_types:
+  - "全1論ジャンル翻訳まとめPDF（各ジャンル編）"
+  - "言語化→再現性 実践ワークシート"
+  - "ミリテク思考OSプロンプト集"
+
+price_range:
+  min: 500
+  max: 2000
+
+author_pen_name: "ミリテク"
+model: "claude-sonnet-4-6"
+monthly_cost_limit: 300
