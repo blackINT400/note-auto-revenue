@@ -128,3 +128,121 @@ def get_empire_cost_limit() -> float:
         return float(portfolio.get("revenue_pool", {}).get("monthly_cost_limit", 5000))
     except Exception:
         return 5000.0
+
+
+def get_master_os() -> str:
+    """owner/context_prompt.md からミリテク思考OSマスタープロンプトを返す"""
+    path = PROJECT_ROOT / "owner" / "context_prompt.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
+    return ""
+
+
+def solve_with_os(
+    problem: str,
+    client=None,
+    model: str | None = None,
+) -> dict:
+    """
+    ミリテク思考OS × 6ステップで問題を哲学的に解決する。
+    empire_main.py の MAX_RETRIES 使い切り時に呼ばれる。
+
+    STEP1: 問題を一文で言語化（命題化）
+    STEP2: 全（普遍的真理）への接続
+    STEP3: 背理法で不要な仮説を削る
+    STEP4: 重力（影響範囲×確信度×緊急性）で根本原因を特定
+    STEP5: 言語化して確信してから解決策を実行
+    STEP6: 結果を proof_log.md に記録
+    """
+    import json as _json
+    import re as _re
+
+    import anthropic as _anthropic
+
+    try:
+        from empire.proposition_lib import append_proof_log, find_similar, load_propositions
+    except ImportError:
+        append_proof_log = None  # type: ignore[assignment]
+        find_similar = None      # type: ignore[assignment]
+        load_propositions = None # type: ignore[assignment]
+
+    master_os = get_master_os()
+
+    similar_str = ""
+    if load_propositions and find_similar:
+        try:
+            props_data = load_propositions()
+            similar = find_similar(problem[:80], props_data)
+            if similar:
+                similar_str = "\n\n== 類似の過去解決策（proven_propositions より）==\n" + "\n".join(
+                    f"- 命題: {p.get('proposition', '')} "
+                    f"/ 確信度: {p.get('confidence', 0)}% "
+                    f"/ 解決策: {p.get('action', '')}"
+                    for p in similar
+                )
+        except Exception:
+            pass
+
+    prompt = f"""ミリテク思考OS（全一・相対・翻訳）を使って、以下の問題を6ステップで解決してください。
+
+問題: {problem}
+{similar_str}
+
+== 思考OS（参考）==
+{master_os[:600]}
+
+以下の構造でJSONのみ出力してください（前置き不要）:
+{{
+  "proposition": "問題を一文で言語化した命題",
+  "universal_truth": "この問題と一致する普遍的真理（全への接続）",
+  "hypotheses_eliminated": ["背理法で削った仮説1", "仮説2"],
+  "root_cause": "重力（影響範囲×確信度×緊急性）で見た根本原因",
+  "solution": "言語化して確信した解決策（具体的行動）",
+  "confidence": 確信度0から100の整数,
+  "action": "今すぐ実行する次の一手（60字以内）",
+  "needs_owner": true または false
+}}"""
+
+    try:
+        if client is None:
+            client = _anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY", ""))
+        if model is None:
+            model = get_model()
+
+        resp = client.messages.create(
+            model=model,
+            max_tokens=600,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        text = resp.content[0].text.strip()
+        m = _re.search(r"\{.*\}", text, _re.DOTALL)
+        if not m:
+            raise ValueError(f"JSON抽出失敗: {text[:200]}")
+        result = _json.loads(m.group())
+
+        # STEP6: proof_log.md に記録
+        if append_proof_log:
+            try:
+                append_proof_log(
+                    proposition=result.get("proposition", problem[:80]),
+                    universal_truth=result.get("universal_truth", ""),
+                    result=result.get("solution", ""),
+                    context="エラー自己解決",
+                )
+            except Exception:
+                pass
+
+        return result
+
+    except Exception as e:
+        logger.warning("[思考OS] solve_with_os 失敗: %s", e)
+        return {
+            "proposition": problem[:80],
+            "universal_truth": "解決失敗",
+            "hypotheses_eliminated": [],
+            "root_cause": "API接続エラー",
+            "solution": "オーナーに手動確認を依頼",
+            "confidence": 0,
+            "action": "オーナーに報告",
+            "needs_owner": True,
+        }

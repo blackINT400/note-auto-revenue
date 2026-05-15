@@ -23,7 +23,7 @@ import yaml
 
 from empire.utils import (
     EMPIRE_DIR, PROJECT_ROOT,
-    get_empire_cost_limit, get_model,
+    get_empire_cost_limit, get_master_os, get_model,
     load_portfolio, record_empire_cost, save_portfolio,
 )
 
@@ -506,11 +506,15 @@ def make_decision(kpis: list, history: list, portfolio: dict,
   "reasoning": "判断理由（日本語200字以内）"
 }}"""
 
-    response = client.messages.create(
-        model=model,
-        max_tokens=1536,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    master_os = get_master_os()
+    ceo_kwargs: dict = {
+        "model": model,
+        "max_tokens": 1536,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if master_os:
+        ceo_kwargs["system"] = master_os
+    response = client.messages.create(**ceo_kwargs)
     content = response.content[0].text
     record_empire_cost("ceo", response.usage.input_tokens, response.usage.output_tokens)
 
@@ -774,17 +778,97 @@ def run(notify_fn=None, weekly_report: bool = False) -> dict:
         logger.info(f"[CEO] 停止実行完了: {executed}")
 
     # Layer2: Claude判断（コンテキスト付き）
+    decision: dict = {}
+    client_ref = None
+    model_ref = get_model()
     if kpis:
         try:
-            client   = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-            model    = get_model()
-            decision = make_decision(kpis, history, portfolio, rule_triggers, client, model)
+            client_ref = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+            decision = make_decision(kpis, history, portfolio, rule_triggers, client_ref, model_ref)
             log_decision(kpis, decision, rule_triggers)
             portfolio = apply_decision(portfolio, decision, kpis, rule_triggers, notify_fn)
             logger.info(f"[CEO] 判断完了: {decision.get('reasoning', '')[:80]}")
         except Exception as e:
             logger.error(f"[CEO] Claude API失敗: {e}")
             log_decision(kpis, {"error": str(e)}, rule_triggers)
+
+    # ── 行動確信プロトコル: 主要経営判断の命題を証明 ─────────────────────────
+    if decision and client_ref:
+        try:
+            from empire.proposition_lib import (
+                load_propositions, find_similar,
+                prove_proposition, add_proposition,
+                confidence_label, CONFIDENCE_AUTO,
+            )
+
+            # 最も重要な判断（拡大 > 縮小 > 停止）の命題を証明
+            action_map = [
+                ("scale_up",   "拡大"),
+                ("scale_down", "縮小"),
+                ("kill",       "停止"),
+            ]
+            for key, label in action_map:
+                targets = decision.get(key, [])
+                if targets:
+                    biz = targets[0]
+                    kpi = next((k for k in kpis if k["id"] == biz), {})
+                    proposition = (
+                        f"{biz}事業を{label}することが今最善の経営判断である"
+                    )
+                    observation = (
+                        f"月収: ¥{kpi.get('monthly_revenue', 0):,} / "
+                        f"ROI: {kpi.get('roi', 0):.0f}% / "
+                        f"判断理由: {decision.get('reasoning', '')[:80]}"
+                    )
+                    props_data = load_propositions()
+                    similar = find_similar(proposition, props_data)
+                    master_os = get_master_os()
+                    proof = prove_proposition(
+                        client_ref, model_ref, proposition, observation,
+                        master_os, "経営判断", similar,
+                    )
+                    record = add_proposition(props_data, proof, "経営判断", f"{label}: {biz}")
+                    conf = proof.get("confidence", 0)
+                    logger.info(
+                        "[確信プロトコル] CEO判断証明: %s（確信度: %d%%）",
+                        proposition[:40], conf,
+                    )
+                    if notify_fn:
+                        notify_fn(
+                            f"📐 CEO判断の確信ログ: {biz}",
+                            f"命題: {proposition}\n"
+                            f"全: {proof.get('universal_truth', '—')}\n"
+                            f"確信度: {confidence_label(conf)}",
+                        )
+                    break  # 最も重要な1件のみ証明
+        except Exception as e:
+            logger.warning("[確信プロトコル] CEO判断証明エラー: %s", e)
+
+    # ── 出版記録: マイルストーン記録 ─────────────────────────────────────────────
+    try:
+        from empire.proposition_lib import record_milestone
+
+        # 初収益チェック（履歴1ヶ月以内の事業が初めて収益を記録した場合）
+        for kpi in kpis:
+            biz_history = _get_business_months(kpi["id"], history, 2)
+            rev = float(kpi.get("monthly_revenue", 0))
+            if rev > 0 and len(biz_history) <= 1:
+                record_milestone(
+                    f"{kpi['id']} 初収益",
+                    f"月収: ¥{rev:,.0f} / ROI: {kpi.get('roi', 0):.0f}%",
+                    f"¥{rev:,.0f}",
+                )
+
+        # スケールアップ判断のマイルストーン
+        for biz in decision.get("scale_up", [])[:1]:
+            kpi = next((k for k in kpis if k["id"] == biz), {})
+            record_milestone(
+                f"{biz} スケールアップ",
+                decision.get("reasoning", "")[:60],
+                f"ROI {kpi.get('roi', 0):.0f}%",
+            )
+    except Exception as e:
+        logger.warning("[出版記録] マイルストーン記録エラー: %s", e)
 
     save_portfolio(portfolio)
 

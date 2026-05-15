@@ -4,6 +4,8 @@ on:
   schedule:
     # 毎日 07:00 JST = 22:00 UTC（前日）
     - cron: '0 22 * * *'
+    # 毎週月曜 08:30 JST = 23:30 UTC（日曜）: 市場分析（weekly直前）
+    - cron: '30 23 * * 0'
     # 毎週月曜 09:00 JST = 00:00 UTC 月曜
     - cron: '0 0 * * 1'
     # 毎月1日 10:00 JST = 01:00 UTC
@@ -19,6 +21,8 @@ on:
           - daily
           - weekly
           - monthly
+          - market_analysis
+          - feedback
 
 jobs:
   orchestrate:
@@ -49,7 +53,11 @@ jobs:
           elif [ "$(date -u +%d)" = "01" ] && [ "$(date -u +%H)" = "01" ]; then
             echo "mode=monthly" >> $GITHUB_OUTPUT
           elif [ "$(date -u +%u)" = "1" ] && [ "$(date -u +%H)" = "00" ]; then
+            # 月曜 00:00 UTC = 09:00 JST → weekly
             echo "mode=weekly" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%u)" = "0" ] && [ "$(date -u +%H)" = "23" ]; then
+            # 日曜 23:30 UTC = 月曜 08:30 JST → market_analysis
+            echo "mode=market_analysis" >> $GITHUB_OUTPUT
           else
             echo "mode=daily" >> $GITHUB_OUTPUT
           fi
@@ -69,7 +77,8 @@ jobs:
         run: |
           git config --global user.email "empire-bot@auto-revenue.bot"
           git config --global user.name "Empire Bot"
-          git add empire/portfolio.yaml empire/data/ logs/ businesses/ articles/ data/ config.yaml .github/workflows/ || true
+          # owner/ logs/ data/ は .gitignore 対象のため除外
+          git add empire/portfolio.yaml businesses/ articles/ config.yaml .github/workflows/ || true
           git diff --staged --quiet && echo "変更なし" || \
             git commit -m "empire: auto update $(date +%Y-%m-%d) [skip ci]"
           git push

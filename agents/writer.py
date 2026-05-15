@@ -134,17 +134,11 @@ def _load_thought_seeds() -> str:
 
 
 def _load_owner_context() -> str:
-    """owner/context_prompt.md からオーナープロファイルを読み込む"""
-    context_path = Path("owner/context_prompt.md")
+    """owner/context_prompt.md からミリテク思考OSマスタープロンプトを読み込む"""
+    context_path = Path(__file__).parent.parent / "owner" / "context_prompt.md"
     if not context_path.exists():
         return ""
-    content = context_path.read_text(encoding="utf-8")
-    # コメント行（<!--...-->）と見出し行を除去して本文のみ返す
-    lines = [
-        l for l in content.splitlines()
-        if not l.startswith("#") and not l.startswith("<!--") and not l.strip() == "-->"
-    ]
-    return "\n".join(lines).strip()
+    return context_path.read_text(encoding="utf-8").strip()
 
 
 def _build_system_prompt() -> str:
@@ -174,8 +168,11 @@ def _build_system_prompt() -> str:
         ]
     if owner_context:
         parts += [
-            "## [OS-3] オーナーコンテキスト",
-            "※ このシステムのオーナーの方針・価値観。記事の方向性と優先順位に反映する。",
+            "## [OS-3] オーナーコンテキスト（思考の骨格。記事本文には一切登場させない）",
+            "※ 以下の思考構造を記事の「結論・視点・構成」に反映する。",
+            "※ ただし「抽象化」「具体化」「相対」「絶対」「飽和」「渇望」「全1」「0と1」",
+            "※ 「翻訳」「ミリテク思考OS」などのメタ言語は記事本文に一切書かない。",
+            "※ 読者には『なぜかこの記事は深い』と感じさせるが、手法は見えない状態にする。",
             owner_context,
             "",
         ]
@@ -360,6 +357,22 @@ def run() -> list:
     published_hashes = _published_hashes()
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
+    # 確信プロトコル用の初期化（遅延インポートでエラー耐性を確保）
+    _prop_lib_ok = False
+    _props_data: dict = {}
+    _master_os = ""
+    try:
+        from empire.proposition_lib import (
+            load_propositions, find_similar,
+            prove_proposition, add_proposition,
+            confidence_label, CONFIDENCE_EXP,
+        )
+        _props_data = load_propositions()
+        _master_os = _load_owner_context()
+        _prop_lib_ok = True
+    except ImportError:
+        logger.debug("[確信プロトコル] proposition_lib 未ロード。証明なしで続行。")
+
     articles = []
     topic_idx = 0
 
@@ -378,6 +391,33 @@ def run() -> list:
             if _title_hash(topic) in published_hashes:
                 logger.info(f"重複スキップ: {topic[:30]}...")
                 continue
+
+            # ── 行動確信プロトコル: 記事トピックの命題を証明 ────────────────────
+            if _prop_lib_ok:
+                try:
+                    proposition = f"「{topic[:40]}」の記事は今週の読者に刺さる"
+                    observation = f"ジャンル: {config.get('niche', '')} / 品質閾値: {quality_threshold}点"
+                    similar = find_similar(proposition, _props_data)
+                    proof = prove_proposition(
+                        client, config.get("model", "claude-haiku-4-5-20251001"),
+                        proposition, observation, _master_os, "コンテンツ", similar,
+                    )
+                    conf = proof.get("confidence", 0)
+                    add_proposition(_props_data, proof, "コンテンツ", f"記事生成: {topic[:30]}")
+                    _props_data = load_propositions()  # 最新状態に更新
+
+                    if conf < CONFIDENCE_EXP:
+                        logger.info(
+                            "[確信プロトコル] 確信度不足(%d%%) — 次のトピックへ: %s",
+                            conf, topic[:30],
+                        )
+                        continue  # 確信度50%未満は次のトピックに切り替え
+                    logger.info(
+                        "[確信プロトコル] 証明完了 — %s（%s）",
+                        topic[:30], confidence_label(conf),
+                    )
+                except Exception as e:
+                    logger.debug("[確信プロトコル] 証明スキップ（エラー）: %s", e)
 
             # 品質チェック付き生成（最大2回）
             for attempt in range(1, 3):

@@ -516,7 +516,28 @@ class ReportCollector:
         ]
         _post(msg3_embeds)
 
-        # ── メッセージ4: 週次のみ — 自動学習結果 ─────────────────────────────
+        # ── メッセージ4: 証明済み行動ログ（daily/weekly 共通）────────────────
+        try:
+            from empire.proposition_lib import (
+                load_propositions, format_daily_discord, get_top_patterns,
+            )
+            from datetime import date as _date
+            props_data = load_propositions()
+            today_str = str(_date.today())
+            today_proofs = [
+                p for p in props_data.get("propositions", [])
+                if p.get("date") == today_str
+            ]
+            proof_section = format_daily_discord(props_data, today_proofs)
+            _post([{
+                "title": "📐 証明済み行動ログ",
+                "description": proof_section[:4096],
+                "color": 0xEB459E,
+            }])
+        except Exception as _e:
+            logger.debug("[Report] 証明ログ送信スキップ: %s", _e)
+
+        # ── メッセージ5: 週次のみ — 自動学習結果 ─────────────────────────────
         if self.mode == "weekly":
             learning_text = "取得中"
             try:

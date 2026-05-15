@@ -1,12 +1,15 @@
 """
 empire_main.py: 帝国全体のオーケストレーター
 
---mode daily  : 全事業の日次処理 + CEO判断
---mode weekly : Scout（新市場スキャン）+ Launcher（新事業準備）+ CEO週次レポート
---mode monthly: 月次総括 + 戦略立案（毎月1日に自動実行）
+--mode daily          : 全事業の日次処理 + CEO判断
+--mode weekly         : Scout（新市場スキャン）+ Launcher（新事業準備）+ CEO週次レポート
+--mode monthly        : 月次総括 + 戦略立案（毎月1日に自動実行）
+--mode market_analysis: 自律市場分析（週次。weekly_reviewの直前に実行）
+--mode feedback       : オーナーフィードバックを市場分析に反映（--feedback "..." と併用）
 
 GitHub Actionsスケジュール:
   毎日   07:00 JST: --mode daily
+  毎週月曜 08:30 JST: --mode market_analysis
   毎週月曜 09:00 JST: --mode weekly
   毎月1日 10:00 JST: --mode monthly
 """
@@ -24,7 +27,7 @@ from empire.utils import (
     PROJECT_ROOT, EMPIRE_DIR,
     get_empire_cost_limit, get_empire_month_cost,
     load_portfolio, save_portfolio,
-    notify,
+    notify, solve_with_os,
 )
 
 # ── ログ設定 ──────────────────────────────────────────────────────────────────
@@ -48,18 +51,37 @@ RETRY_WAIT = 30
 # ── リトライ付き実行 ──────────────────────────────────────────────────────────
 
 def _run(func, name: str):
+    last_exc: Exception | None = None
     for attempt in range(1, MAX_RETRIES + 1):
         try:
             return func()
         except SystemExit:
             raise
         except Exception as e:
+            last_exc = e
             logger.error(f"[{name}] エラー (試行 {attempt}/{MAX_RETRIES}): {e}")
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_WAIT)
-            else:
-                notify(f"⚠️ [{name}] {MAX_RETRIES}回失敗", f"エラー: {e}", urgent=True)
-                raise
+
+    # 全リトライ失敗 — ミリテク思考OS で自己診断
+    assert last_exc is not None
+    try:
+        sol = solve_with_os(problem=f"[{name}] {last_exc}")
+        action  = sol.get("action", "—")
+        owner   = sol.get("needs_owner", True)
+        conf    = sol.get("confidence", 0)
+        root    = sol.get("root_cause", "—")
+        solution= sol.get("solution", "—")
+        flag    = "🔴 オーナー確認が必要" if owner else f"🟡 確信度{conf}% — 自動対処"
+        notify(
+            f"⚠️ [{name}] {MAX_RETRIES}回失敗 → 思考OS診断",
+            f"根本原因: {root}\n解決策: {solution}\n次の一手: {action}\n{flag}",
+            urgent=True,
+        )
+    except Exception:
+        notify(f"⚠️ [{name}] {MAX_RETRIES}回失敗", f"エラー: {last_exc}", urgent=True)
+
+    raise last_exc
 
 
 # ── 安全装置: 帝国コスト上限 ─────────────────────────────────────────────────
@@ -311,6 +333,30 @@ def run_daily():
         rc.add_action("日次処理完了")
 
 
+def run_market_analysis() -> dict:
+    """市場分析エージェント単独実行（weekly の直前に呼ばれる）"""
+    logger.info("=" * 60)
+    logger.info("帝国 市場分析 開始")
+    logger.info("=" * 60)
+
+    from empire.report_generator import ReportCollector
+    with ReportCollector("market_analysis") as rc:
+        rc.add_action("自律市場分析エージェント 開始")
+
+        try:
+            from empire import market_analyst
+            result = _run(market_analyst.run, "MarketAnalyst（市場分析）")
+            analysis = result.get("analysis", {}) if result else {}
+            top = (analysis.get("top_opportunities") or [""])[:1]
+            rc.add_success(f"市場分析完了: トップ機会「{top[0] if top else '—'}」")
+            logger.info("帝国 市場分析 完了")
+            return result or {}
+        except Exception as e:
+            rc.add_failure("市場分析エラー", cause=str(e)[:100])
+            logger.warning(f"[帝国] 市場分析エラー（後続処理は継続）: {e}")
+            return {}
+
+
 def run_weekly():
     logger.info("=" * 60)
     logger.info("帝国 週次処理 開始")
@@ -327,6 +373,18 @@ def run_weekly():
             return
 
         portfolio = load_portfolio()
+
+        # 市場分析（Scout前に実行して結果を統合）
+        rc.add_action("MarketAnalyst エージェント: 自律市場分析")
+        market_result = {}
+        try:
+            from empire import market_analyst
+            market_result = _run(market_analyst.run, "MarketAnalyst（市場分析）")
+            market_result = market_result or {}
+            top = (market_result.get("analysis", {}).get("top_opportunities") or [""])[:1]
+            rc.add_success(f"市場分析完了: トップ機会「{top[0] if top else '—'}」")
+        except Exception as e:
+            rc.add_failure("市場分析エラー（後続処理は継続）", cause=str(e)[:100])
 
         # Scout: 新市場スキャン
         rc.add_action("Scout エージェント: 新市場スキャン")
@@ -351,7 +409,7 @@ def run_weekly():
             except Exception as e:
                 rc.add_failure("新事業準備失敗", cause=str(e)[:100])
 
-        # CEO: 週次レポート付き判断
+        # CEO: 週次レポート付き判断（market_result を渡して活用）
         rc.add_action("CEO エージェント: 週次判断 + レポート")
         try:
             from empire import ceo_agent
@@ -359,6 +417,22 @@ def run_weekly():
             rc.add_success("CEO 週次判断完了")
         except Exception as e:
             rc.add_failure("CEO 週次判断エラー", cause=str(e)[:100])
+
+        # 市場分析セクションを週次レポートに追記
+        if market_result:
+            try:
+                from empire.market_analyst import format_discord_section
+                import json as _json
+                learnings_path = Path(__file__).parent.parent / "owner" / "market_learnings.json"
+                learnings = {}
+                if learnings_path.exists():
+                    learnings = _json.loads(learnings_path.read_text(encoding="utf-8"))
+                section = format_discord_section(market_result.get("analysis", {}), learnings)
+                if section:
+                    from empire.utils import notify
+                    notify("🔬 市場分析レポート（週次）", section)
+            except Exception as e:
+                logger.warning(f"[帝国] 市場分析Discord通知スキップ: {e}")
 
         logger.info("帝国 週次処理 完了")
 
@@ -402,9 +476,17 @@ def main():
     parser = argparse.ArgumentParser(description="帝国オーケストレーター")
     parser.add_argument(
         "--mode",
-        choices=["daily", "weekly", "monthly"],
+        choices=["daily", "weekly", "monthly", "market_analysis", "feedback"],
         required=True,
-        help="daily: 日次処理 / weekly: スカウト+ポートフォリオ最適化 / monthly: 月次総括",
+        help=(
+            "daily: 日次処理 / weekly: スカウト+ポートフォリオ最適化 / monthly: 月次総括 / "
+            "market_analysis: 自律市場分析 / feedback: 市場分析フィードバック反映"
+        ),
+    )
+    parser.add_argument(
+        "--feedback",
+        default="",
+        help="--mode feedback 時のフィードバックテキスト（例: '修正: コンテンツ販売に集中すべき'）",
     )
     args = parser.parse_args()
 
@@ -413,8 +495,17 @@ def main():
             run_daily()
         elif args.mode == "weekly":
             run_weekly()
-        else:
+        elif args.mode == "monthly":
             run_monthly()
+        elif args.mode == "market_analysis":
+            run_market_analysis()
+        elif args.mode == "feedback":
+            if not args.feedback:
+                print("--feedback テキストを指定してください。例: --feedback '修正: コンテンツ販売優先'")
+                sys.exit(1)
+            from empire.market_analyst import apply_feedback
+            result = apply_feedback(args.feedback)
+            print(result)
     except SystemExit as e:
         if str(e) == "COST_LIMIT_EXCEEDED":
             notify("🛑 [帝国] APIコスト上限", "今月のAPIコスト上限に達しました。処理を停止します。", urgent=True)

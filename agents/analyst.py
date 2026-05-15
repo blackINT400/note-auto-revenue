@@ -99,14 +99,25 @@ def _save_learnings(data: dict):
     LEARNINGS_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
+def _load_master_os() -> str:
+    path = Path(__file__).parent.parent / "owner" / "context_prompt.md"
+    if path.exists():
+        return path.read_text(encoding="utf-8").strip()
+    return ""
+
+
 def _call_claude(client: anthropic.Anthropic, prompt: str, model: str,
                  max_tokens: int = 1024) -> tuple:
     """(テキスト, input_tokens, output_tokens)"""
-    response = client.messages.create(
-        model=model,
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
-    )
+    master_os = _load_master_os()
+    kwargs: dict = {
+        "model": model,
+        "max_tokens": max_tokens,
+        "messages": [{"role": "user", "content": prompt}],
+    }
+    if master_os:
+        kwargs["system"] = master_os
+    response = client.messages.create(**kwargs)
     return response.content[0].text, response.usage.input_tokens, response.usage.output_tokens
 
 
@@ -532,6 +543,88 @@ JSONのみ出力してください。説明や前置きは不要です。"""
         logger.error("[オーナー学習] エラー: %s", e)
 
 
+# ── F. 行動確信プロトコル（週次証明） ──────────────────────────────────────────
+
+def _prove_weekly_observations(
+    client: anthropic.Anthropic,
+    model: str,
+    articles: list,
+    config: dict,
+    summary: dict,
+) -> None:
+    """週次観測から命題を3つ立てて全で証明し、proven_propositions.jsonに蓄積する"""
+    try:
+        from empire.proposition_lib import (
+            load_propositions, find_similar,
+            prove_proposition, add_proposition,
+            format_weekly_discord, append_proof_log,
+        )
+        from empire.utils import get_master_os, notify
+    except ImportError as e:
+        logger.warning("[確信プロトコル] インポート失敗: %s", e)
+        return
+
+    master_os = get_master_os()
+    props_data = load_propositions()
+
+    niche = config.get("niche", "副業・節税")
+    avg_score = summary.get("avg_quality_score", 0)
+    top_kw = (config.get("auto_strategy", {}).get("top_keywords") or [])[:3]
+    kw_str = "・".join(top_kw) if top_kw else niche
+
+    candidates = [
+        (
+            f"「{kw_str}」テーマの記事は今の読者に強く刺さる",
+            f"今週の上位キーワード: {kw_str} / 平均品質スコア: {avg_score}点 / 直近7日記事数: {summary.get('recent_7days_count', 0)}本",
+            "コンテンツ",
+        ),
+        (
+            f"{niche}ジャンルの記事は朝6時投稿が最も読まれる",
+            f"Zenn読者属性: 副業・エンジニア / 朝の可処分時間が最大 / 投稿履歴: {summary.get('total_articles', 0)}本",
+            "タイミング",
+        ),
+        (
+            f"品質スコア{int(avg_score)}点以上の記事は低品質記事の2倍以上スキを獲得する",
+            f"今週の平均品質スコア: {avg_score}点 / A/Bテスト勝者パターン: {summary.get('top_ab_pattern', '未確定')}",
+            "品質",
+        ),
+    ]
+
+    this_week_ids: list[str] = []
+    for proposition, observation, domain in candidates:
+        try:
+            similar = find_similar(proposition, props_data)
+            proof = prove_proposition(client, model, proposition, observation, master_os, domain, similar)
+            record = add_proposition(props_data, proof, domain, "週次分析から自動生成")
+            this_week_ids.append(record["id"])
+            logger.info(
+                "[確信プロトコル] 証明完了 — %s（確信度: %d%%）",
+                proposition[:40], proof.get("confidence", 0),
+            )
+            # 出版記録: proof_log.md に追記
+            try:
+                append_proof_log(
+                    proposition=proof.get("proposition", proposition),
+                    universal_truth=proof.get("universal_truth", ""),
+                    result="",
+                    context=f"週次分析 — {domain}",
+                )
+            except Exception:
+                pass
+            # ライブラリを最新状態に更新
+            props_data = load_propositions()
+        except Exception as e:
+            logger.warning("[確信プロトコル] 命題証明エラー: %s", e)
+
+    # Discord 週次証明サマリーを通知
+    if this_week_ids:
+        try:
+            section = format_weekly_discord(props_data, this_week_ids)
+            notify("🔬 今週の証明サマリー（確信プロトコル）", section)
+        except Exception as e:
+            logger.warning("[確信プロトコル] Discord通知失敗: %s", e)
+
+
 # ── 週次メイン処理 ────────────────────────────────────────────────────────────
 
 def run():
@@ -647,3 +740,7 @@ WEEKLY_REPORT: 今週の振り返りと来週への提言（200字以内）
     # ── E. オーナー思考学習 ──
     logger.info("=== E. オーナー思考学習 ===")
     _learn_owner_thoughts(client, model)
+
+    # ── F. 行動確信プロトコル — 週次観測から命題を証明 ──
+    logger.info("=== F. 行動確信プロトコル（週次証明）===")
+    _prove_weekly_observations(client, model, articles, config, summary)

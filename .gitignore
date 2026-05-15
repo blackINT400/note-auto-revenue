@@ -1,9 +1,21 @@
+# ──────────────────────────────────────────────────────────
+# 機密資産（競合への流出を防ぐ。ローカル専用。）
+# ──────────────────────────────────────────────────────────
+owner/
+
 # 環境変数・シークレット
 .env
 .env.*
 *.key
 *.pem
 secrets/
+
+# ──────────────────────────────────────────────────────────
+# 運用データ（外部に出さない）
+# ──────────────────────────────────────────────────────────
+logs/
+data/
+empire/data/
 
 # Python
 __pycache__/
@@ -13,14 +25,6 @@ __pycache__/
 venv/
 dist/
 build/
-
-# ログ・データ（大きくなるもの）
-logs/*.log
-data/trends_*.json
-data/ab_variants.json
-empire/data/empire_cost.json
-empire/data/opportunities.jsonl
-empire/data/kpi_history.jsonl
 
 # macOS
 .DS_Store
