@@ -57,7 +57,7 @@ jobs:
           git config --global user.email "empire-bot@auto-revenue.bot"
           git config --global user.name "Empire Bot"
           BIZ_ID="${{ inputs.business_id || 'note_言語化全1論' }}"
-          git add "businesses/${BIZ_ID}/" thoughts/ || true
+          git add "businesses/${BIZ_ID}/" thoughts/ logs/ || true
           git diff --staged --quiet || \
             git commit -m "note_magazine: auto update $(date +%Y-%m-%d) [skip ci]"
           git push
