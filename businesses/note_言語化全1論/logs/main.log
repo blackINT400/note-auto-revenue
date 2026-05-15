@@ -213,3 +213,29 @@
 2026-05-15 12:16:21,699 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 4 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 6 記事 / フォロワー 50 人
 2026-05-15 12:16:21,699 [INFO] empire.report_generator: [Report] Discord送信完了
 2026-05-15 12:16:21,699 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-15_21-16.md
+2026-05-15 22:03:17,740 [INFO] __main__: [note] 起動 mode=daily genre=恋愛・好きな人への気持ちの伝え方
+2026-05-15 22:03:19,829 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-15 22:03:20,798 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-15 22:03:21,655 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-15 22:03:23,336 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-15 22:03:24,610 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-15 22:03:25,155 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-15 22:03:25,303 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-15 22:03:25,615 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-15 22:03:25,615 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-15 22:03:37,353 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 22:03:37,373 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2072, output: 580 tokens
+2026-05-15 22:03:37,374 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-15.json
+2026-05-15 22:04:12,599 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 22:04:12,600 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3313, output: 1880 tokens
+2026-05-15 22:04:12,600 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_友達が4人いなくてもあなたはすでに完全だ.json
+2026-05-15 22:04:13,323 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-15 22:04:13,323 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-15 22:04:13,456 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-15 22:04:13,456 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-15 22:04:13,456 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_友達が4人いなくても_あなたはすでに完全だ.md
+2026-05-15 22:04:13,456 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-15 22:04:13,456 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-15 22:04:13,457 [INFO] __main__: [note] 完了: {'published': [{'title': '友達が4人いなくても、あなたはすでに完全だ', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_友達が4人いなくても_あなたはすでに完全だ.md', 'published_at': '2026-05-15T22:04:13.323810+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_友達が4人いなくてもあなたはすでに完全だ.json'}], 'mode': 'daily'}
+2026-05-15 22:04:13,462 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 5 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 5 記事 / フォロワー 50 人
+2026-05-15 22:04:13,467 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-15_07-04.md
