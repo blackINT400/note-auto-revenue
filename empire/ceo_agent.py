@@ -552,7 +552,7 @@ def make_decision(kpis: list, history: list, portfolio: dict,
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def apply_decision(portfolio: dict, decision: dict, kpis: list,
-                   rule_triggers: dict, slack_fn=None) -> dict:
+                   rule_triggers: dict, notify_fn=None) -> dict:
     """CEO判断を portfolio.yaml に反映する（kill は24時間後）"""
     businesses   = portfolio.get("businesses", [])
     allocation   = decision.get("resource_allocation", {})
@@ -601,8 +601,8 @@ def apply_decision(portfolio: dict, decision: dict, kpis: list,
                 f"24時間後（{kill_at[:16]}）に実行されます。"
             )
             logger.warning(msg)
-            if slack_fn:
-                slack_fn(msg)
+            if notify_fn:
+                notify_fn("帝国通知", msg)
 
     # 水平展開推奨を empire_kpi に記録（launcher_agent が参照）
     if decision.get("horizontal_expansion"):
@@ -612,7 +612,7 @@ def apply_decision(portfolio: dict, decision: dict, kpis: list,
     return portfolio
 
 
-def process_pending_kills(portfolio: dict, slack_fn=None) -> tuple:
+def process_pending_kills(portfolio: dict, notify_fn=None) -> tuple:
     """24時間経過した停止予定事業を実際に停止する"""
     now = datetime.now()
     pending     = portfolio.get("safety", {}).get("pending_kills", [])
@@ -633,8 +633,8 @@ def process_pending_kills(portfolio: dict, slack_fn=None) -> tuple:
             done.append(bid)
             msg = f"🔴 *[帝国]* 事業「{bid}」を停止しました。"
             logger.info(msg)
-            if slack_fn:
-                slack_fn(msg)
+            if notify_fn:
+                notify_fn("帝国通知", msg)
         else:
             still.append(pk)
 
@@ -689,7 +689,7 @@ def log_decision(kpis: list, decision: dict, rule_triggers: dict):
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
 
-def send_weekly_report(portfolio: dict, slack_fn=None):
+def send_weekly_report(portfolio: dict, notify_fn=None):
     businesses = portfolio.get("businesses", [])
     active     = [b for b in businesses if b.get("status") in ("active", "reduced")]
     kpi        = portfolio.get("empire_kpi", {})
@@ -726,15 +726,15 @@ def send_weekly_report(portfolio: dict, slack_fn=None):
         f"📈 ダッシュボード: {pages_url}"
     )
     logger.info(f"週次レポート\n{msg}")
-    if slack_fn:
-        slack_fn(msg)
+    if notify_fn:
+        notify_fn("帝国通知", msg)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # メイン
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def run(slack_fn=None, weekly_report: bool = False) -> dict:
+def run(notify_fn=None, weekly_report: bool = False) -> dict:
     portfolio  = load_portfolio()
     businesses = portfolio.get("businesses", [])
 
@@ -744,8 +744,8 @@ def run(slack_fn=None, weekly_report: bool = False) -> dict:
     if total_cost >= cost_limit:
         msg = f"🛑 *[帝国]* 月間コスト上限（{cost_limit:,.0f}円）到達。全事業を一時停止します。"
         logger.error(msg)
-        if slack_fn:
-            slack_fn(msg)
+        if notify_fn:
+            notify_fn("帝国通知", msg)
         for b in businesses:
             if b.get("status") == "active":
                 b["status"] = "paused_cost_limit"
@@ -769,7 +769,7 @@ def run(slack_fn=None, weekly_report: bool = False) -> dict:
     portfolio = update_revenue_pool(portfolio, kpis, rule_triggers)
 
     # 停止予定処理
-    portfolio, executed = process_pending_kills(portfolio, slack_fn)
+    portfolio, executed = process_pending_kills(portfolio, notify_fn)
     if executed:
         logger.info(f"[CEO] 停止実行完了: {executed}")
 
@@ -780,7 +780,7 @@ def run(slack_fn=None, weekly_report: bool = False) -> dict:
             model    = get_model()
             decision = make_decision(kpis, history, portfolio, rule_triggers, client, model)
             log_decision(kpis, decision, rule_triggers)
-            portfolio = apply_decision(portfolio, decision, kpis, rule_triggers, slack_fn)
+            portfolio = apply_decision(portfolio, decision, kpis, rule_triggers, notify_fn)
             logger.info(f"[CEO] 判断完了: {decision.get('reasoning', '')[:80]}")
         except Exception as e:
             logger.error(f"[CEO] Claude API失敗: {e}")
@@ -789,7 +789,7 @@ def run(slack_fn=None, weekly_report: bool = False) -> dict:
     save_portfolio(portfolio)
 
     if weekly_report:
-        send_weekly_report(portfolio, slack_fn)
+        send_weekly_report(portfolio, notify_fn)
 
     logger.info("[CEO] 処理完了")
     return portfolio

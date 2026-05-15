@@ -1,12 +1,14 @@
 """
 empire/utils.py: 帝国エージェント共通ユーティリティ
-全エージェントがここからポートフォリオ操作・コスト記録・モデル取得を行う
+全エージェントがここからポートフォリオ操作・コスト記録・モデル取得・Discord通知を行う
 """
 import json
 import logging
+import os
 from datetime import date
 from pathlib import Path
 
+import requests
 import yaml
 
 EMPIRE_DIR = Path(__file__).parent
@@ -14,11 +16,38 @@ PROJECT_ROOT = EMPIRE_DIR.parent
 PORTFOLIO_PATH = EMPIRE_DIR / "portfolio.yaml"
 EMPIRE_COST_PATH = EMPIRE_DIR / "data" / "empire_cost.json"
 
+# ── Discord通知 ────────────────────────────────────────────────────────────────
+DISCORD_WEBHOOK_URL = os.environ.get(
+    "DISCORD_WEBHOOK_URL",
+    "https://discord.com/api/webhooks/1504810050194247742/"
+    "LdfwEGOffRL9WCBR2Z0FrEK3Y3OFkuUbBddFJiXhIJQ2feoBqZgzZIaFS1U1K82c5ot5",
+)
+
+logger = logging.getLogger(__name__)
+
+
+def notify(title: str, body: str, urgent: bool = False) -> None:
+    """Discord embed で通知する。urgent=True で赤色表示。"""
+    color = 0xFF4444 if urgent else 0x1D9E75
+    # Discord embed の description は 4096 文字上限
+    desc = body[:4000] + "\n…（省略）" if len(body) > 4000 else body
+    payload = {
+        "embeds": [{
+            "title": title[:256],
+            "description": desc,
+            "color": color,
+        }]
+    }
+    try:
+        resp = requests.post(DISCORD_WEBHOOK_URL, json=payload, timeout=10)
+        if resp.status_code not in (200, 204):
+            logger.warning("Discord通知失敗: %d %s", resp.status_code, resp.text[:100])
+    except Exception as exc:
+        logger.warning("Discord通知エラー: %s", exc)
+
 INPUT_COST_PER_MTOK = 3.0
 OUTPUT_COST_PER_MTOK = 15.0
 JPY_RATE = 150.0
-
-logger = logging.getLogger(__name__)
 
 
 def load_portfolio() -> dict:

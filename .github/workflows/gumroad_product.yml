@@ -39,7 +39,7 @@ jobs:
       - name: Run Gumroad Product
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           GUMROAD_API_TOKEN: ${{ secrets.GUMROAD_API_TOKEN }}
         run: |
           BIZ_ID="${{ inputs.business_id }}"

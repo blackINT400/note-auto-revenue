@@ -12,20 +12,19 @@ GitHub Actionsスケジュール:
 """
 import argparse
 import logging
-import os
 import subprocess
 import sys
 import time
 from datetime import date
 from pathlib import Path
 
-import requests
 import yaml
 
 from empire.utils import (
     PROJECT_ROOT, EMPIRE_DIR,
     get_empire_cost_limit, get_empire_month_cost,
     load_portfolio, save_portfolio,
+    notify,
 )
 
 # ── ログ設定 ──────────────────────────────────────────────────────────────────
@@ -46,18 +45,6 @@ MAX_RETRIES = 3
 RETRY_WAIT = 30
 
 
-# ── Slack通知 ─────────────────────────────────────────────────────────────────
-
-def _slack(message: str):
-    url = os.environ.get("SLACK_WEBHOOK_URL")
-    if not url:
-        return
-    try:
-        requests.post(url, json={"text": message}, timeout=10)
-    except Exception as e:
-        logger.warning(f"Slack通知失敗: {e}")
-
-
 # ── リトライ付き実行 ──────────────────────────────────────────────────────────
 
 def _run(func, name: str):
@@ -71,7 +58,7 @@ def _run(func, name: str):
             if attempt < MAX_RETRIES:
                 time.sleep(RETRY_WAIT)
             else:
-                _slack(f"⚠️ *[{name}]* {MAX_RETRIES}回失敗しました。\nエラー: {e}")
+                notify(f"⚠️ [{name}] {MAX_RETRIES}回失敗", f"エラー: {e}", urgent=True)
                 raise
 
 
@@ -83,8 +70,19 @@ def _empire_cost_guard() -> bool:
     limit = get_empire_cost_limit()
     threshold = limit * 0.20  # 帝国エージェント自体のコスト上限は全体の20%
     if empire_cost >= threshold:
-        _slack(f"🛑 *[帝国]* エージェントのAPIコスト({empire_cost:.0f}円)が上限({threshold:.0f}円)に達しました。")
+        notify(
+            "🛑 [帝国] エージェントAPIコスト上限",
+            f"エージェントのAPIコスト（¥{empire_cost:.0f}）が上限（¥{threshold:.0f}）に達しました。",
+            urgent=True,
+        )
         return True
+    # 80%超え警告
+    if empire_cost >= threshold * 0.80:
+        notify(
+            "⚠️ [帝国] コスト警告",
+            f"エージェントのAPIコスト（¥{empire_cost:.0f}）が上限の80%を超えました（上限: ¥{threshold:.0f}）。",
+            urgent=True,
+        )
     return False
 
 
@@ -199,18 +197,16 @@ def run_monthly_summary(portfolio: dict):
     next_target = 30000  # デフォルト3ヶ月目標
     pages_url = "https://blackINT400.github.io/note-auto-revenue/"
 
-    slack_msg = (
-        f"📅 *{target_year}年{target_month}月 帝国月次レポート*\n\n"
-        f"📊 *今月の実績*\n"
-        f"  収益: ¥{total_rev:,.0f} / コスト: ¥{total_cost:,.0f} / 純利益: ¥{total_profit:,.0f}\n"
-        f"  稼働事業数: {empire_kpi.get('business_count', 0)}件\n\n"
-        f"🏆 *パフォーマンストップ3*\n{top3_lines}\n\n"
-        f"🎯 *来月の目標*: ¥{next_target:,.0f} "
-        f"（あと ¥{max(0, next_target - total_rev):,.0f}）\n\n"
-        f"📈 ダッシュボード: {pages_url}\n"
-        f"📄 詳細ログ: `{output_path.name}`"
+    notify(
+        f"📅 {target_year}年{target_month}月 帝国月次レポート",
+        f"**今月の実績**\n"
+        f"収益: ¥{total_rev:,.0f} / コスト: ¥{total_cost:,.0f} / 純利益: ¥{total_profit:,.0f}\n"
+        f"稼働事業数: {empire_kpi.get('business_count', 0)}件\n\n"
+        f"**パフォーマンストップ3**\n{top3_lines}\n\n"
+        f"**来月の目標**: ¥{next_target:,.0f}（あと ¥{max(0, next_target - total_rev):,.0f}）\n\n"
+        f"ダッシュボード: {pages_url}\n"
+        f"詳細ログ: `{output_path.name}`",
     )
-    _slack(slack_msg)
 
 
 # ── モード別処理 ──────────────────────────────────────────────────────────────
@@ -238,25 +234,36 @@ def run_daily():
                 "[帝国] %s — 無料コンテンツ量産フェーズ。有料機能はブロック済み。",
                 phase_info["name"],
             )
-        _slack(
-            f"[帝国] {phase_info['name']}\n"
+        notify(
+            f"[帝国] {phase_info['name']}",
             f"記事: {phase_info['article_count']} 本 | 月収: ¥{phase_info['monthly_revenue']:.0f}\n"
-            f"{phase_info['next_hint']}"
+            f"{phase_info['next_hint']}",
         )
 
         # 安全装置: コスト上限チェック（全事業合計）
         cost_limit = get_empire_cost_limit()
         total_biz_cost = sum(float(b.get("monthly_cost", 0)) for b in portfolio.get("businesses", []))
         if total_biz_cost >= cost_limit:
-            _slack(f"🛑 *[帝国]* 全事業の月間コスト合計({total_biz_cost:,.0f}円)が上限({cost_limit:,.0f}円)に達しました。日次処理を停止します。")
+            notify(
+                "🛑 [帝国] 月間コスト上限到達",
+                f"全事業の累計コスト ¥{total_biz_cost:,.0f} が上限 ¥{cost_limit:,.0f} に達しました。日次処理を停止します。",
+                urgent=True,
+            )
             logger.error("帝国コスト上限超過。日次処理を中断します。")
             rc.add_failure(
-                f"コスト上限超過で日次処理を停止",
+                "コスト上限超過で日次処理を停止",
                 cause=f"累計コスト ¥{total_biz_cost:,.0f} ≥ 上限 ¥{cost_limit:,.0f}",
                 needs_action=True,
             )
             rc.add_confirmation(f"月間APIコストが上限（¥{cost_limit:,.0f}）に達しました。上限引き上げまたは処理削減を検討してください。")
             return
+        # 80%警告
+        elif total_biz_cost >= cost_limit * 0.80:
+            notify(
+                "⚠️ [帝国] コスト警告 80%超え",
+                f"今月のコスト ¥{total_biz_cost:,.0f}（上限 ¥{cost_limit:,.0f} の{total_biz_cost/cost_limit*100:.0f}%）",
+                urgent=True,
+            )
 
         # 全アクティブ事業を実行（フェーズに関係なく日次生成は常に実行）
         rc.add_action("全アクティブ事業の日次処理を実行")
@@ -269,7 +276,7 @@ def run_daily():
             rc.add_action("CEO エージェント 日次判断")
             try:
                 from empire import ceo_agent
-                _run(lambda: ceo_agent.run(slack_fn=_slack, weekly_report=False), "CEO（日次判断）")
+                _run(lambda: ceo_agent.run(notify_fn=notify, weekly_report=False), "CEO（日次判断）")
                 rc.add_success("CEO 日次判断完了")
             except Exception as e:
                 rc.add_failure("CEO 日次判断エラー", cause=str(e)[:100])
@@ -288,17 +295,17 @@ def run_daily():
             logger.warning(f"[帝国] ダッシュボード更新スキップ: {e}")
             rc.add_failure("ダッシュボード更新スキップ", cause=str(e)[:100])
 
-        # ── Slack日次サマリー（KPI + ダッシュボードURL）──────────────────────────
+        # ── Discord日次サマリー ──────────────────────────────────────────────────
         total = snapshot.get("total", {})
         rev = float(total.get("revenue", 0))
         cost = float(total.get("cost", 0))
         profit = float(total.get("profit", 0))
         roi = float(total.get("roi", 0))
         pages_url = "https://blackINT400.github.io/note-auto-revenue/"
-        _slack(
-            f"✅ *[帝国] 日次処理完了* ({date.today()})\n"
+        notify(
+            f"✅ [帝国] 日次処理完了 {date.today()}",
             f"今月の収益: ¥{rev:,.0f} / コスト: ¥{cost:,.0f} / 純利益: ¥{profit:,.0f} (ROI {roi:.1f}%)\n"
-            f"ダッシュボード: {pages_url}"
+            f"ダッシュボード: {pages_url}",
         )
         logger.info("帝国 日次処理 完了")
         rc.add_action("日次処理完了")
@@ -336,7 +343,7 @@ def run_weekly():
             rc.add_action("Launcher エージェント: 新事業準備")
             try:
                 from empire import launcher_agent
-                new_bid = _run(lambda: launcher_agent.run(opportunities, slack_fn=_slack), "Launcher（新事業準備）")
+                new_bid = _run(lambda: launcher_agent.run(opportunities, notify_fn=notify), "Launcher（新事業準備）")
                 if new_bid:
                     logger.info(f"[帝国] 新事業「{new_bid}」の準備完了。Slackで承認を確認してください。")
                     rc.add_success(f"新事業準備完了: {new_bid}")
@@ -348,7 +355,7 @@ def run_weekly():
         rc.add_action("CEO エージェント: 週次判断 + レポート")
         try:
             from empire import ceo_agent
-            _run(lambda: ceo_agent.run(slack_fn=_slack, weekly_report=True), "CEO（週次判断 + レポート）")
+            _run(lambda: ceo_agent.run(notify_fn=notify, weekly_report=True), "CEO（週次判断 + レポート）")
             rc.add_success("CEO 週次判断完了")
         except Exception as e:
             rc.add_failure("CEO 週次判断エラー", cause=str(e)[:100])
@@ -410,7 +417,7 @@ def main():
             run_monthly()
     except SystemExit as e:
         if str(e) == "COST_LIMIT_EXCEEDED":
-            _slack("🛑 *[帝国]* APIコスト上限に達しました。今月の処理を停止します。")
+            notify("🛑 [帝国] APIコスト上限", "今月のAPIコスト上限に達しました。処理を停止します。", urgent=True)
             sys.exit(0)
         raise
 

@@ -319,7 +319,7 @@ def _can_launch_today(portfolio: dict) -> bool:
 
 # ── メイン ────────────────────────────────────────────────────────────────────
 
-def run(opportunities: list, slack_fn=None) -> str:
+def run(opportunities: list, notify_fn=None) -> str:
     """
     展開候補リストから最高スコアの機会を選んで新事業をセットアップする。
     返り値: 作成した business_id（何もしない場合は空文字）
@@ -372,8 +372,8 @@ def run(opportunities: list, slack_fn=None) -> str:
             f"※ 承認しない場合は portfolio.yaml で status を 'terminated' に変更してください"
         )
         logger.info(f"[Launcher] Slack通知:\n{msg}")
-        if slack_fn:
-            slack_fn(msg)
+        if notify_fn:
+            notify_fn("帝国通知", msg)
 
         return business_id
 

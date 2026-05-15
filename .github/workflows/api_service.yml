@@ -39,7 +39,7 @@ jobs:
       - name: Run API Service
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
           RAPIDAPI_KEY: ${{ secrets.RAPIDAPI_KEY }}
           VPS_HOST: ${{ secrets.VPS_HOST }}
         run: |

@@ -11,8 +11,9 @@ import time
 from datetime import date
 from pathlib import Path
 
-import requests
 import yaml
+
+from empire.utils import notify
 
 # ── ログ設定 ──────────────────────────────────────────────────────────────────
 LOG_DIR = Path("logs")
@@ -30,18 +31,6 @@ logger = logging.getLogger(__name__)
 
 MAX_RETRIES = 3
 RETRY_WAIT_SEC = 30
-
-# ── Slack通知 ─────────────────────────────────────────────────────────────────
-
-def _slack(message: str):
-    url = os.environ.get("SLACK_WEBHOOK_URL")
-    if not url:
-        logger.debug("SLACK_WEBHOOK_URLが未設定のため通知をスキップ")
-        return
-    try:
-        requests.post(url, json={"text": message}, timeout=10)
-    except Exception as e:
-        logger.warning(f"Slack通知失敗: {e}")
 
 
 # ── リトライ付き実行 ──────────────────────────────────────────────────────────
@@ -61,9 +50,9 @@ def _run(func, name: str):
                 logger.info(f"{RETRY_WAIT_SEC}秒後にリトライします...")
                 time.sleep(RETRY_WAIT_SEC)
             else:
-                msg = f"⚠️ *[{name}]* {MAX_RETRIES}回連続でエラーが発生しました。システムを停止します。\nエラー: {e}"
+                msg = f"{MAX_RETRIES}回連続でエラーが発生しました。システムを停止します。\nエラー: {e}"
                 logger.critical(msg)
-                _slack(msg)
+                notify(f"⚠️ [{name}] 連続エラー", msg, urgent=True)
                 raise
 
 
@@ -93,15 +82,14 @@ def run_daily():
             articles = []
 
         if not articles:
-            msg = "⚠️ 今日は記事を生成できませんでした（コスト上限または品質基準未達）"
-            logger.warning(msg)
-            _slack(msg)
+            logger.warning("今日は記事を生成できませんでした（コスト上限または品質基準未達）")
+            notify("⚠️ 記事生成なし", "コスト上限または品質基準未達のため生成をスキップしました。", urgent=True)
             rc.add_failure("記事生成なし", cause="コスト上限または品質基準未達")
         else:
             try:
                 results = _run(lambda: publisher.run(articles), "Publisher（Zenn投稿）")
-                title_list = "\n".join(f"• {r.get('title', '')}" for r in results)
-                _slack(f"✅ *本日の記事投稿完了* ({len(results)}件)\n{title_list}")
+                title_list = "\n".join(f"・{r.get('title', '')}" for r in results)
+                notify("✅ 本日の記事投稿完了", f"{len(results)}件\n{title_list}")
                 logger.info(f"日次処理 完了: {len(results)}件の記事を投稿")
                 for r in results:
                     rc.add_success(f"Zenn投稿完了: {r.get('title', '')[:40]}")
@@ -115,7 +103,7 @@ def run_daily():
             try:
                 path = _run(analyst.generate_monthly_summary, "MonthlyReport（月次サマリー）")
                 if path:
-                    _slack(f"📅 *月次サマリーを生成しました*\n`{path}`")
+                    notify("📅 月次サマリー生成", f"`{path}`")
                     rc.add_success(f"月次サマリー生成: {path}")
             except Exception as e:
                 rc.add_failure("月次サマリー生成失敗", cause=str(e)[:100])
@@ -143,7 +131,7 @@ def run_weekly():
         keywords = config.get("auto_strategy", {}).get("top_keywords", [])
         report = config.get("auto_strategy", {}).get("weekly_report", "")
         kw_str = ", ".join(keywords[:5]) if keywords else "なし"
-        _slack(f"📊 *週次分析完了*\n戦略キーワード: {kw_str}\n{report}")
+        notify("📊 週次分析完了", f"戦略キーワード: {kw_str}\n{report}")
         logger.info("週次分析 完了")
 
 
@@ -162,7 +150,7 @@ def main():
             run_weekly()
     except SystemExit as e:
         if str(e) == "COST_LIMIT_EXCEEDED":
-            _slack("🛑 *月間APIコスト上限に達しました*\n今月の自動実行を停止します。来月1日に自動再開します。")
+            notify("🛑 月間APIコスト上限", "今月の自動実行を停止します。来月1日に自動再開します。", urgent=True)
             sys.exit(0)
         raise
 

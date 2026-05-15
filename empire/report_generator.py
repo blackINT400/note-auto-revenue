@@ -1,22 +1,18 @@
 """
-empire/report_generator.py — 実行レポート自動生成 & メール送信
+empire/report_generator.py — 実行レポート自動生成 & Discord送信
 
 使い方:
     collector = ReportCollector(mode="daily")
     collector.add_action("トレンドスキャン実行")
     collector.add_success("記事生成: 副業節税タイトル")
     collector.add_failure("note投稿失敗", cause="422 Unprocessable Entity", needs_action=True)
-    collector.finalize()   # レポート生成 + メール送信
+    collector.finalize()   # レポート生成 + Discord送信
 """
 from __future__ import annotations
 
 import json
 import logging
-import os
-import smtplib
 from datetime import datetime, timezone
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
 
 import yaml
@@ -177,10 +173,10 @@ class ReportCollector:
     # ── レポート生成 ────────────────────────────────────────────────────
 
     def finalize(self) -> Path:
-        """レポートを生成してファイルに保存し、メール送信する"""
+        """レポートを生成してファイルに保存し、Discord送信する"""
         report_text = self._build_report()
         self.report_path = self._save(report_text)
-        self._send_email(report_text)
+        self._send_discord()
         logger.info("[Report] 生成完了: %s", self.report_path)
         return self.report_path
 
@@ -283,44 +279,61 @@ class ReportCollector:
         path.write_text(report_text, encoding="utf-8")
         return path
 
-    def _send_email(self, report_text: str) -> None:
-        gmail_address = os.environ.get("GMAIL_ADDRESS", "")
-        app_password = os.environ.get("GMAIL_APP_PASSWORD", "")
-        notify_email = os.environ.get("NOTIFY_EMAIL", "") or gmail_address
-
-        if not gmail_address or not app_password:
-            logger.info("[Report] GMAIL_ADDRESS/GMAIL_APP_PASSWORD 未設定 — メール送信スキップ")
-            return
+    def _send_discord(self) -> None:
+        """実行レポートを Discord embed 形式で送信する。"""
+        from empire.utils import notify
 
         now = datetime.now(timezone.utc)
         jst_hour = (now.hour + 9) % 24
-        timestamp = f"{now.strftime('%Y-%m-%d')} {jst_hour:02d}:{now.strftime('%M')}"
+        timestamp = f"{now.strftime('%Y-%m-%d')} {jst_hour:02d}:{now.strftime('%M')} JST"
 
-        # メインの処理を件名に
-        if self._successes:
-            main_action = self._successes[0][:30]
-        elif self._actions:
-            main_action = self._actions[0][:30]
+        portfolio = _load_portfolio()
+        article_count = _count_published_articles(PROJECT_ROOT)
+        monthly_revenue = _get_monthly_revenue(portfolio)
+        api_cost = _get_monthly_cost(PROJECT_ROOT)
+        _, phase_name = _get_phase(portfolio, PROJECT_ROOT)
+
+        # ── セクションごとに文字列を組む ──────────────────────────────────────
+        actions_str = "\n".join(f"・{a}" for a in self._actions) or "・（記録なし）"
+        success_str = "\n".join(f"・{s}" for s in self._successes) or "・なし"
+
+        if self._failures:
+            fail_lines = []
+            for f in self._failures:
+                fail_lines.append(f"・{f['msg']}")
+                if f.get("cause"):
+                    fail_lines.append(f"　原因: {f['cause']}")
+                needs = "はい" if f.get("needs_action") else "いいえ"
+                fail_lines.append(f"　対処が必要か: {needs}")
+            fail_str = "\n".join(fail_lines)
         else:
-            main_action = f"{self.mode}処理"
+            fail_str = "・なし"
 
-        failures_exist = bool(self._failures)
-        subject = f"【帝国レポート】{timestamp} {main_action}{'⚠️要確認' if failures_exist else ''}"
+        next_schedules = {
+            "daily":   "次回 06:00 JST: 日次処理（トレンド → 記事生成 → 投稿/通知）\n毎週月曜 08:00 JST: 週次処理",
+            "weekly":  "明日 06:00 JST: 日次処理（通常運転）\n来週月曜 08:00 JST: 次回週次処理",
+            "monthly": "明日 06:00 JST: 日次処理（通常運転）\n翌月 1 日 10:00 JST: 次回月次総括",
+        }
+        next_str = next_schedules.get(self.mode, "")
 
-        try:
-            msg = MIMEMultipart()
-            msg["From"] = gmail_address
-            msg["To"] = notify_email
-            msg["Subject"] = subject
-            msg.attach(MIMEText(report_text, "plain", "utf-8"))
+        confirm_str = "\n".join(f"・{c}" for c in self._confirmations) or "・なし"
 
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                server.login(gmail_address, app_password)
-                server.sendmail(gmail_address, notify_email, msg.as_string())
+        body = (
+            f"**今回やったこと**\n{actions_str}\n\n"
+            f"**現在の状況**\n"
+            f"・投稿済み記事数：{article_count} 本\n"
+            f"・今月の収益：¥{monthly_revenue:,.0f}\n"
+            f"・今月のAPIコスト：¥{api_cost:,.1f}\n"
+            f"・現在のフェーズ：{phase_name}\n\n"
+            f"**成功**\n{success_str}\n\n"
+            f"**問題・エラー**\n{fail_str}\n\n"
+            f"**次回の予定**\n{next_str}\n\n"
+            f"**確認事項**\n{confirm_str}"
+        )
 
-            logger.info("[Report] メール送信完了: %s → %s", subject[:60], notify_email)
-        except Exception as exc:
-            logger.warning("[Report] メール送信失敗: %s", exc)
+        urgent = bool(self._failures and any(f.get("needs_action") for f in self._failures))
+        notify(f"実行レポート {timestamp}", body, urgent=urgent)
+        logger.info("[Report] Discord送信完了")
 
 
 # ── スタンドアロン生成（empire_main.py 外から呼ぶ用）────────────────────────
