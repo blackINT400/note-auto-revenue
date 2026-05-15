@@ -12,38 +12,35 @@ import requests
 logger = logging.getLogger(__name__)
 
 NOTE_API_BASE = "https://note.com/api/v1"
-NOTE_API_BASE_V2 = "https://note.com/api/v2"
-SESSION_PATH = NOTE_API_BASE_V2 + "/sessions"
 TEXT_NOTES_PATH = NOTE_API_BASE + "/text_notes"
 
 
-def _note_login(email: str, password: str) -> requests.Session | None:
-    """note.com にログインしてセッションを返す。失敗時は None。"""
+def _note_session() -> requests.Session | None:
+    """
+    _note_session_v5 Cookie を使ってセッションを返す。
+    Cookie認証方式（メール/パスワードログインは廃止済み）。
+    """
+    cookie_value = os.environ.get("NOTE_SESSION_COOKIE", "")
+    if not cookie_value:
+        logger.warning("NOTE_SESSION_COOKIE が未設定です。自動投稿をスキップします。")
+        return None
+
     session = requests.Session()
     session.headers.update({
         "Content-Type": "application/json",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "User-Agent": (
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/124.0.0.0 Safari/537.36"
+        ),
         "Accept": "application/json, text/plain, */*",
         "Accept-Language": "ja,en;q=0.9",
         "Origin": "https://note.com",
-        "Referer": "https://note.com/login",
+        "Referer": "https://note.com/",
     })
-
-    # まず v2 エンドポイントを試す
-    for endpoint, payload in [
-        (SESSION_PATH, {"login": email, "password": password}),
-        (NOTE_API_BASE + "/sessions", {"login": email, "password": password}),
-    ]:
-        try:
-            resp = session.post(endpoint, json=payload, timeout=15)
-            if resp.status_code in (200, 201):
-                logger.info("note.com login succeeded via %s", endpoint)
-                return session
-            logger.warning("note.com login attempt %s failed: %d %s", endpoint, resp.status_code, resp.text[:200])
-        except Exception as exc:
-            logger.warning("note.com login error at %s: %s", endpoint, exc)
-
-    return None
+    session.cookies.set("_note_session_v5", cookie_value, domain="note.com")
+    logger.info("note.com: Cookie認証セッションを初期化しました")
+    return session
 
 
 def _post_note(session: requests.Session, draft: dict, magazine_id: str = "") -> dict | None:
@@ -138,13 +135,9 @@ def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
         logger.info("Already posted today, skipping distributor (interval=%dh)", post_interval_hours)
         return []
 
-    # note.com 認証情報
-    email = os.environ.get("NOTE_EMAIL", "")
-    password = os.environ.get("NOTE_PASSWORD", "")
+    # note.com Cookie認証
     magazine_id = config.get("magazine_id", "")
-    note_session = None
-    if email and password:
-        note_session = _note_login(email, password)
+    note_session = _note_session()
 
     results = []
     for article_meta in articles:
