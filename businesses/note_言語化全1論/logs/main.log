@@ -116,3 +116,21 @@
 2026-05-15 10:40:41,654 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_他者の視線はあなたの設計図ではない.md
 2026-05-15 10:40:41,654 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
 2026-05-15 10:40:41,655 [INFO] __main__: [note] 完了: {'published': [{'title': '他者の視線はあなたの設計図ではない', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_他者の視線はあなたの設計図ではない.md', 'published_at': '2026-05-15T10:40:41.414953+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_他者の視線はあなたの設計図ではない.json'}], 'mode': 'daily'}
+2026-05-15 10:42:13,074 [INFO] __main__: [note] 起動 mode=daily genre=感情・怒りや不安との付き合い方
+2026-05-15 10:42:14,872 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-15 10:42:16,062 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-15 10:42:17,238 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-15 10:42:18,170 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-15 10:42:19,615 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-15 10:42:19,883 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-15 10:42:20,619 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-15 10:42:21,641 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-15 10:42:21,641 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-15 10:42:33,220 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 10:42:33,239 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2068, output: 579 tokens
+2026-05-15 10:42:33,240 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-15.json
+2026-05-15 10:43:09,178 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 10:43:09,179 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3109, output: 1797 tokens
+2026-05-15 10:43:09,180 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_思い込みは壁ではないあなたが自分で引いた線だ.json
+2026-05-15 10:43:09,180 [INFO] empire.playbooks.note_magazine.distributor: Already posted today, skipping distributor (interval=24h)
+2026-05-15 10:43:09,180 [INFO] __main__: [note] 完了: {'published': [], 'mode': 'daily'}
