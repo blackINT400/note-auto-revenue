@@ -4,21 +4,27 @@
 platform: github_pages
 site_url: "https://blackint400.github.io/note-auto-revenue/affiliate/"
 
-niche: "言語化・副業・節税・資産形成"
+niche: "恋愛・人間関係・自己成長・哲学"
 articles_per_week: 3
 quality_threshold: 75
 
-# A8.net登録後にリンクを追加
+# A8.net提携申請後にリンクを追加（優先: 婚活アプリ → 自己成長 → 書籍）
 affiliate_links:
-  - name: "freee（確定申告）"
-    url: ""          # A8.net登録後に記入
-    keyword: "確定申告 フリーランス"
-  - name: "マネーフォワード"
+  - name: "Pairs（マッチングアプリ）"
+    url: ""          # A8.netで提携申請後に記入
+    keyword: "恋愛 出会い マッチングアプリ"
+  - name: "with（マッチングアプリ）"
     url: ""
-    keyword: "家計簿 副業"
-  - name: "SBI証券"
+    keyword: "恋愛 婚活 相性"
+  - name: "Omiai（婚活アプリ）"
     url: ""
-    keyword: "投資 初心者"
+    keyword: "婚活 真剣交際"
+  - name: "Udemy（自己成長講座）"
+    url: ""
+    keyword: "自己成長 スキルアップ"
+  - name: "楽天ブックス（書籍）"
+    url: ""          # 楽天アフィリエイト（登録済み）
+    keyword: "哲学 心理学 おすすめ本"
 
 author_pen_name: "ミリテク"
 model: "claude-sonnet-4-6"
