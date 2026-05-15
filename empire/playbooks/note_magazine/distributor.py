@@ -50,7 +50,7 @@ def _post_note(session: requests.Session, draft: dict, magazine_id: str = "") ->
     note_payload: dict = {
         "name": title,
         "body": full_body,
-        "status": "draft",  # 安全のため下書き投稿
+        "status": "public",  # 即時公開
     }
     if magazine_id:
         note_payload["magazine_id"] = magazine_id
