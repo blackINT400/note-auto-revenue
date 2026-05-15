@@ -1,0 +1,40 @@
+# note有料マガジン事業 — 言語化×全1論
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+platform: note
+note_user_id: militech_2077
+note_profile_url: https://note.com/militech_2077
+
+# マガジン設定（作成後に更新）
+magazine_name: "言語化の技術 — 全1論で世界を翻訳する"
+magazine_price: 980        # 月額（円）
+magazine_id: ""            # note側で作成後に記入
+
+# コンテンツ設定
+niche: "言語化・全1論・再現性"
+articles_per_day: 1        # note は1日1記事
+post_interval_hours: 24
+quality_threshold: 75
+
+# 展開ジャンルのローテーション（毎日1ジャンルずつ翻訳）
+genre_rotation:
+  - "副業・節税"
+  - "資産形成・投資"
+  - "人間関係・ストレス解消"
+  - "仕事術・生産性"
+  - "習慣・マインド"
+  - "恋愛・パートナーシップ"
+  - "自己成長"
+
+# 著者設定
+author_pen_name: "ミリテク"
+author_tagline: "FXで言語化を学び、再現性を全ジャンルに翻訳する"
+
+model: "claude-sonnet-4-6"
+monthly_cost_limit: 1000
+
+# 自動更新エリア（触らない）
+auto_strategy:
+  current_genre_index: 0
+  last_updated: ""
+  weekly_report: ""

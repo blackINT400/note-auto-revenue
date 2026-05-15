@@ -15,6 +15,17 @@ businesses:
     started_date: "2026-05-14"
     data_dir: "."   # プロジェクトルートからの相対パス
 
+  - id: "note_言語化全1論"
+    type: "note_magazine"
+    status: "active"
+    niche: "言語化・全1論・再現性"
+    monthly_revenue: 0
+    monthly_cost: 0
+    roi: 0
+    resource_weight: 1.0
+    started_date: "2026-05-15"
+    data_dir: "businesses/note_言語化全1論"
+
 revenue_pool:
   total_earned: 0
   available_budget: 0
