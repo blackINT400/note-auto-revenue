@@ -37,3 +37,24 @@
 2026-05-15 09:30:22,478 [WARNING] empire.playbooks.note_magazine.distributor: note.com login attempt https://note.com/api/v1/sessions failed: 404 
 2026-05-15 09:30:22,478 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 0 articles processed
 2026-05-15 09:30:22,479 [INFO] __main__: [note] 完了: {'published': [], 'mode': 'daily'}
+2026-05-15 09:31:39,655 [INFO] __main__: [note] 起動 mode=daily genre=人間関係・職場のストレス解消
+2026-05-15 09:31:40,872 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-15 09:31:42,052 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-15 09:31:43,170 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-15 09:31:44,115 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-15 09:31:44,936 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-15 09:31:45,054 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-15 09:31:45,183 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-15 09:31:45,466 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-15 09:31:45,466 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-15 09:31:57,852 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 09:31:57,867 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2094, output: 610 tokens
+2026-05-15 09:31:57,868 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-15.json
+2026-05-15 09:32:33,680 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-15 09:32:33,681 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 1893, output: 2031 tokens
+2026-05-15 09:32:33,681 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_嫌悪感は境界線の言語である他者の身体が不快なときあなたは何を守っている.json
+2026-05-15 09:32:33,975 [WARNING] empire.playbooks.note_magazine.distributor: note.com login attempt https://note.com/api/v2/sessions failed: 404 
+2026-05-15 09:32:34,161 [WARNING] empire.playbooks.note_magazine.distributor: note.com login attempt https://note.com/api/v1/sessions failed: 404 
+2026-05-15 09:32:34,162 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_嫌悪感は境界線の言語である__他者の身体が不快なとき_あなたは何を守っている.md
+2026-05-15 09:32:34,162 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-15 09:32:34,162 [INFO] __main__: [note] 完了: {'published': [{'title': '嫌悪感は境界線の言語である——他者の身体が不快なとき、あなたは何を守っている', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_嫌悪感は境界線の言語である__他者の身体が不快なとき_あなたは何を守っている.md', 'published_at': '2026-05-15T09:32:34.162640+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_嫌悪感は境界線の言語である他者の身体が不快なときあなたは何を守っている.json'}], 'mode': 'daily'}
