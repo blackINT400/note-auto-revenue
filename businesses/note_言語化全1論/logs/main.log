@@ -239,3 +239,29 @@
 2026-05-15 22:04:13,457 [INFO] __main__: [note] 完了: {'published': [{'title': '友達が4人いなくても、あなたはすでに完全だ', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-15_友達が4人いなくても_あなたはすでに完全だ.md', 'published_at': '2026-05-15T22:04:13.323810+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-15_友達が4人いなくてもあなたはすでに完全だ.json'}], 'mode': 'daily'}
 2026-05-15 22:04:13,462 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 5 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 5 記事 / フォロワー 50 人
 2026-05-15 22:04:13,467 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-15_07-04.md
+2026-05-16 21:55:47,091 [INFO] __main__: [note] 起動 mode=daily genre=自己成長・自分を変える方法
+2026-05-16 21:55:48,303 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-16 21:55:49,767 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-16 21:55:50,711 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-16 21:55:52,436 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-16 21:55:53,872 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-16 21:55:54,097 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-16 21:55:54,245 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-16 21:55:54,485 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-16 21:55:54,485 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-16 21:56:05,167 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-16 21:56:05,190 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1950, output: 500 tokens
+2026-05-16 21:56:05,191 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-16.json
+2026-05-16 21:56:43,447 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-16 21:56:43,448 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3316, output: 1991 tokens
+2026-05-16 21:56:43,449 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-16_喪失は壊れじゃない失恋の夜に全が現れる理由.json
+2026-05-16 21:56:43,826 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-16 21:56:43,826 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-16 21:56:44,008 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-16 21:56:44,008 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-16 21:56:44,009 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-16_喪失は壊れじゃない_失恋の夜に_全_が現れる理由.md
+2026-05-16 21:56:44,009 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-16 21:56:44,009 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-16 21:56:44,010 [INFO] __main__: [note] 完了: {'published': [{'title': '喪失は壊れじゃない。失恋の夜に「全」が現れる理由', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-16_喪失は壊れじゃない_失恋の夜に_全_が現れる理由.md', 'published_at': '2026-05-16T21:56:43.827043+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-16_喪失は壊れじゃない失恋の夜に全が現れる理由.json'}], 'mode': 'daily'}
+2026-05-16 21:56:44,016 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 6 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 4 記事 / フォロワー 50 人
+2026-05-16 21:56:44,020 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-16_06-56.md
