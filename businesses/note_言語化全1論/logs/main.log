@@ -265,3 +265,31 @@
 2026-05-16 21:56:44,010 [INFO] __main__: [note] 完了: {'published': [{'title': '喪失は壊れじゃない。失恋の夜に「全」が現れる理由', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-16_喪失は壊れじゃない_失恋の夜に_全_が現れる理由.md', 'published_at': '2026-05-16T21:56:43.827043+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-16_喪失は壊れじゃない失恋の夜に全が現れる理由.json'}], 'mode': 'daily'}
 2026-05-16 21:56:44,016 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 6 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 4 記事 / フォロワー 50 人
 2026-05-16 21:56:44,020 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-16_06-56.md
+2026-05-17 21:59:23,325 [INFO] __main__: [note] 起動 mode=daily genre=人間関係・職場のストレス解消
+2026-05-17 21:59:24,614 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-17 21:59:25,700 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-17 21:59:26,547 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-17 21:59:27,400 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-17 21:59:28,769 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-17 21:59:29,494 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-17 21:59:29,626 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-17 21:59:30,343 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-17 21:59:30,343 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-17 21:59:42,661 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-17 21:59:42,684 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2076, output: 607 tokens
+2026-05-17 21:59:42,685 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-17.json
+2026-05-17 22:00:22,684 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-17 22:00:22,685 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3320, output: 2148 tokens
+2026-05-17 22:00:22,686 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-17_いってらっしゃいが自己肯定感を作る愛着は記憶ではなく構造だ.json
+2026-05-17 22:00:23,031 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-17 22:00:23,031 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-17 22:00:23,171 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-17 22:00:23,171 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-17 22:00:23,172 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-17__いってらっしゃい_が自己肯定感を作る__愛着は記憶ではなく構造だ.md
+2026-05-17 22:00:23,172 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-17 22:00:23,172 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-17 22:00:23,173 [INFO] __main__: [note] 完了: {'published': [{'title': '「いってらっしゃい」が自己肯定感を作る——愛着は記憶ではなく構造だ', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-17__いってらっしゃい_が自己肯定感を作る__愛着は記憶ではなく構造だ.md', 'published_at': '2026-05-17T22:00:23.031374+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-17_いってらっしゃいが自己肯定感を作る愛着は記憶ではなく構造だ.json'}], 'mode': 'daily'}
+2026-05-17 22:00:23,178 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 7 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 3 記事 / フォロワー 50 人
+2026-05-17 22:00:23,186 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 7 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 3 記事 / フォロワー 50 人
+2026-05-17 22:00:24,966 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-17 22:00:24,966 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-17_07-00.md
