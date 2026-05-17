@@ -1,0 +1,5 @@
+# Zenn GitHub連携の設定ファイル
+# https://zenn.dev/zenn/articles/zenn-cli-guide
+
+[articles]
+location = "articles"

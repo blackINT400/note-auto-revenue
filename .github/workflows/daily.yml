@@ -38,6 +38,14 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Setup Node.js (zenn-cli)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install zenn-cli
+        run: npm install
+
       - name: Determine run mode
         id: mode
         run: |

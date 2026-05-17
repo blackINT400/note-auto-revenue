@@ -1,0 +1,8 @@
+{
+  "name": "note-auto-revenue",
+  "version": "1.0.0",
+  "description": "Zenn自動収益システム",
+  "dependencies": {
+    "zenn-cli": ">=0.1.154"
+  }
+}
