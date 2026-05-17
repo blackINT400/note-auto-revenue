@@ -293,3 +293,31 @@
 2026-05-17 22:00:23,186 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 7 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 3 記事 / フォロワー 50 人
 2026-05-17 22:00:24,966 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-17 22:00:24,966 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-17_07-00.md
+2026-05-17 23:55:45,680 [INFO] __main__: [note] 起動 mode=daily genre=自己肯定感・自信のつくり方
+2026-05-17 23:55:46,670 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-17 23:55:47,857 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-17 23:55:48,752 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-17 23:55:49,776 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-17 23:55:51,190 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-17 23:55:51,844 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-17 23:55:52,004 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-17 23:55:52,903 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-17 23:55:52,903 [INFO] empire.playbooks.note_magazine.scout: Total RSS candidates: 30
+2026-05-17 23:56:05,804 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-17 23:56:05,824 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2093, output: 627 tokens
+2026-05-17 23:56:05,825 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-17.json
+2026-05-17 23:56:48,864 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-17 23:56:48,865 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3320, output: 2256 tokens
+2026-05-17 23:56:48,866 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-17_愛された記憶は消えないそれが大人の自己肯定感の正体だ.json
+2026-05-17 23:56:49,410 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-17 23:56:49,410 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-17 23:56:49,596 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-17 23:56:49,596 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-17 23:56:49,596 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-17_愛された記憶は消えない_それが大人の自己肯定感の正体だ_.md
+2026-05-17 23:56:49,596 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-17 23:56:49,597 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-17 23:56:49,598 [INFO] __main__: [note] 完了: {'published': [{'title': '愛された記憶は消えない。それが大人の自己肯定感の正体だ。', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-17_愛された記憶は消えない_それが大人の自己肯定感の正体だ_.md', 'published_at': '2026-05-17T23:56:49.410488+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-17_愛された記憶は消えないそれが大人の自己肯定感の正体だ.json'}], 'mode': 'daily'}
+2026-05-17 23:56:49,603 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 8 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 2 記事 / フォロワー 50 人
+2026-05-17 23:56:49,611 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 8 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 2 記事 / フォロワー 50 人
+2026-05-17 23:56:50,729 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-17 23:56:50,729 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-17_08-56.md
