@@ -13,8 +13,8 @@ on:
         type: choice
         options: [daily, weekly]
       business_id:
-        description: '事業ID (businesses/ 配下のディレクトリ名)'
-        required: true
+        description: '事業ID（空欄=portfolio.yamlのactiveな全affiliate_seo事業を自動実行）'
+        required: false
         default: ''
 
 jobs:
@@ -22,8 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      pages: write
-      id-token: write
 
     steps:
       - uses: actions/checkout@v4
@@ -38,7 +36,18 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run Affiliate SEO
+      - name: Discover active affiliate_seo businesses
+        id: discover
+        run: |
+          EXPLICIT="${{ inputs.business_id }}"
+          if [ -n "$EXPLICIT" ]; then
+            echo "targets=$EXPLICIT" >> $GITHUB_OUTPUT
+          else
+            TARGETS=$(python3 -c "import yaml,sys; p=yaml.safe_load(open('empire/portfolio.yaml',encoding='utf-8')); print(' '.join(b['id'] for b in p.get('businesses',[]) if b.get('type')=='affiliate_seo' and b.get('status')=='active'))")
+            echo "targets=$TARGETS" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run Affiliate SEO businesses
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
@@ -46,20 +55,34 @@ jobs:
           WORDPRESS_USER: ${{ secrets.WORDPRESS_USER }}
           WORDPRESS_APP_PASSWORD: ${{ secrets.WORDPRESS_APP_PASSWORD }}
         run: |
-          BIZ_ID="${{ inputs.business_id }}"
-          MODE="${{ inputs.mode || 'daily' }}"
-          if [ -z "$BIZ_ID" ]; then
-            echo "business_id が指定されていません"
-            exit 1
-          fi
-          python "businesses/${BIZ_ID}/main.py" --mode "${MODE}"
+          TARGETS="${{ steps.discover.outputs.targets }}"
+          MODE="${{ inputs.mode }}"
+          MODE="${MODE:-daily}"
 
-      - name: Commit results (articles + public/)
+          if [ -z "$TARGETS" ]; then
+            echo "実行対象の affiliate_seo 事業が見つかりません（portfolio.yaml の status=active が必要）"
+            exit 0
+          fi
+
+          echo "実行対象: $TARGETS / モード: $MODE"
+          FAILED=0
+          for BIZ_ID in $TARGETS; do
+            SCRIPT="businesses/${BIZ_ID}/main.py"
+            if [ ! -f "$SCRIPT" ]; then
+              echo "WARNING: $SCRIPT が見つかりません — スキップ"
+              continue
+            fi
+            echo ">>> ${BIZ_ID} --mode ${MODE}"
+            python "$SCRIPT" --mode "$MODE" || { echo "FAILED: $BIZ_ID"; FAILED=$((FAILED+1)); }
+          done
+
+          [ "$FAILED" -eq 0 ] || exit 1
+
+      - name: Commit results
         run: |
           git config --global user.email "empire-bot@auto-revenue.bot"
           git config --global user.name "Empire Bot"
-          BIZ_ID="${{ inputs.business_id }}"
-          git add "businesses/${BIZ_ID}/" || true
+          git add businesses/ || true
           git diff --staged --quiet || \
             git commit -m "affiliate_seo: auto update $(date +%Y-%m-%d) [skip ci]"
           git push
