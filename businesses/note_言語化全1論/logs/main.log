@@ -321,3 +321,38 @@
 2026-05-17 23:56:49,611 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 8 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 2 記事 / フォロワー 50 人
 2026-05-17 23:56:50,729 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-17 23:56:50,729 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-17_08-56.md
+2026-05-18 12:56:07,375 [INFO] __main__: [note] 起動 mode=daily genre=恋愛・別れと向き合い方
+2026-05-18 12:56:09,316 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-18 12:56:10,758 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-18 12:56:12,714 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-18 12:56:14,631 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-18 12:56:14,631 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-18 12:56:14,632 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-18 12:56:16,312 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-18 12:56:17,349 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-18 12:56:18,227 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-18 12:56:19,193 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-18 12:56:20,567 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-18 12:56:21,143 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-18 12:56:21,916 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-18 12:56:22,661 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-18 12:56:22,661 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-18 12:56:34,288 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-18 12:56:34,314 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1883, output: 579 tokens
+2026-05-18 12:56:34,315 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-18.json
+2026-05-18 12:57:10,163 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-18 12:57:10,165 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3313, output: 1962 tokens
+2026-05-18 12:57:10,165 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-18_強い思想を持つ人は孤独になって当然だ.json
+2026-05-18 12:57:10,527 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-18 12:57:10,527 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-18 12:57:10,668 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-18 12:57:10,668 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-18 12:57:10,668 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-18_強い思想を持つ人は_孤独になって当然だ.md
+2026-05-18 12:57:10,668 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-18 12:57:10,922 [INFO] empire.playbooks.note_magazine.distributor: Discord記事送信完了: 強い思想を持つ人は、孤独になって当然だ
+2026-05-18 12:57:10,923 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-18 12:57:10,924 [INFO] __main__: [note] 完了: {'published': [{'title': '強い思想を持つ人は、孤独になって当然だ', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-18_強い思想を持つ人は_孤独になって当然だ.md', 'published_at': '2026-05-18T12:57:10.527805+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-18_強い思想を持つ人は孤独になって当然だ.json'}], 'mode': 'daily', 'abstraction': {}}
+2026-05-18 12:57:10,929 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 9 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 1 記事 / フォロワー 50 人
+2026-05-18 12:57:10,938 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 9 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 1 記事 / フォロワー 50 人
+2026-05-18 12:57:12,105 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-18 12:57:12,105 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-18_21-57.md
