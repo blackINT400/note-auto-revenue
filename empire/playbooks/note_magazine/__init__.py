@@ -20,15 +20,15 @@ def setup(config: dict, data_dir: Path) -> None:
 
 def run(config: dict, data_dir: Path, mode: str = "daily") -> dict:
     """
-    daily: scout → creator → distributor
+    daily: scout(STEP1+2) → creator(STEP3) → distributor(STEP4: Discord送信)
     weekly: analyzer → strategy update
     """
     setup(config, data_dir)
     if mode == "daily":
-        topics = run_scout(config, data_dir)
-        articles = run_creator(config, data_dir, topics)
-        result = run_distributor(config, data_dir, articles)
-        return {"published": result, "mode": mode}
+        topics, abstraction_meta = run_scout(config, data_dir)
+        articles = run_creator(config, data_dir, topics, abstraction_meta)
+        result = run_distributor(config, data_dir, articles, abstraction_meta)
+        return {"published": result, "mode": mode, "abstraction": abstraction_meta}
     # weekly
     insights = run_analyzer(config, data_dir)
     return {"insights": insights, "mode": mode}

@@ -22,7 +22,7 @@ def _slugify(text: str) -> str:
     return text[:40] or "article"
 
 
-def _build_prompt(niche: str, topic: dict, config: dict) -> str:
+def _build_prompt(niche: str, topic: dict, config: dict, abstraction_meta: dict | None = None) -> str:
     """著者の思考OS + 文体OSを注入したプロンプトを構築する"""
     title_hint = topic.get("title", "")
     keywords = ", ".join(topic.get("keywords", []))
@@ -62,6 +62,22 @@ def _build_prompt(niche: str, topic: dict, config: dict) -> str:
             "",
         ]
 
+    if abstraction_meta:
+        surface = abstraction_meta.get("surface_trend", "")
+        abstract = abstraction_meta.get("abstract_structure", "")
+        psychology = abstraction_meta.get("reader_psychology", "")
+        pattern = abstraction_meta.get("replicable_pattern", "")
+        if abstract or pattern:
+            parts += [
+                "## STEP3: 市場分析 → 抽象構造の翻訳（最重要）",
+                "今日の記事はこの構造を本日のジャンルに翻訳したものにしてください。",
+                f"・表面トレンド: {surface}",
+                f"・なぜ読まれるかの本質: {abstract}",
+                f"・読者の深層心理: {psychology}",
+                f"・翻訳パターン（これを本日ジャンルで再現する）: {pattern}",
+                "",
+            ]
+
     parts += [
         "## 本日のジャンル",
         today_genre,
@@ -97,9 +113,10 @@ def _generate_article(
     niche: str,
     topic: dict,
     config: dict,
+    abstraction_meta: dict | None = None,
 ) -> dict:
     """1記事分のコンテンツを Claude で生成する"""
-    prompt = _build_prompt(niche, topic, config)
+    prompt = _build_prompt(niche, topic, config, abstraction_meta)
 
     response = client.messages.create(
         model=model,
@@ -160,7 +177,12 @@ def _generate_article(
     return article
 
 
-def run_creator(config: dict, data_dir: Path, topics: list) -> list[dict]:
+def run_creator(
+    config: dict,
+    data_dir: Path,
+    topics: list,
+    abstraction_meta: dict | None = None,
+) -> list[dict]:
     """トピックリストから記事を生成し下書き JSON として保存する"""
     niche = config.get("niche", "副業・節税")
     model = config.get("model", "claude-sonnet-4-6")
@@ -177,7 +199,7 @@ def run_creator(config: dict, data_dir: Path, topics: list) -> list[dict]:
 
     for topic in topics[:articles_per_day]:
         try:
-            article = _generate_article(client, model, niche, topic, config)
+            article = _generate_article(client, model, niche, topic, config, abstraction_meta)
         except Exception as exc:
             logger.error("Article generation failed for topic '%s': %s", topic.get("title"), exc)
             continue

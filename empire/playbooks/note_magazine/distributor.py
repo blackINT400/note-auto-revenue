@@ -215,7 +215,64 @@ def _send_email_notification(draft: dict, md_path: str) -> bool:
         return False
 
 
-def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
+def _send_discord_article(draft: dict, abstraction_meta: dict) -> None:
+    """STEP4: 生成記事 + 市場分析メタ情報を Discord に送信する"""
+    import os as _os
+    webhook_url = _os.environ.get("DISCORD_WEBHOOK_URL", "")
+    if not webhook_url:
+        logger.warning("DISCORD_WEBHOOK_URL 未設定 — Discord記事送信スキップ")
+        return
+
+    title = draft.get("title_a", "無題")
+    body = draft.get("body", "")
+    hashtags = draft.get("hashtags", [])
+    tag_str = " ".join(f"#{t}" for t in hashtags)
+
+    ref_title = abstraction_meta.get("reference_title", "（取得中）")
+    abstract_structure = abstraction_meta.get("abstract_structure", "（取得中）")
+    today_genre = draft.get("topic", {}).get("title", "（今日のジャンル）")
+    replicable_pattern = abstraction_meta.get("replicable_pattern", "")
+
+    meta_header = (
+        f"参考にした人気記事: {ref_title}\n"
+        f"抽象化した構造: {abstract_structure}\n"
+        f"翻訳したテーマ: {today_genre}"
+    )
+    if replicable_pattern:
+        meta_header += f"\n翻訳パターン: {replicable_pattern}"
+
+    # Discord の embed description は 4096 文字まで
+    body_preview = body[:1800] + "…（続き）" if len(body) > 1800 else body
+    full_text = f"タイトル: {title}\n\n{body_preview}\n\n---\n{tag_str}"
+
+    embeds = [
+        {
+            "title": "📝 市場分析レポート",
+            "description": meta_header[:4096],
+            "color": 0xF59E0B,
+        },
+        {
+            "title": f"【note投稿用記事】{title}",
+            "description": full_text[:4096],
+            "color": 0x1D9E75,
+        },
+    ]
+
+    try:
+        resp = requests.post(
+            webhook_url,
+            json={"embeds": embeds},
+            timeout=15,
+        )
+        if resp.status_code in (200, 204):
+            logger.info("Discord記事送信完了: %s", title[:50])
+        else:
+            logger.warning("Discord記事送信失敗: %d %s", resp.status_code, resp.text[:200])
+    except Exception as exc:
+        logger.warning("Discord記事送信エラー: %s", exc)
+
+
+def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_meta: dict | None = None) -> list[dict]:
     """記事リストを note.com に投稿、または下書きとして保存する。"""
     post_interval_hours = config.get("post_interval_hours", 24)
     published_path = data_dir / "data" / "published.jsonl"
@@ -257,8 +314,9 @@ def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
                 }
                 _append_published(published_path, record)
                 results.append(record)
+                # STEP4: Discord に記事 + 市場分析メタを送信
+                _send_discord_article(draft, abstraction_meta or {})
                 continue
-            # API 失敗 → フォールバック
             logger.warning("API post failed, falling back to markdown save")
 
         # フォールバック: マークダウン保存 + メール通知
@@ -273,6 +331,8 @@ def run_distributor(config: dict, data_dir: Path, articles: list) -> list[dict]:
         }
         _append_published(published_path, record)
         results.append(record)
+        # STEP4: Discord に記事 + 市場分析メタを送信
+        _send_discord_article(draft, abstraction_meta or {})
 
     logger.info("Distributor done: %d articles processed", len(results))
     return results
