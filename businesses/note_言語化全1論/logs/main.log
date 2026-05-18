@@ -356,3 +356,38 @@
 2026-05-18 12:57:10,938 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 9 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 1 記事 / フォロワー 50 人
 2026-05-18 12:57:12,105 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-18 12:57:12,105 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-18_21-57.md
+2026-05-18 22:07:34,248 [INFO] __main__: [note] 起動 mode=daily genre=習慣・毎日を変える小さな行動
+2026-05-18 22:07:35,315 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-18 22:07:36,494 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-18 22:07:37,614 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-18 22:07:39,441 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-18 22:07:39,441 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-18 22:07:39,441 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-18 22:07:40,338 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-18 22:07:41,288 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-18 22:07:42,276 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-18 22:07:43,412 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-18 22:07:44,757 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-18 22:07:45,332 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-18 22:07:45,560 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-18 22:07:45,717 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-18 22:07:45,717 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-18 22:07:58,535 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-18 22:07:58,557 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1917, output: 636 tokens
+2026-05-18 22:07:58,557 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-18.json
+2026-05-18 22:08:31,604 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-18 22:08:31,606 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3320, output: 1715 tokens
+2026-05-18 22:08:31,606 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-18_孤独は壊れていない孤立が壊すのだ.json
+2026-05-18 22:08:31,985 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-18 22:08:31,985 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-18 22:08:32,164 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-18 22:08:32,164 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-18 22:08:32,164 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-18_孤独は壊れていない_孤立が壊すのだ_.md
+2026-05-18 22:08:32,164 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-18 22:08:32,391 [INFO] empire.playbooks.note_magazine.distributor: Discord記事送信完了: 孤独は壊れていない。孤立が壊すのだ。
+2026-05-18 22:08:32,392 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-18 22:08:32,393 [INFO] __main__: [note] 完了: {'published': [{'title': '孤独は壊れていない。孤立が壊すのだ。', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-18_孤独は壊れていない_孤立が壊すのだ_.md', 'published_at': '2026-05-18T22:08:31.985956+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-18_孤独は壊れていない孤立が壊すのだ.json'}], 'mode': 'daily', 'abstraction': {}}
+2026-05-18 22:08:32,399 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 10 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-18 22:08:32,407 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 10 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-18 22:08:33,419 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-18 22:08:33,419 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-18_07-08.md
