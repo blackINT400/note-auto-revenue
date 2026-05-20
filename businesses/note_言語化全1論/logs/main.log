@@ -426,3 +426,38 @@
 2026-05-19 22:21:18,873 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 11 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-05-19 22:21:20,003 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-19 22:21:20,003 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-19_07-21.md
+2026-05-20 22:26:13,684 [INFO] __main__: [note] 起動 mode=daily genre=人間関係・親や家族との距離感
+2026-05-20 22:26:15,263 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-20 22:26:16,553 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-20 22:26:17,539 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-20 22:26:19,493 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-20 22:26:19,493 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-20 22:26:19,493 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-20 22:26:20,379 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-20 22:26:21,272 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-20 22:26:22,136 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-20 22:26:22,942 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-20 22:26:24,331 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-20 22:26:24,935 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-20 22:26:25,628 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-20 22:26:26,320 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-20 22:26:26,320 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-20 22:26:37,353 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-20 22:26:37,372 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1696, output: 579 tokens
+2026-05-20 22:26:37,373 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-20.json
+2026-05-20 22:27:16,646 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-20 22:27:16,647 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3316, output: 1920 tokens
+2026-05-20 22:27:16,648 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-20_外見を変えた瞬間全てが変わるそれは偶然ではなく構造上そうなっている.json
+2026-05-20 22:27:17,061 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-20 22:27:17,061 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-20 22:27:17,196 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-20 22:27:17,196 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-20 22:27:17,197 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-20_外見を変えた瞬間_全てが変わる__それは偶然ではなく構造上そうなっている.md
+2026-05-20 22:27:17,197 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-20 22:27:17,533 [INFO] empire.playbooks.note_magazine.distributor: Discord記事送信完了: 外見を変えた瞬間、全てが変わる——それは偶然ではなく構造上そうなっている
+2026-05-20 22:27:17,534 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-20 22:27:17,535 [INFO] __main__: [note] 完了: {'published': [{'title': '外見を変えた瞬間、全てが変わる——それは偶然ではなく構造上そうなっている', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-20_外見を変えた瞬間_全てが変わる__それは偶然ではなく構造上そうなっている.md', 'published_at': '2026-05-20T22:27:17.062059+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-20_外見を変えた瞬間全てが変わるそれは偶然ではなく構造上そうなっている.json'}], 'mode': 'daily', 'abstraction': {}}
+2026-05-20 22:27:17,540 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 12 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-20 22:27:17,548 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 12 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-20 22:27:18,759 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-20 22:27:18,759 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-20_07-27.md
