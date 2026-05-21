@@ -461,3 +461,38 @@
 2026-05-20 22:27:17,548 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 12 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-05-20 22:27:18,759 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-20 22:27:18,759 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-20_07-27.md
+2026-05-21 22:23:46,329 [INFO] __main__: [note] 起動 mode=daily genre=恋愛・パートナーシップの長続きする秘訣
+2026-05-21 22:23:47,586 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-21 22:23:48,997 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-21 22:23:50,257 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-21 22:23:51,332 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-21 22:23:51,332 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-21 22:23:51,332 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-21 22:23:52,230 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-21 22:23:53,488 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-21 22:23:54,398 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-21 22:23:55,360 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-21 22:23:56,808 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-21 22:23:57,144 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-21 22:23:57,393 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-21 22:23:57,982 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-21 22:23:57,983 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-21 22:24:08,462 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-21 22:24:08,485 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1815, output: 506 tokens
+2026-05-21 22:24:08,486 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-21.json
+2026-05-21 22:24:43,839 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-21 22:24:43,840 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3322, output: 1716 tokens
+2026-05-21 22:24:43,840 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-21_週4勤務は愛の時間を構造的に取り戻す唯一の設計だ.json
+2026-05-21 22:24:44,210 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-21 22:24:44,210 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-21 22:24:44,389 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-21 22:24:44,389 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-21 22:24:44,389 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-21_週4勤務は_愛の時間_を構造的に取り戻す唯一の設計だ.md
+2026-05-21 22:24:44,389 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-21 22:24:44,520 [INFO] empire.playbooks.note_magazine.distributor: Discord記事送信完了: 週4勤務は「愛の時間」を構造的に取り戻す唯一の設計だ
+2026-05-21 22:24:44,520 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-21 22:24:44,521 [INFO] __main__: [note] 完了: {'published': [{'title': '週4勤務は「愛の時間」を構造的に取り戻す唯一の設計だ', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-21_週4勤務は_愛の時間_を構造的に取り戻す唯一の設計だ.md', 'published_at': '2026-05-21T22:24:44.210523+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-21_週4勤務は愛の時間を構造的に取り戻す唯一の設計だ.json'}], 'mode': 'daily', 'abstraction': {}}
+2026-05-21 22:24:44,527 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 13 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-21 22:24:44,535 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 13 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-21 22:24:45,660 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-21 22:24:45,660 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-21_07-24.md
