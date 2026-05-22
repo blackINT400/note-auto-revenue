@@ -496,3 +496,38 @@
 2026-05-21 22:24:44,535 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 13 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-05-21 22:24:45,660 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-21 22:24:45,660 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-21_07-24.md
+2026-05-22 22:12:29,841 [INFO] __main__: [note] 起動 mode=daily genre=自己成長・比べることをやめる思考法
+2026-05-22 22:12:31,070 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-22 22:12:32,432 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-22 22:12:34,103 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-22 22:12:36,055 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-22 22:12:36,055 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-22 22:12:36,055 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-22 22:12:37,783 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-22 22:12:38,752 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-22 22:12:39,697 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-22 22:12:40,516 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-22 22:12:41,797 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-22 22:12:41,998 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-22 22:12:42,196 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-22 22:12:42,333 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-22 22:12:42,333 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-22 22:12:54,806 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-22 22:12:54,828 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2143, output: 603 tokens
+2026-05-22 22:12:54,829 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-22.json
+2026-05-22 22:13:34,747 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-22 22:13:34,748 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3316, output: 2001 tokens
+2026-05-22 22:13:34,748 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-22_比べることは構造上不可能だその歳でという言葉が的外れな理由.json
+2026-05-22 22:13:35,314 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-22 22:13:35,314 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-22 22:13:35,497 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-22 22:13:35,497 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-22 22:13:35,497 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-22_比べることは構造上_不可能だ___その歳で_という言葉が的外れな理由.md
+2026-05-22 22:13:35,497 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-22 22:13:35,623 [INFO] empire.playbooks.note_magazine.distributor: Discord記事送信完了: 比べることは構造上、不可能だ——「その歳で」という言葉が的外れな理由
+2026-05-22 22:13:35,624 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-22 22:13:35,625 [INFO] __main__: [note] 完了: {'published': [{'title': '比べることは構造上、不可能だ——「その歳で」という言葉が的外れな理由', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-22_比べることは構造上_不可能だ___その歳で_という言葉が的外れな理由.md', 'published_at': '2026-05-22T22:13:35.315193+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-22_比べることは構造上不可能だその歳でという言葉が的外れな理由.json'}], 'mode': 'daily', 'abstraction': {}}
+2026-05-22 22:13:35,631 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 14 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-22 22:13:35,640 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 14 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-22 22:13:36,461 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-22 22:13:36,462 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-22_07-13.md
