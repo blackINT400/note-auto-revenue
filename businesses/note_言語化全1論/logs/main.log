@@ -531,3 +531,38 @@
 2026-05-22 22:13:35,640 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 14 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-05-22 22:13:36,461 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-22 22:13:36,462 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-22_07-13.md
+2026-05-23 21:59:16,262 [INFO] __main__: [note] 起動 mode=daily genre=恋愛・好きな人への気持ちの伝え方
+2026-05-23 21:59:17,580 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-23 21:59:19,189 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-23 21:59:20,312 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-23 21:59:22,295 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-23 21:59:22,296 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-23 21:59:22,296 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-23 21:59:23,155 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-23 21:59:24,230 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-23 21:59:25,065 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-23 21:59:25,993 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-23 21:59:27,524 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-23 21:59:27,871 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-23 21:59:28,021 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-23 21:59:28,238 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-23 21:59:28,238 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-23 21:59:40,443 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-23 21:59:40,466 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1945, output: 614 tokens
+2026-05-23 21:59:40,466 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-23.json
+2026-05-23 22:00:22,748 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-23 22:00:22,749 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3314, output: 2047 tokens
+2026-05-23 22:00:22,749 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-23_子供だから仕方ないは親の免罪符であり子供の成長回路を完全に遮断する.json
+2026-05-23 22:00:23,253 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-23 22:00:23,253 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-23 22:00:23,432 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-23 22:00:23,432 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-23 22:00:23,432 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-23__子供だから仕方ない_は親の免罪符であり_子供の成長回路を完全に遮断する.md
+2026-05-23 22:00:23,432 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-23 22:00:23,661 [INFO] empire.playbooks.note_magazine.distributor: Discord記事送信完了: 「子供だから仕方ない」は親の免罪符であり、子供の成長回路を完全に遮断する
+2026-05-23 22:00:23,662 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-23 22:00:23,663 [INFO] __main__: [note] 完了: {'published': [{'title': '「子供だから仕方ない」は親の免罪符であり、子供の成長回路を完全に遮断する', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-23__子供だから仕方ない_は親の免罪符であり_子供の成長回路を完全に遮断する.md', 'published_at': '2026-05-23T22:00:23.253756+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-23_子供だから仕方ないは親の免罪符であり子供の成長回路を完全に遮断する.json'}], 'mode': 'daily', 'abstraction': {}}
+2026-05-23 22:00:23,669 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 15 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-23 22:00:23,678 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 15 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-23 22:00:24,399 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-23 22:00:24,400 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-23_07-00.md
