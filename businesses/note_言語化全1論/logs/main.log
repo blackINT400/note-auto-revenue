@@ -566,3 +566,38 @@
 2026-05-23 22:00:23,678 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 15 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-05-23 22:00:24,399 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-23 22:00:24,400 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-23_07-00.md
+2026-05-24 22:00:06,519 [INFO] __main__: [note] 起動 mode=daily genre=自己成長・自分を変える方法
+2026-05-24 22:00:07,824 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-24 22:00:09,013 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-24 22:00:10,075 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-24 22:00:11,182 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-24 22:00:11,182 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-24 22:00:11,182 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-24 22:00:12,023 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-24 22:00:13,025 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-24 22:00:13,940 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-24 22:00:14,813 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-24 22:00:15,701 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-24 22:00:16,607 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-24 22:00:16,788 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-24 22:00:17,614 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-24 22:00:17,614 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-24 22:00:29,838 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-24 22:00:29,861 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2027, output: 541 tokens
+2026-05-24 22:00:29,862 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-24.json
+2026-05-24 22:01:09,308 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-05-24 22:01:09,309 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 3310, output: 1947 tokens
+2026-05-24 22:01:09,310 [INFO] empire.playbooks.note_magazine.creator: Saved draft: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-24_夫婦の会話に解決は要らない共感だけが関係を再構築する唯一の構造だ.json
+2026-05-24 22:01:09,645 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-24 22:01:09,645 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-24 22:01:09,804 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-05-24 22:01:09,805 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-05-24 22:01:09,805 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-24_夫婦の会話に_解決_は要らない_共感だけが関係を再構築する唯一の構造だ_.md
+2026-05-24 22:01:09,805 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-05-24 22:01:10,020 [INFO] empire.playbooks.note_magazine.distributor: Discord記事送信完了: 夫婦の会話に「解決」は要らない。共感だけが関係を再構築する唯一の構造だ。
+2026-05-24 22:01:10,021 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-05-24 22:01:10,022 [INFO] __main__: [note] 完了: {'published': [{'title': '夫婦の会話に「解決」は要らない。共感だけが関係を再構築する唯一の構造だ。', 'status': 'draft_ready', 'path_or_url': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-05-24_夫婦の会話に_解決_は要らない_共感だけが関係を再構築する唯一の構造だ_.md', 'published_at': '2026-05-24T22:01:09.645913+00:00', 'draft_path': '/home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/2026-05-24_夫婦の会話に解決は要らない共感だけが関係を再構築する唯一の構造だ.json'}], 'mode': 'daily', 'abstraction': {}}
+2026-05-24 22:01:10,028 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 16 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-24 22:01:10,037 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 16 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-24 22:01:11,025 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-24 22:01:11,025 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-24_07-01.md
