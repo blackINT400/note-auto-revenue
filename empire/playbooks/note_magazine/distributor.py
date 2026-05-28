@@ -216,60 +216,84 @@ def _send_email_notification(draft: dict, md_path: str) -> bool:
 
 
 def _send_discord_article(draft: dict, abstraction_meta: dict) -> None:
-    """STEP4: 生成記事 + 市場分析メタ情報を Discord に送信する"""
+    """
+    STEP4: note-記事チャンネルに記事全文を送信する。
+    ・NOTE_DISCORD_WEBHOOK_URL → note-記事チャンネル（記事本文のみ）
+    ・DISCORD_WEBHOOK_URL      → 帝国-レポートチャンネル（システムレポートのみ、ここでは使わない）
+    """
     import os as _os
-    webhook_url = _os.environ.get("DISCORD_WEBHOOK_URL", "")
+    webhook_url = _os.environ.get("NOTE_DISCORD_WEBHOOK_URL", "")
     if not webhook_url:
-        logger.warning("DISCORD_WEBHOOK_URL 未設定 — Discord記事送信スキップ")
-        return
+        # フォールバック: 旧来のDISCORD_WEBHOOK_URLに送る
+        webhook_url = _os.environ.get("DISCORD_WEBHOOK_URL", "")
+        if not webhook_url:
+            logger.warning("NOTE_DISCORD_WEBHOOK_URL / DISCORD_WEBHOOK_URL 未設定 — Discord記事送信スキップ")
+            return
+        logger.info("NOTE_DISCORD_WEBHOOK_URL 未設定 → DISCORD_WEBHOOK_URL にフォールバック")
 
     title = draft.get("title_a", "無題")
+    title_b = draft.get("title_b", "")
     body = draft.get("body", "")
     hashtags = draft.get("hashtags", [])
     tag_str = " ".join(f"#{t}" for t in hashtags)
 
-    ref_title = abstraction_meta.get("reference_title", "（取得中）")
-    abstract_structure = abstraction_meta.get("abstract_structure", "（取得中）")
-    today_genre = draft.get("topic", {}).get("title", "（今日のジャンル）")
-    replicable_pattern = abstraction_meta.get("replicable_pattern", "")
+    # 市場分析メタ（あれば添付）
+    ref_title = abstraction_meta.get("reference_title", "")
+    abstract_structure = abstraction_meta.get("abstract_structure", "")
+    today_genre = draft.get("topic", {}).get("title", "")
 
-    meta_header = (
-        f"参考にした人気記事: {ref_title}\n"
-        f"抽象化した構造: {abstract_structure}\n"
-        f"翻訳したテーマ: {today_genre}"
-    )
-    if replicable_pattern:
-        meta_header += f"\n翻訳パターン: {replicable_pattern}"
+    # ── メッセージ1: 記事メタ情報 ────────────────────────────────────────────
+    meta_lines = [f"**タイトルA:** {title}"]
+    if title_b and title_b != title:
+        meta_lines.append(f"**タイトルB:** {title_b}")
+    if today_genre:
+        meta_lines.append(f"**ジャンル:** {today_genre}")
+    if ref_title:
+        meta_lines.append(f"**参考人気記事:** {ref_title}")
+    if abstract_structure:
+        meta_lines.append(f"**抽象構造:** {abstract_structure}")
+    meta_lines.append(f"\n**推奨ハッシュタグ:**\n{tag_str}")
 
-    # Discord の embed description は 4096 文字まで
-    body_preview = body[:1800] + "…（続き）" if len(body) > 1800 else body
-    full_text = f"タイトル: {title}\n\n{body_preview}\n\n---\n{tag_str}"
+    # ── メッセージ2: 本文全文（4096字ごとに分割）────────────────────────────
+    # Discord embed description 上限 = 4096文字
+    # 本文が長い場合は複数embedに分割する
+    CHUNK = 3900  # 余裕を持って3900文字ずつ
+    body_chunks = [body[i:i+CHUNK] for i in range(0, max(len(body), 1), CHUNK)]
 
     embeds = [
         {
-            "title": "📝 市場分析レポート",
-            "description": meta_header[:4096],
-            "color": 0xF59E0B,
-        },
-        {
-            "title": f"【note投稿用記事】{title}",
-            "description": full_text[:4096],
-            "color": 0x1D9E75,
-        },
+            "title": f"📝 note記事: {title[:80]}",
+            "description": "\n".join(meta_lines)[:4096],
+            "color": 0x41C9E2,  # 水色（note-記事チャンネル専用色）
+        }
     ]
 
-    try:
-        resp = requests.post(
-            webhook_url,
-            json={"embeds": embeds},
-            timeout=15,
-        )
-        if resp.status_code in (200, 204):
-            logger.info("Discord記事送信完了: %s", title[:50])
-        else:
-            logger.warning("Discord記事送信失敗: %d %s", resp.status_code, resp.text[:200])
-    except Exception as exc:
-        logger.warning("Discord記事送信エラー: %s", exc)
+    for idx, chunk in enumerate(body_chunks):
+        chunk_title = "本文" if len(body_chunks) == 1 else f"本文 ({idx+1}/{len(body_chunks)})"
+        embeds.append({
+            "title": chunk_title,
+            "description": chunk,
+            "color": 0x1D9E75,
+        })
+
+    # Discord は1メッセージに最大10 embed
+    def _post_embeds(embed_list: list) -> None:
+        try:
+            resp = requests.post(
+                webhook_url,
+                json={"embeds": embed_list},
+                timeout=15,
+            )
+            if resp.status_code not in (200, 204):
+                logger.warning("Discord記事送信失敗: %d %s", resp.status_code, resp.text[:200])
+        except Exception as exc:
+            logger.warning("Discord記事送信エラー: %s", exc)
+
+    # 10embed ずつ送信（通常は2〜3枚なので1回）
+    for i in range(0, len(embeds), 10):
+        _post_embeds(embeds[i:i+10])
+
+    logger.info("Discord記事送信完了 → note-記事ch: %s", title[:50])
 
 
 def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_meta: dict | None = None) -> list[dict]:
