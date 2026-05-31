@@ -410,3 +410,34 @@
 2026-05-30 22:04:28,658 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 18 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-05-30 22:04:29,916 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-05-30 22:04:29,916 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-30_07-04.md
+2026-05-31 22:04:18,100 [INFO] __main__: [note] 起動 mode=daily genre=恋愛・好きな人への気持ちの伝え方
+2026-05-31 22:04:19,687 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-31 22:04:20,996 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-31 22:04:23,101 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-31 22:04:24,576 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-31 22:04:24,576 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-05-31 22:04:24,576 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-05-31 22:04:25,524 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-05-31 22:04:26,470 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-05-31 22:04:27,359 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-05-31 22:04:28,347 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-05-31 22:04:29,854 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-05-31 22:04:30,452 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-05-31 22:04:30,584 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-05-31 22:04:30,744 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-05-31 22:04:30,744 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-05-31 22:04:30,914 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-05-31 22:04:30,915 [ERROR] empire.playbooks.note_magazine.scout: Claude topic selection failed: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CbbQPdca4NimrsZFuSje4'}
+2026-05-31 22:04:31,023 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-05-31 22:04:31,024 [ERROR] empire.playbooks.note_magazine.scout: Fallback topic generation also failed: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CbbQPeGkxgNqwKGyEvFF7'}
+2026-05-31 22:04:31,025 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-05-31.json
+2026-05-31 22:04:31,149 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-05-31 22:04:31,150 [ERROR] empire.playbooks.note_magazine.creator: Article generation failed for topic '恋愛・人間関係・自己成長・哲学の基本ガイド': Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011CbbQPesiaMckYEHoJVheg'}
+2026-05-31 22:04:31,487 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-05-31 22:04:31,487 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-05-31 22:04:31,487 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 0 articles processed
+2026-05-31 22:04:31,488 [INFO] __main__: [note] 完了: {'published': [], 'mode': 'daily', 'abstraction': {}}
+2026-05-31 22:04:31,498 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 18 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-31 22:04:31,508 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 18 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-05-31 22:04:32,390 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-05-31 22:04:32,391 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-05-31_07-04.md
