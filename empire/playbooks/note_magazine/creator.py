@@ -13,6 +13,18 @@ import anthropic
 
 logger = logging.getLogger(__name__)
 
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+PATTERNS_PATH = PROJECT_ROOT / "owner" / "note_patterns.json"
+
+
+def _load_patterns() -> dict:
+    if not PATTERNS_PATH.exists():
+        return {}
+    try:
+        return json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
 
 def _slugify(text: str) -> str:
     """タイトルからファイル名用スラグを生成する"""
@@ -62,6 +74,48 @@ def _build_prompt(niche: str, topic: dict, config: dict, abstraction_meta: dict 
             "",
         ]
 
+    # ── note_patterns.json からパターンを注入 ──────────────────────────────
+    patterns = _load_patterns()
+    if patterns.get("latest"):
+        latest = patterns["latest"]
+        tp = latest.get("title_patterns", {})
+        bp = latest.get("body_patterns", {})
+        formula = tp.get("title_formula", "")
+        power_words = tp.get("power_words", [])
+        avoid_words = tp.get("avoid_words", [])
+        opening_types = bp.get("opening_types", [])
+        conclusion_style = bp.get("conclusion_style", "")
+        market_insight = latest.get("market_insight", "")
+        # ジャンルに対応するresonance構造を探す
+        resonance = {}
+        for rs in latest.get("resonance_structures", []):
+            if today_genre and rs.get("genre", "") in today_genre:
+                resonance = rs
+                break
+        if not resonance and latest.get("resonance_structures"):
+            resonance = latest["resonance_structures"][0]
+
+        pattern_lines = ["## 市場パターン分析（必ず記事に反映）"]
+        if formula:
+            pattern_lines.append(f"タイトル公式: {formula}")
+        if power_words:
+            pattern_lines.append(f"パワーワード（積極使用）: {', '.join(power_words[:5])}")
+        if avoid_words:
+            pattern_lines.append(f"避けるワード: {', '.join(avoid_words[:3])}")
+        if opening_types:
+            pattern_lines.append(f"冒頭パターン: {', '.join(opening_types[:2])}")
+        if conclusion_style:
+            pattern_lines.append(f"結論の型: {conclusion_style}")
+        if market_insight:
+            pattern_lines.append(f"今の市場: {market_insight}")
+        if resonance:
+            pattern_lines += [
+                f"刺さる構造: {resonance.get('abstract_structure', '')}",
+                f"読者心理: {resonance.get('reader_psychology', '')}",
+                f"再現パターン: {resonance.get('replicable_pattern', '')}",
+            ]
+        parts += pattern_lines + [""]
+
     if abstraction_meta:
         surface = abstraction_meta.get("surface_trend", "")
         abstract = abstraction_meta.get("abstract_structure", "")
@@ -88,13 +142,15 @@ def _build_prompt(niche: str, topic: dict, config: dict, abstraction_meta: dict 
         "",
         "## 出力形式（JSONのみ・コードブロック・前置き一切不要）",
         "{",
-        '  "title_a": "全1論の視点を込めた断定的タイトル（見出しは問いか断言）",',
-        '  "title_b": "読者の今の感情を直撃するタイトル",',
+        '  "title_a": "【20文字以内】具体的な感情/場面＋断言または問い。パターン分析のパワーワードを活用",',
+        '  "title_b": "【20文字以内】読者が「自分のことだ」と感じる別パターン",',
         '  "hashtags": ["タグ1", "タグ2", "タグ3", "タグ4", "タグ5"],',
         '  "body": "記事本文（note Markdown形式、2000〜2500文字）"',
         "}",
         "",
         "## body執筆の指示",
+        "- 一人称は「私」。「ぼく」「僕」は絶対に使わない",
+        "- 「ぼくたちが」「僕たちが」は「人は」「読者は」または文を組み替えて自然な表現に",
         "- 冒頭2〜3文で読者を掴む（「この記事では」禁止・経験か感情から始める）",
         "- 全1論の構造を、ジャンル固有の言葉に翻訳する（抽象→具体の順）",
         "- 数字か固有名詞で具体性を担保する",

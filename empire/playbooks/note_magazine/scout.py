@@ -16,6 +16,19 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
+PATTERNS_PATH = PROJECT_ROOT / "owner" / "note_patterns.json"
+
+
+def _load_patterns() -> dict:
+    """owner/note_patterns.jsonを読み込む"""
+    if not PATTERNS_PATH.exists():
+        return {}
+    try:
+        return json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
 
 def _fetch_note_trending(tags: list[str]) -> list[dict]:
     """note.com API + RSS で人気記事トップ20を取得する"""
@@ -175,8 +188,29 @@ def _pick_topics_with_claude(
     model: str,
     niche: str,
     candidates: list[dict],
+    patterns: dict | None = None,
 ) -> list[dict]:
-    """Claude を使ってニッチに合うトップ5トピックを選定する"""
+    """Claude を使ってニッチに合うトップ5トピックを選定する（パターンデータ活用）"""
+
+    # パターンデータからタイトル生成のヒントを組み立てる
+    pattern_hint = ""
+    if patterns and patterns.get("latest"):
+        latest = patterns["latest"]
+        tp = latest.get("title_patterns", {})
+        formula = tp.get("title_formula", "")
+        power_words = tp.get("power_words", [])
+        avoid_words = tp.get("avoid_words", [])
+        market_insight = latest.get("market_insight", "")
+        if formula or power_words:
+            pattern_hint = (
+                f"\n\n## note人気記事のパターン分析（必ず活用）\n"
+                f"タイトル公式: {formula}\n"
+                f"パワーワード: {', '.join(power_words[:5])}\n"
+                f"避けるワード: {', '.join(avoid_words[:3])}\n"
+                f"今の市場: {market_insight}\n"
+                f"タイトルは20文字以内・具体的な感情や場面を入れること。"
+            )
+
     if candidates:
         candidate_text = "\n".join(
             f"- [{c['source']}] {c['title']}" for c in candidates[:40]
@@ -185,18 +219,20 @@ def _pick_topics_with_claude(
             f"あなたはnote.comの有料マガジン編集者です。\n"
             f"ニッチ: {niche}\n\n"
             f"以下のトレンド候補から、このニッチに最も適した上位5つのトピックを選んでください。\n\n"
-            f"候補:\n{candidate_text}\n\n"
+            f"候補:\n{candidate_text}"
+            f"{pattern_hint}\n\n"
             f"各トピックについて以下のJSON形式で返してください（配列）:\n"
-            f'[{{"title": "記事タイトル案", "keywords": ["kw1", "kw2", "kw3"], "reason": "選んだ理由（50字以内）"}}]\n\n'
+            f'[{{"title": "20文字以内の記事タイトル", "keywords": ["kw1", "kw2", "kw3"], "reason": "選んだ理由（50字以内）"}}]\n\n'
             f"JSONのみ返してください。コードブロックや説明は不要です。"
         )
     else:
         prompt = (
             f"あなたはnote.comの有料マガジン編集者です。\n"
             f"ニッチ: {niche}\n\n"
-            f"このニッチで今週バズりそうな記事トピックを5つ考えてください。\n\n"
+            f"このニッチで今週バズりそうな記事トピックを5つ考えてください。"
+            f"{pattern_hint}\n\n"
             f"各トピックについて以下のJSON形式で返してください（配列）:\n"
-            f'[{{"title": "記事タイトル案", "keywords": ["kw1", "kw2", "kw3"], "reason": "理由（50字以内）"}}]\n\n'
+            f'[{{"title": "20文字以内の記事タイトル", "keywords": ["kw1", "kw2", "kw3"], "reason": "理由（50字以内）"}}]\n\n'
             f"JSONのみ返してください。コードブロックや説明は不要です。"
         )
 
@@ -263,13 +299,20 @@ def run_scout(config: dict, data_dir: Path) -> tuple[list[dict], dict]:
     all_candidates = trending_as_candidates + note_rss_entries + hatena_entries
     logger.info("Total candidates: %d", len(all_candidates))
 
+    # ── パターンデータ読み込み ────────────────────────────────────────────────
+    patterns = _load_patterns()
+    if patterns.get("latest"):
+        logger.info("note_patterns.json 読み込み済み (last_updated: %s)", patterns.get("last_updated", ""))
+    else:
+        logger.info("note_patterns.json なし — パターンなしで実行")
+
     # ── STEP3: Claude でトピック選定 ─────────────────────────────────────────
     try:
-        topics = _pick_topics_with_claude(client, model, niche, all_candidates)
+        topics = _pick_topics_with_claude(client, model, niche, all_candidates, patterns)
     except Exception as exc:
         logger.error("Claude topic selection failed: %s", exc)
         try:
-            topics = _pick_topics_with_claude(client, model, niche, [])
+            topics = _pick_topics_with_claude(client, model, niche, [], patterns)
         except Exception as exc2:
             logger.error("Fallback topic generation also failed: %s", exc2)
             topics = [
