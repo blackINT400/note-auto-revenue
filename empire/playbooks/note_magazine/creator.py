@@ -1,5 +1,9 @@
 """
 Creator: Claude でnote.com向け有料記事を生成し下書きとして保存する
+
+API利用可能時  : Claude API で高品質記事を生成
+API利用不可時  : note_patterns.json + voice_os.md でテンプレート記事を生成
+どちらの場合も : ready/YYYY-MM-DD.md に保存し、パスを返す
 """
 import json
 import logging
@@ -22,6 +26,7 @@ logger = logging.getLogger(__name__)
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 PATTERNS_PATH = PROJECT_ROOT / "owner" / "note_patterns.json"
 AFFILIATES_PATH = PROJECT_ROOT / "owner" / "affiliates.yaml"
+VOICE_OS_PATH = PROJECT_ROOT / "thoughts" / "voice_os.md"
 
 
 def _load_patterns() -> dict:
@@ -92,6 +97,16 @@ def _append_affiliate_section(body: str, affiliates: list[dict]) -> str:
 
     logger.info("アフィリエイト挿入: %s", [af.get("id") for af in affiliates])
     return body + "\n".join(lines)
+
+
+def _load_voice_os() -> str:
+    """thoughts/voice_os.md を読み込む"""
+    if not VOICE_OS_PATH.exists():
+        return ""
+    try:
+        return VOICE_OS_PATH.read_text(encoding="utf-8")
+    except Exception:
+        return ""
 
 
 def _slugify(text: str) -> str:
@@ -301,61 +316,286 @@ def _generate_article(
     return article
 
 
+def _build_template_body(
+    genre: str,
+    title_a: str,
+    abstract_structure: str,
+    reader_psychology: str,
+    replicable_pattern: str,
+    surface_trend: str,
+    power_words: list,
+    magazine_url: str,
+) -> str:
+    """voice_os.md の5ステップ構造に従って本文を生成する（API不要）"""
+    pw = power_words[0] if power_words else "構造"
+    pw2 = power_words[1] if len(power_words) > 1 else "言語化"
+
+    opening = (reader_psychology[:40] + "——") if reader_psychology else f"{genre}について、なぜ自分はこうなのか。"
+    trend_str = surface_trend or f"{genre}に関する情報やノウハウ"
+    abstract_str = abstract_structure or f"{genre}の悩みは個人の問題ではなく、構造の問題だ。"
+    pattern_str = replicable_pattern or (
+        f"{genre}において、多くの人が「もっと頑張れば変われる」という精神論に頼る。"
+        f"しかし変わらない理由は努力不足ではなく、構造の見方にある。"
+    )
+
+    body = f"""## {title_a}
+
+「{opening}」
+
+そう感じたことがあるなら、あなたはすでに答えの入り口に立っている。
+
+---
+
+### ■ STEP1：「当たり前」という前提を疑う
+
+{genre}に関して、世の中には無数の「答え」が溢れている。
+{trend_str}——こういった情報が毎日量産される。
+
+だが、ここで一度立ち止まってほしい。
+
+**その「当たり前」は、本当に正しい前提か。**
+
+多くの人が疑わずに受け入れているその前提が、
+「相対的世界の幻想」である可能性がある。
+
+---
+
+### ■ STEP2：構造で見ると何が起きているか
+
+{abstract_str}
+
+FXという極限の因果律の世界で私が学んだのは、
+1回の判断が全資産を左右するという事実ではなかった。
+「1つの完了した動作が、全ての結果を内包している」という構造だった。
+
+{genre}も、同じ法則で動いている。
+
+---
+
+### ■ STEP3：1＝0の法則から見る本質
+
+{pattern_str}
+
+量子力学における「観測によって確定する」現象と同じだ。
+{pw2}（観測）した瞬間に、0（未確定の悩み）が1（確定した理解）に変わる。
+
+これが「全1論」の核心だ。
+
+---
+
+### ■ STEP4：あなたがすでに完了させているもの
+
+今日、水を飲んだか。
+
+その動作を完了させた瞬間に、あなたは宇宙の法則を正しく使いこなしている。
+呼吸を続けている。心臓を動かしている。
+これらはすべて「完了の連鎖」だ。
+
+{genre}の「変化」も、同じ構造の延長線上にある。
+それはあなたの外にあるのではなく、
+すでにあなたの内側で動いている。
+
+**「頑張ればできる」ではない。「動作を完了させている以上、結果は既に内包されている」。**
+これは精神論ではなく、物理的な事実だ。
+
+---
+
+### ■ STEP5：断言
+
+{pw}を探し続ける必要はない。
+
+あなたはすでに、毎日無数の「完了」を積み重ねている。
+{genre}においても、その構造は変わらない。
+
+問いを手放した瞬間に、{pw}は見える。
+
+---
+このマガジンでは、全ジャンルに通底する「再現の法則」を毎日翻訳しています。
+→ {magazine_url}
+---"""
+    return body
+
+
+def _generate_article_template(niche: str, topic: dict, config: dict) -> dict:
+    """Claude API不使用。note_patterns.json + voice_os.md でテンプレート記事を生成する"""
+    genre = config.get("today_genre", niche)
+
+    patterns = _load_patterns()
+    latest = patterns.get("latest", {})
+
+    # パターンデータ取得
+    power_words = latest.get("title_patterns", {}).get("power_words", ["構造", "言語化", "設計"])
+
+    # ジャンルに対応するresonance_structureを取得
+    resonance: dict = {}
+    for rs in latest.get("resonance_structures", []):
+        if rs.get("genre", "") and rs.get("genre", "") in genre:
+            resonance = rs
+            break
+    if not resonance and latest.get("resonance_structures"):
+        resonance = latest["resonance_structures"][0]
+
+    surface_trend      = resonance.get("surface_trend", "")
+    abstract_structure = resonance.get("abstract_structure", "")
+    reader_psychology  = resonance.get("reader_psychology", "")
+    replicable_pattern = resonance.get("replicable_pattern", "")
+
+    pw  = power_words[0] if power_words else "構造"
+    pw2 = power_words[1] if len(power_words) > 1 else "言語化"
+
+    # ジャンル別タイトルパターン（voice_os.mdの「なぜ〇〇は〜〜なのか」型）
+    genre_title_map: dict[str, tuple[str, str]] = {
+        "恋愛":   (f"なぜ{pw}を知ると恋愛が変わるのか",      f"好きな人に振り回される人の{pw}"),
+        "婚活":   (f"婚活で疲れる人の{pw}を暴く",            f"なぜ婚活ほど{pw}が決め手になるのか"),
+        "人間関係":(f"人間関係が消耗する本当の{pw}",          f"なぜ距離を置くほど孤立するのか"),
+        "自己成長":(f"自己肯定感を高めようとする人の矛盾",    f"なぜ頑張るほど変われないのか"),
+        "哲学":   (f"「普通」という言葉の{pw}を疑う",         f"なぜ{pw2}できないと不安になるのか"),
+        "不安":   (f"不安が消えない人の{pw}の正体",           f"なぜ安心しようとするほど不安になるのか"),
+        "孤独":   (f"孤独を癒そうとする人ほど孤独になる{pw}", f"孤独の{pw}を{pw2}する"),
+        "習慣":   (f"習慣化が続かない人の{pw}を暴く",         f"なぜ意志力に頼るほど習慣は崩れるのか"),
+    }
+    default_titles = (f"なぜ{genre}に悩む人ほど{pw}を見失うのか", f"{genre}が変わらない本当の{pw}")
+    title_a, title_b = genre_title_map.get(genre, default_titles)
+
+    magazine_url = (
+        f"https://note.com/{config.get('note_user_id', 'militech_2077')}"
+        f"/m/{config.get('magazine_id', '')}"
+    )
+
+    body = _build_template_body(
+        genre=genre,
+        title_a=title_a,
+        abstract_structure=abstract_structure,
+        reader_psychology=reader_psychology,
+        replicable_pattern=replicable_pattern,
+        surface_trend=surface_trend,
+        power_words=power_words,
+        magazine_url=magazine_url,
+    )
+
+    return {
+        "title_a": title_a,
+        "title_b": title_b,
+        "body": body,
+        "hashtags": [genre, pw, pw2, "言語化", "全1論"][:5],
+        "generated_by": "template",
+    }
+
+
+def _save_ready_md(article: dict, ready_dir: Path, today: str) -> Path:
+    """ready/YYYY-MM-DD.md に記事を保存する（同日複数の場合は連番）"""
+    ready_dir.mkdir(parents=True, exist_ok=True)
+
+    generated_by = article.get("generated_by", "claude_api")
+    mode_label = "【テンプレート生成】" if generated_by == "template" else "【Claude API生成】"
+    hashtags_str = " ".join(f"#{h}" for h in article.get("hashtags", []))
+
+    content = (
+        f"# {article['title_a']}\n\n"
+        f"{mode_label} 生成日: {today}\n\n"
+        f"---\n\n"
+        f"**タイトルB案:** {article['title_b']}\n\n"
+        f"**ハッシュタグ:** {hashtags_str}\n\n"
+        f"---\n\n"
+        f"{article['body']}\n"
+    )
+
+    ready_path = ready_dir / f"{today}.md"
+    counter = 1
+    while ready_path.exists():
+        ready_path = ready_dir / f"{today}_{counter:02d}.md"
+        counter += 1
+
+    ready_path.write_text(content, encoding="utf-8")
+    logger.info("Saved ready: %s (mode=%s)", ready_path.name, generated_by)
+    return ready_path
+
+
 def run_creator(
     config: dict,
     data_dir: Path,
     topics: list,
     abstraction_meta: dict | None = None,
 ) -> list[dict]:
-    """トピックリストから記事を生成し下書き JSON として保存する"""
+    """
+    トピックリストから記事を生成し、下書きJSONと ready/YYYY-MM-DD.md に保存する。
+
+    API利用可能時 : Claude API で高品質記事生成
+    API利用不可時 : note_patterns.json + voice_os.md でテンプレート記事生成
+    """
     niche = config.get("niche", "副業・節税")
     model = config.get("model", "claude-sonnet-4-6")
     articles_per_day = config.get("articles_per_day", 1)
 
-    api_key = os.environ["ANTHROPIC_API_KEY"]
-    client = anthropic.Anthropic(api_key=api_key)
+    # ── API利用可否を確認 ────────────────────────────────────────────────────
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    client = None
+    if api_key:
+        try:
+            client = anthropic.Anthropic(api_key=api_key)
+        except Exception as exc:
+            logger.warning("Anthropic client 初期化失敗: %s", exc)
 
     drafts_dir = data_dir / "data" / "drafts"
     drafts_dir.mkdir(parents=True, exist_ok=True)
+    ready_dir = data_dir / "ready"
 
     today = date.today().isoformat()
     results = []
 
     for topic in topics[:articles_per_day]:
-        try:
-            article = _generate_article(client, model, niche, topic, config, abstraction_meta)
-        except Exception as exc:
-            logger.error("Article generation failed for topic '%s': %s", topic.get("title"), exc)
-            continue
+        article = None
+        generated_by = "template"
 
-        slug = _slugify(article["title_a"])
-        draft_path = drafts_dir / f"{today}_{slug}.json"
+        # ── API生成を試みる ──────────────────────────────────────────────────
+        if client:
+            try:
+                article = _generate_article(client, model, niche, topic, config, abstraction_meta)
+                generated_by = "claude_api"
+                logger.info("Claude API 生成成功: %s", article.get("title_a", ""))
+            except Exception as exc:
+                logger.warning("API生成失敗 → テンプレートフォールバック: %s", exc)
 
-        # アフィリエイトリンクを本文末尾に挿入
+        # ── テンプレートフォールバック ────────────────────────────────────────
+        if article is None:
+            logger.info("テンプレートベース記事生成を開始 (genre=%s)...", config.get("today_genre", niche))
+            article = _generate_article_template(niche, topic, config)
+
+        # ── アフィリエイト挿入 ────────────────────────────────────────────────
         today_genre = config.get("today_genre", niche)
         topic_title = topic.get("title", "")
         matched_affiliates = _select_affiliates(today_genre, topic_title)
         body_with_affiliates = _append_affiliate_section(article["body"], matched_affiliates)
+        article["body"] = body_with_affiliates
+        article["generated_by"] = generated_by
 
+        # ── drafts/ に JSON 保存 ──────────────────────────────────────────────
+        slug = _slugify(article["title_a"])
+        draft_path = drafts_dir / f"{today}_{slug}.json"
         draft = {
             "title_a": article["title_a"],
             "title_b": article["title_b"],
             "body": body_with_affiliates,
             "hashtags": article["hashtags"],
             "topic": topic,
-            "affiliates_inserted": [af.get("id") for af in matched_affiliates],
+            "affiliates_inserted": [af.get("name") for af in matched_affiliates],
+            "generated_by": generated_by,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
-
         with open(draft_path, "w", encoding="utf-8") as f:
             json.dump(draft, f, ensure_ascii=False, indent=2)
+        logger.info("Saved draft: %s", draft_path.name)
 
-        logger.info("Saved draft: %s", draft_path)
+        # ── ready/ に Markdown 保存 ───────────────────────────────────────────
+        ready_path = _save_ready_md(article, ready_dir, today)
+
         results.append({
             "path": str(draft_path),
+            "ready_path": str(ready_path),
             "title_a": draft["title_a"],
             "title_b": draft["title_b"],
             "hashtags": draft["hashtags"],
+            "generated_by": generated_by,
             "created_at": draft["created_at"],
         })
 

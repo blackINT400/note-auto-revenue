@@ -1,6 +1,6 @@
 """
 note有料マガジン事業 — main.py
-言語化×全1論を毎日1ジャンルに翻訳して投稿する
+言語化×全1論を毎日2ジャンルに翻訳して投稿する
 
 Usage:
   python businesses/note_言語化全1論/main.py --mode daily
@@ -47,6 +47,10 @@ logger = logging.getLogger(__name__)
 
 
 def load_config() -> dict:
+    """
+    config.yaml を読み込み、著者OS・ジャンルを注入して返す。
+    呼ぶたびにジャンルインデックスが1進む（2回呼ぶと2ジャンル取得できる）。
+    """
     cfg = yaml.safe_load(CONFIG_PATH.read_text(encoding="utf-8"))
 
     # 著者OSと思考シードを注入
@@ -68,7 +72,7 @@ def load_config() -> dict:
             genre_rotation=genres,
             current_idx=idx,
             affiliates_path=AFFILIATES_PATH,
-            patterns_path=PATTERNS_PATH,  # note_patterns.json の hot_genres (+1) を反映
+            patterns_path=PATTERNS_PATH,
             client=None,  # API不要のルールベースモード
         )
         cfg["today_genre"] = theme_result["theme"]
@@ -92,45 +96,108 @@ def main():
     parser.add_argument("--mode", choices=["daily", "weekly", "report"], default="daily")
     args = parser.parse_args()
 
-    config = load_config()
-    logger.info(f"[note] 起動 mode={args.mode} genre={config.get('today_genre','')}")
-
-    setup(config, BUSINESS_DIR)
-
     from empire.report_generator import ReportCollector
-    with ReportCollector(args.mode) as rc:
-        rc.add_action(f"note有料マガジン事業 起動 mode={args.mode} genre={config.get('today_genre','')}")
 
-        if args.mode == "report":
-            result = report(config, BUSINESS_DIR)
-            rc.add_success("パフォーマンスレポート生成完了")
-        else:
-            result = run(config, BUSINESS_DIR, mode=args.mode)
-
-            published = result.get("published", [])
-            for rec in published:
-                status = rec.get("status", "")
-                title = rec.get("title", "")
-                if status == "published":
-                    rc.add_success(f"note投稿成功: {title}")
-                    # ジャンル履歴に記録（次回の抽象化・具体化判断に使用）
-                    genre_engine.record_article(
-                        data_dir=BUSINESS_DIR,
-                        title=title,
-                    )
-                elif status == "draft_ready":
-                    rc.add_failure(
-                        f"note投稿失敗→メール通知: {title}",
-                        cause="note.com API エラー（CSRF/認証）。メールで記事全文を送信済み。",
-                        needs_action=False,
-                    )
-                    # 下書きも記録（投稿失敗でもテーマは消費したとみなす）
-                    genre_engine.record_article(
-                        data_dir=BUSINESS_DIR,
-                        title=title,
-                    )
-
+    # ── weekly / report は従来通り1回実行 ────────────────────────────────────
+    if args.mode != "daily":
+        config = load_config()
+        logger.info(f"[note] 起動 mode={args.mode} genre={config.get('today_genre','')}")
+        setup(config, BUSINESS_DIR)
+        with ReportCollector(args.mode) as rc:
+            rc.add_action(f"note有料マガジン事業 起動 mode={args.mode}")
+            if args.mode == "report":
+                result = report(config, BUSINESS_DIR)
+                rc.add_success("パフォーマンスレポート生成完了")
+            else:
+                result = run(config, BUSINESS_DIR, mode=args.mode)
         logger.info(f"[note] 完了: {result}")
+        return
+
+    # ── daily: 2ジャンル × 1本ずつ生成 ──────────────────────────────────────
+    # load_config() を2回呼ぶことでジャンルインデックスを2つ進め、異なるジャンルを取得
+    config1, config2 = _load_two_different_configs()
+
+    genre1 = config1.get("today_genre", "")
+    genre2 = config2.get("today_genre", "")
+    logger.info(f"[note] 起動 mode=daily | 1本目ジャンル={genre1} | 2本目ジャンル={genre2}")
+
+    setup(config1, BUSINESS_DIR)
+
+    with ReportCollector(args.mode) as rc:
+        rc.add_action(
+            f"note有料マガジン事業 起動 mode=daily "
+            f"| 1本目={genre1} | 2本目={genre2}"
+        )
+
+        all_published = []
+
+        # 1本目
+        result1 = run(config1, BUSINESS_DIR, mode="daily")
+        for rec in result1.get("published", []):
+            _process_record(rec, rc, config1)
+            all_published.append(rec)
+
+        # 2本目（ジャンルを変えて再実行）
+        result2 = run(config2, BUSINESS_DIR, mode="daily")
+        for rec in result2.get("published", []):
+            _process_record(rec, rc, config2)
+            all_published.append(rec)
+
+        logger.info(f"[note] 完了: {len(all_published)}本生成")
+
+
+def _load_two_different_configs() -> tuple[dict, dict]:
+    """
+    2本目のジャンルが1本目と被らないよう、必要なら強制的に別ジャンルを選ぶ。
+    genre_engine は「同テーマ3回まで継続」の設計なので、1日2本生成すると
+    同テーマになりやすい。大ジャンル（「・」より前）が同じなら強制ローテーション。
+    """
+    config1 = load_config()
+    config2 = load_config()
+
+    genre1 = config1.get("today_genre", "")
+    genre2 = config2.get("today_genre", "")
+    genre1_base = genre1.split("・")[0]
+    genre2_base = genre2.split("・")[0]
+
+    if genre1_base == genre2_base:
+        genres = config2.get("genre_rotation", [])
+        current_idx = config2.get("auto_strategy", {}).get("current_genre_index", 0)
+
+        # genre1 と大ジャンルが違うものを探す
+        for offset in range(1, len(genres)):
+            candidate_idx = (current_idx + offset) % len(genres)
+            candidate = genres[candidate_idx]
+            candidate_base = candidate.split("・")[0]
+            if candidate_base != genre1_base:
+                config2["today_genre"] = candidate
+                config2.setdefault("auto_strategy", {})["current_genre_index"] = (
+                    (candidate_idx + 1) % len(genres)
+                )
+                CONFIG_PATH.write_text(
+                    yaml.dump(config2, allow_unicode=True, default_flow_style=False, sort_keys=False),
+                    encoding="utf-8",
+                )
+                logger.info("2本目ジャンルを強制変更: %s → %s", genre2, candidate)
+                break
+
+    return config1, config2
+
+
+def _process_record(rec: dict, rc, config: dict) -> None:
+    """記事1本分の後処理（ログ・ジャンル履歴記録）"""
+    status = rec.get("status", "")
+    title = rec.get("title", "")
+    if status == "published":
+        rc.add_success(f"note投稿成功: {title}")
+        genre_engine.record_article(data_dir=BUSINESS_DIR, title=title)
+    elif status == "draft_ready":
+        rc.add_failure(
+            f"note投稿失敗→下書き保存: {title}",
+            cause="note.com API エラーまたはCOOKIE未設定。ready/に保存済み。",
+            needs_action=False,
+        )
+        genre_engine.record_article(data_dir=BUSINESS_DIR, title=title)
 
 
 if __name__ == "__main__":

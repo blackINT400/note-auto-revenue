@@ -215,6 +215,83 @@ def _send_email_notification(draft: dict, md_path: str) -> bool:
         return False
 
 
+def _send_discord_note_article_report(draft: dict, article_num: int) -> None:
+    """
+    帝国-レポートチャンネルに記事を所定フォーマットで送信する。
+
+    送信フォーマット:
+      ---
+      【note投稿用記事】
+      タイトル: XXX
+      本文: XXX
+      ハッシュタグ: XXX
+      ---
+
+    DISCORD_WEBHOOK_URL（帝国-レポートチャンネル）に送信。
+    本文が長い場合は複数embedに分割。
+    """
+    import os as _os
+    webhook_url = _os.environ.get("DISCORD_WEBHOOK_URL", "")
+    if not webhook_url:
+        logger.warning("DISCORD_WEBHOOK_URL 未設定 — 帝国レポートへの記事送信スキップ")
+        return
+
+    title     = draft.get("title_a", "無題")
+    title_b   = draft.get("title_b", "")
+    body      = draft.get("body", "")
+    hashtags  = draft.get("hashtags", [])
+    tag_str   = " ".join(f"#{h}" for h in hashtags)
+    genre     = draft.get("topic", {}).get("title", draft.get("genre", ""))
+    gen_by    = draft.get("generated_by", "unknown")
+    gen_label = "テンプレート生成" if gen_by == "template" else "Claude API生成"
+
+    # ── ヘッダーメッセージ（2000字以内の content フィールド）──────────────────
+    header = (
+        f"**【note投稿用記事】{article_num}本目**　|　{gen_label}\n"
+        f"ジャンル: {genre}" if genre else
+        f"**【note投稿用記事】{article_num}本目**　|　{gen_label}"
+    )
+
+    # ── Embed 1: タイトル + ハッシュタグ ────────────────────────────────────────
+    meta_desc = (
+        f"**タイトル:** {title}\n"
+        + (f"**タイトルB案:** {title_b}\n" if title_b and title_b != title else "")
+        + f"\n**ハッシュタグ:** {tag_str}"
+    )
+    embeds = [
+        {
+            "title": f"📝 {article_num}本目: {title[:80]}",
+            "description": meta_desc[:4096],
+            "color": 0x41C9E2,
+        }
+    ]
+
+    # ── Embed 2〜: 本文（3900字ずつ分割）────────────────────────────────────────
+    CHUNK = 3900
+    body_chunks = [body[i : i + CHUNK] for i in range(0, max(len(body), 1), CHUNK)]
+    for idx, chunk in enumerate(body_chunks):
+        chunk_label = "本文" if len(body_chunks) == 1 else f"本文 ({idx+1}/{len(body_chunks)})"
+        embeds.append({"title": chunk_label, "description": chunk, "color": 0x1D9E75})
+
+    # ── Discord に送信（10 embed ずつ）──────────────────────────────────────────
+    def _post(embed_list: list, content: str = "") -> None:
+        payload: dict = {"embeds": embed_list}
+        if content:
+            payload["content"] = content
+        try:
+            resp = requests.post(webhook_url, json=payload, timeout=15)
+            if resp.status_code not in (200, 204):
+                logger.warning("Discord帝国レポート送信失敗: %d %s", resp.status_code, resp.text[:200])
+        except Exception as exc:
+            logger.warning("Discord帝国レポート送信エラー: %s", exc)
+
+    _post(embeds[:9], content=header)          # 最初のバッチにヘッダーを付ける
+    for i in range(9, len(embeds), 10):
+        _post(embeds[i : i + 10])
+
+    logger.info("Discord帝国レポート送信完了 (%d本目): %s", article_num, title[:50])
+
+
 def _send_discord_article(draft: dict, abstraction_meta: dict) -> None:
     """
     STEP4: note-記事チャンネルに記事全文を送信する。
@@ -313,7 +390,8 @@ def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_me
     note_session = _note_session()
 
     results = []
-    for article_meta in articles:
+    for article_idx, article_meta in enumerate(articles):
+        article_num = article_idx + 1  # 1本目・2本目…
         draft_path = article_meta.get("path", "")
         if not draft_path or not Path(draft_path).exists():
             logger.warning("Draft file not found: %s", draft_path)
@@ -338,8 +416,9 @@ def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_me
                 }
                 _append_published(published_path, record)
                 results.append(record)
-                # STEP4: Discord に記事 + 市場分析メタを送信
                 _send_discord_article(draft, abstraction_meta or {})
+                # 帝国-レポートチャンネルにも所定フォーマットで送信
+                _send_discord_note_article_report(draft, article_num)
                 continue
             logger.warning("API post failed, falling back to markdown save")
 
@@ -355,8 +434,9 @@ def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_me
         }
         _append_published(published_path, record)
         results.append(record)
-        # STEP4: Discord に記事 + 市場分析メタを送信
         _send_discord_article(draft, abstraction_meta or {})
+        # 帝国-レポートチャンネルにも所定フォーマットで送信
+        _send_discord_note_article_report(draft, article_num)
 
     logger.info("Distributor done: %d articles processed", len(results))
     return results

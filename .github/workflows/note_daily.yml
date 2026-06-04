@@ -1,0 +1,68 @@
+name: Note Daily Publisher
+
+on:
+  schedule:
+    # 毎日 06:00 JST = 21:00 UTC（前日）
+    - cron: '0 21 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '実行モード (daily / weekly)'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%u)" = "1" ]; then
+            # 月曜日 = weekly（パターン分析）
+            echo "mode=weekly" >> $GITHUB_OUTPUT
+          else
+            echo "mode=daily" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run note publisher (2記事/日 → Discord送信)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          NOTE_DISCORD_WEBHOOK_URL: ${{ secrets.NOTE_DISCORD_WEBHOOK_URL }}
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+        run: python businesses/note_言語化全1論/main.py --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Commit config.yaml (ジャンルインデックス更新)
+        run: |
+          git config --global user.email "auto-publisher@note-revenue.bot"
+          git config --global user.name "Note Auto Publisher"
+          git add businesses/note_言語化全1論/config.yaml 2>/dev/null || true
+          git diff --staged --quiet && echo "config変更なし" || \
+            git commit -m "chore: update genre index $(date +%Y-%m-%d) [skip ci]"
+          git push
