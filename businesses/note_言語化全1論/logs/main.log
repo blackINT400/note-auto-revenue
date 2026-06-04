@@ -567,3 +567,82 @@
 2026-06-03 23:07:44,802 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 18 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-06-03 23:07:45,660 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-06-03 23:07:45,661 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-03_08-07.md
+2026-06-04 22:24:09,506 [INFO] agents.genre_engine: 初回: ジャンル選定 → 恋愛・好きな人への気持ちの伝え方（通常ローテーション）
+2026-06-04 22:24:09,513 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 初回選定（通常ローテーション）)
+2026-06-04 22:24:09,518 [INFO] agents.genre_engine: テーマ継続: 恋愛・好きな人への気持ちの伝え方 (level=1, consecutive=1→2)
+2026-06-04 22:24:09,524 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 継続（同テーマ 2回目）)
+2026-06-04 22:24:09,531 [INFO] __main__: 2本目ジャンルを強制変更: 恋愛・好きな人への気持ちの伝え方 → 人間関係・職場のストレス解消
+2026-06-04 22:24:09,531 [INFO] __main__: [note] 起動 mode=daily | 1本目ジャンル=恋愛・好きな人への気持ちの伝え方 | 2本目ジャンル=人間関係・職場のストレス解消
+2026-06-04 22:24:10,748 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-04 22:24:12,091 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-04 22:24:13,100 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-04 22:24:15,191 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-04 22:24:15,191 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-04 22:24:15,191 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-04 22:24:16,050 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-04 22:24:17,007 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-04 22:24:17,865 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-04 22:24:18,695 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-04 22:24:19,942 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-04 22:24:20,646 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-04 22:24:20,825 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-04 22:24:20,940 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-04 22:24:20,940 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-04 22:24:20,940 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-04 22:24:31,719 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-04 22:24:31,737 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1825, output: 414 tokens
+2026-06-04 22:24:31,738 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-04.json
+2026-06-04 22:25:09,355 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-04 22:25:09,356 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 5788, output: 1840 tokens
+2026-06-04 22:25:09,356 [INFO] empire.playbooks.note_magazine.creator: Claude API 生成成功: 出産費用、誰が払う問題
+2026-06-04 22:25:09,357 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-04_出産費用誰が払う問題.json
+2026-06-04 22:25:09,357 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-04.md (mode=claude_api)
+2026-06-04 22:25:09,841 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-04 22:25:09,841 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-04 22:25:10,024 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-04 22:25:10,024 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-04 22:25:10,024 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-04_出産費用_誰が払う問題.md
+2026-06-04 22:25:10,024 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-04 22:25:10,250 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (1本目): 出産費用、誰が払う問題
+2026-06-04 22:25:10,462 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (1本目): 出産費用、誰が払う問題
+2026-06-04 22:25:10,462 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-04 22:25:10,464 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=出産費用、誰が払う問題
+2026-06-04 22:25:11,451 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-04 22:25:12,525 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-04 22:25:13,541 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-04 22:25:14,553 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-04 22:25:14,553 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-04 22:25:14,553 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-04 22:25:15,473 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-04 22:25:16,483 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-04 22:25:17,619 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-04 22:25:18,423 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-04 22:25:19,800 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-04 22:25:19,947 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-04 22:25:20,160 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-04 22:25:20,744 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-04 22:25:20,745 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-04 22:25:20,745 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-04 22:25:28,683 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-04 22:25:28,684 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1865, output: 380 tokens
+2026-06-04 22:25:28,684 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-04.json
+2026-06-04 22:26:08,271 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-04 22:26:08,272 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 5780, output: 1868 tokens
+2026-06-04 22:26:08,273 [INFO] empire.playbooks.note_magazine.creator: Claude API 生成成功: 出産費用、男が払う構造論
+2026-06-04 22:26:08,273 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-04_出産費用男が払う構造論.json
+2026-06-04 22:26:08,273 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-04_01.md (mode=claude_api)
+2026-06-04 22:26:08,634 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-04 22:26:08,634 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-04 22:26:08,816 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-04 22:26:08,816 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-04 22:26:08,817 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-04_出産費用_男が払う構造論.md
+2026-06-04 22:26:08,817 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-04 22:26:08,952 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (2本目): 出産費用、男が払う構造論
+2026-06-04 22:26:09,104 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (2本目): 出産費用、男が払う構造論
+2026-06-04 22:26:09,104 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-04 22:26:09,106 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=出産費用、男が払う構造論
+2026-06-04 22:26:09,106 [INFO] __main__: [note] 完了: 2本生成
+2026-06-04 22:26:09,111 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 20 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-04 22:26:09,120 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 20 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-04 22:26:10,299 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-06-04 22:26:10,300 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-04_07-26.md
