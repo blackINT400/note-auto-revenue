@@ -57,7 +57,8 @@ def _select_affiliates(genre: str, topic_title: str, max_count: int = 2) -> list
     scored: list[tuple[int, dict]] = []
     for af in affiliates:
         score = 0
-        for cat in af.get("category", []):
+        # "genres" キーを優先、なければ旧来の "category" にフォールバック
+        for cat in af.get("genres", af.get("category", [])):
             if cat in target or any(c in cat for c in target.split()):
                 score += 1
         if score > 0:

@@ -14,10 +14,17 @@ import anthropic
 import feedparser
 import requests
 
+try:
+    import yaml as _yaml
+    _YAML_AVAILABLE = True
+except ImportError:
+    _YAML_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 PATTERNS_PATH = PROJECT_ROOT / "owner" / "note_patterns.json"
+AFFILIATES_PATH = PROJECT_ROOT / "owner" / "affiliates.yaml"
 
 
 def _load_patterns() -> dict:
@@ -28,6 +35,34 @@ def _load_patterns() -> dict:
         return json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
     except Exception:
         return {}
+
+
+def _build_affiliate_hint(today_genre: str) -> str:
+    """
+    今日のジャンルに合致するアフィリエイト案件をプロンプトヒントとして返す。
+    トピック選定時にClaudeへ「この案件と相性の良い記事を優先してほしい」と伝える。
+    """
+    if not AFFILIATES_PATH.exists() or not _YAML_AVAILABLE:
+        return ""
+    try:
+        data = _yaml.safe_load(AFFILIATES_PATH.read_text(encoding="utf-8"))
+        affiliates = (data or {}).get("affiliates", [])
+    except Exception:
+        return ""
+
+    matched = [
+        af for af in affiliates
+        if any(g in today_genre for g in af.get("genres", []))
+        and "..." not in af.get("url", "...")
+    ]
+    if not matched:
+        return ""
+
+    lines = ["\n\n## アフィリエイト案件（記事末尾に広告挿入予定）"]
+    lines.append("以下のサービスと相性の良いトピックを優先してください:")
+    for af in matched:
+        lines.append(f"・{af['name']}: ジャンル={', '.join(af.get('genres', [])[:3])}")
+    return "\n".join(lines)
 
 
 def _fetch_note_trending(tags: list[str]) -> list[dict]:
@@ -189,8 +224,9 @@ def _pick_topics_with_claude(
     niche: str,
     candidates: list[dict],
     patterns: dict | None = None,
+    affiliate_hint: str = "",
 ) -> list[dict]:
-    """Claude を使ってニッチに合うトップ5トピックを選定する（パターンデータ活用）"""
+    """Claude を使ってニッチに合うトップ5トピックを選定する（パターンデータ＋アフィリエイト活用）"""
 
     # パターンデータからタイトル生成のヒントを組み立てる
     pattern_hint = ""
@@ -220,7 +256,8 @@ def _pick_topics_with_claude(
             f"ニッチ: {niche}\n\n"
             f"以下のトレンド候補から、このニッチに最も適した上位5つのトピックを選んでください。\n\n"
             f"候補:\n{candidate_text}"
-            f"{pattern_hint}\n\n"
+            f"{pattern_hint}"
+            f"{affiliate_hint}\n\n"
             f"各トピックについて以下のJSON形式で返してください（配列）:\n"
             f'[{{"title": "20文字以内の記事タイトル", "keywords": ["kw1", "kw2", "kw3"], "reason": "選んだ理由（50字以内）"}}]\n\n'
             f"JSONのみ返してください。コードブロックや説明は不要です。"
@@ -230,7 +267,8 @@ def _pick_topics_with_claude(
             f"あなたはnote.comの有料マガジン編集者です。\n"
             f"ニッチ: {niche}\n\n"
             f"このニッチで今週バズりそうな記事トピックを5つ考えてください。"
-            f"{pattern_hint}\n\n"
+            f"{pattern_hint}"
+            f"{affiliate_hint}\n\n"
             f"各トピックについて以下のJSON形式で返してください（配列）:\n"
             f'[{{"title": "20文字以内の記事タイトル", "keywords": ["kw1", "kw2", "kw3"], "reason": "理由（50字以内）"}}]\n\n'
             f"JSONのみ返してください。コードブロックや説明は不要です。"
@@ -306,13 +344,16 @@ def run_scout(config: dict, data_dir: Path) -> tuple[list[dict], dict]:
     else:
         logger.info("note_patterns.json なし — パターンなしで実行")
 
+    # ── アフィリエイト情報をプロンプトヒントに変換 ───────────────────────────
+    affiliate_hint = _build_affiliate_hint(config.get("today_genre", niche))
+
     # ── STEP3: Claude でトピック選定 ─────────────────────────────────────────
     try:
-        topics = _pick_topics_with_claude(client, model, niche, all_candidates, patterns)
+        topics = _pick_topics_with_claude(client, model, niche, all_candidates, patterns, affiliate_hint)
     except Exception as exc:
         logger.error("Claude topic selection failed: %s", exc)
         try:
-            topics = _pick_topics_with_claude(client, model, niche, [], patterns)
+            topics = _pick_topics_with_claude(client, model, niche, [], patterns, affiliate_hint)
         except Exception as exc2:
             logger.error("Fallback topic generation also failed: %s", exc2)
             topics = [

@@ -17,6 +17,8 @@ _PROJECT_ROOT = _HERE.parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
+import json
+
 import yaml
 
 from empire.playbooks.note_magazine import setup, run, report
@@ -26,6 +28,8 @@ CONFIG_PATH = BUSINESS_DIR / "config.yaml"
 VOICE_OS_PATH = _PROJECT_ROOT / "thoughts" / "voice_os.md"
 HUMAN_WRITING_OS_PATH = _PROJECT_ROOT / "thoughts" / "human_writing_os.md"
 INBOX_PATH = _PROJECT_ROOT / "thoughts" / "inbox.md"
+AFFILIATES_PATH = _PROJECT_ROOT / "owner" / "affiliates.yaml"
+PATTERNS_PATH = _PROJECT_ROOT / "owner" / "note_patterns.json"
 
 # logs ディレクトリが存在しない場合（GitHub Actions 等）に自動作成
 (BUSINESS_DIR / "logs").mkdir(parents=True, exist_ok=True)
@@ -54,19 +58,94 @@ def load_config() -> dict:
         if inbox and not inbox.startswith("#"):
             cfg["thought_seeds"] = inbox
 
-    # ジャンルローテーション（毎日1ジャンルを循環）
+    # ── アフィリエイト案件ジャンルを読み込む ────────────────────────────
+    affiliate_genres: set[str] = set()
+    if AFFILIATES_PATH.exists():
+        try:
+            af_data = yaml.safe_load(AFFILIATES_PATH.read_text(encoding="utf-8"))
+            for af in (af_data or {}).get("affiliates", []):
+                for g in af.get("genres", []):
+                    affiliate_genres.add(g)
+        except Exception:
+            pass
+
+    # ── 市場パターンで「今読まれているジャンル」を読み込む ──────────────
+    hot_genres: set[str] = set()
+    if PATTERNS_PATH.exists():
+        try:
+            pt = json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
+            for rs in pt.get("latest", {}).get("resonance_structures", []):
+                hot_genres.add(rs.get("genre", ""))
+        except Exception:
+            pass
+
+    # ── ジャンルローテーション（アフィリエイト×市場パターン考慮）────────
     genres = cfg.get("genre_rotation", [])
     idx = cfg.get("auto_strategy", {}).get("current_genre_index", 0)
     if genres:
-        cfg["today_genre"] = genres[idx % len(genres)]
-        # インデックスを進める
-        cfg.setdefault("auto_strategy", {})["current_genre_index"] = (idx + 1) % len(genres)
+        selected_genre, next_idx = _select_genre(
+            genres, idx, affiliate_genres, hot_genres
+        )
+        cfg["today_genre"] = selected_genre
+        cfg.setdefault("auto_strategy", {})["current_genre_index"] = next_idx
         CONFIG_PATH.write_text(
             yaml.dump(cfg, allow_unicode=True, default_flow_style=False, sort_keys=False),
             encoding="utf-8",
         )
+        reason = _genre_select_reason(selected_genre, affiliate_genres, hot_genres)
+        logger.info("ジャンル選定: %s （%s）", selected_genre, reason)
 
     return cfg
+
+
+def _genre_matches(genre: str, keyword_set: set[str]) -> bool:
+    """ジャンル文字列がキーワードセットのいずれかを含むか判定"""
+    return any(kw in genre for kw in keyword_set)
+
+
+def _select_genre(
+    genres: list[str],
+    idx: int,
+    affiliate_genres: set[str],
+    hot_genres: set[str],
+) -> tuple[str, int]:
+    """
+    優先順位:
+      1. アフィリエイト案件 × 市場パターン 両方一致
+      2. アフィリエイト案件 一致
+      3. 市場パターン 一致
+      4. 通常ローテーション（フォールバック）
+    ※ 先読みは最大3スロットまで。飛ばした場合はそのindexから継続。
+    """
+    n = len(genres)
+    look_ahead = min(3, n)
+
+    # 各スコアを計算
+    scores: list[tuple[int, int, str]] = []  # (score, offset, genre)
+    for offset in range(look_ahead):
+        g = genres[(idx + offset) % n]
+        score = 0
+        if _genre_matches(g, affiliate_genres):
+            score += 2
+        if _genre_matches(g, hot_genres):
+            score += 1
+        scores.append((score, offset, g))
+
+    # スコア降順、offset昇順でソート（同スコアなら近い方を優先）
+    scores.sort(key=lambda x: (-x[0], x[1]))
+    best_score, best_offset, best_genre = scores[0]
+
+    next_idx = (idx + best_offset + 1) % n
+    return best_genre, next_idx
+
+
+def _genre_select_reason(genre: str, affiliate_genres: set[str], hot_genres: set[str]) -> str:
+    reasons = []
+    if _genre_matches(genre, affiliate_genres):
+        reasons.append("アフィリエイト案件あり")
+    if _genre_matches(genre, hot_genres):
+        reasons.append("市場パターン一致")
+    return "、".join(reasons) if reasons else "通常ローテーション"
 
 
 def main():
