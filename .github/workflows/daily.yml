@@ -1,11 +1,7 @@
+# disabled 2026-06-05 — Zenn自動投稿を停止（手動再開時はonブロックのコメントを外す）
 name: Zenn Auto Publisher
 
 on:
-  schedule:
-    # 毎日 06:00 JST = 21:00 UTC（前日）
-    - cron: '0 21 * * *'
-    # 毎週月曜 08:00 JST = 23:00 UTC（日曜）
-    - cron: '0 23 * * 0'
   workflow_dispatch:
     inputs:
       mode:
@@ -16,6 +12,22 @@ on:
         options:
           - daily
           - weekly
+# on:
+#   schedule:
+#     # 毎日 06:00 JST = 21:00 UTC（前日）
+#     - cron: '0 21 * * *'
+#     # 毎週月曜 08:00 JST = 23:00 UTC（日曜）
+#     - cron: '0 23 * * 0'
+#   workflow_dispatch:
+#     inputs:
+#       mode:
+#         description: '実行モード (daily / weekly)'
+#         required: true
+#         default: 'daily'
+#         type: choice
+#         options:
+#           - daily
+#           - weekly
 
 jobs:
   publish:
