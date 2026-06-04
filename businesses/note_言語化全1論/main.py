@@ -132,13 +132,13 @@ def main():
         all_published = []
 
         # 1本目
-        result1 = run(config1, BUSINESS_DIR, mode="daily")
+        result1 = run(config1, BUSINESS_DIR, mode="daily", article_num_offset=0)
         for rec in result1.get("published", []):
             _process_record(rec, rc, config1)
             all_published.append(rec)
 
         # 2本目（ジャンルを変えて再実行）
-        result2 = run(config2, BUSINESS_DIR, mode="daily")
+        result2 = run(config2, BUSINESS_DIR, mode="daily", article_num_offset=1)
         for rec in result2.get("published", []):
             _process_record(rec, rc, config2)
             all_published.append(rec)

@@ -578,7 +578,11 @@ def run_creator(
             "body": body_with_affiliates,
             "hashtags": article["hashtags"],
             "topic": topic,
-            "affiliates_inserted": [af.get("name") for af in matched_affiliates],
+            # name と url を両方保存（Discord送信時の関連広告リンク生成に使用）
+            "affiliates_inserted": [
+                {"name": af.get("name", ""), "url": af.get("url", "")}
+                for af in matched_affiliates
+            ],
             "generated_by": generated_by,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }

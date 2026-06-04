@@ -292,89 +292,105 @@ def _send_discord_note_article_report(draft: dict, article_num: int) -> None:
     logger.info("Discord帝国レポート送信完了 (%d本目): %s", article_num, title[:50])
 
 
-def _send_discord_article(draft: dict, abstraction_meta: dict) -> None:
+def _send_discord_article(draft: dict, abstraction_meta: dict, article_num: int = 1) -> None:
     """
-    STEP4: note-記事チャンネルに記事全文を送信する。
-    ・NOTE_DISCORD_WEBHOOK_URL → note-記事チャンネル（記事本文のみ）
-    ・DISCORD_WEBHOOK_URL      → 帝国-レポートチャンネル（システムレポートのみ、ここでは使わない）
+    note-記事チャンネルに記事を所定フォーマットで送信する。
+
+    送信フォーマット:
+      ---
+      【note投稿用記事】
+      タイトル:
+      本文:
+      ハッシュタグ:
+      関連広告: [サービス名](URL)
+      ---
+
+    NOTE_DISCORD_WEBHOOK_URL（note-記事チャンネル）に送信。
+    本文が長い場合は複数 embed に分割。
     """
-    import os as _os
-    webhook_url = _os.environ.get("NOTE_DISCORD_WEBHOOK_URL", "")
+    webhook_url = os.environ.get("NOTE_DISCORD_WEBHOOK_URL", "")
     if not webhook_url:
-        # フォールバック: 旧来のDISCORD_WEBHOOK_URLに送る
-        webhook_url = _os.environ.get("DISCORD_WEBHOOK_URL", "")
+        # フォールバック: DISCORD_WEBHOOK_URL に送る
+        webhook_url = os.environ.get("DISCORD_WEBHOOK_URL", "")
         if not webhook_url:
             logger.warning("NOTE_DISCORD_WEBHOOK_URL / DISCORD_WEBHOOK_URL 未設定 — Discord記事送信スキップ")
             return
         logger.info("NOTE_DISCORD_WEBHOOK_URL 未設定 → DISCORD_WEBHOOK_URL にフォールバック")
 
-    title = draft.get("title_a", "無題")
-    title_b = draft.get("title_b", "")
-    body = draft.get("body", "")
+    title    = draft.get("title_a", "無題")
+    title_b  = draft.get("title_b", "")
+    body     = draft.get("body", "")
     hashtags = draft.get("hashtags", [])
-    tag_str = " ".join(f"#{t}" for t in hashtags)
+    tag_str  = " ".join(f"#{h}" for h in hashtags)
+    gen_by   = draft.get("generated_by", "unknown")
+    gen_label = "テンプレート生成" if gen_by == "template" else "Claude API生成"
 
-    # 市場分析メタ（あれば添付）
-    ref_title = abstraction_meta.get("reference_title", "")
-    abstract_structure = abstraction_meta.get("abstract_structure", "")
-    today_genre = draft.get("topic", {}).get("title", "")
+    # ── 関連広告テキスト ──────────────────────────────────────────────────────
+    affiliates = draft.get("affiliates_inserted", [])
+    ad_lines = ""
+    if affiliates:
+        if isinstance(affiliates[0], dict):
+            # 新形式: [{name, url}, ...]
+            ad_parts = [
+                f"[{af.get('name','')}]({af.get('url','')})"
+                for af in affiliates
+                if af.get("url")
+            ]
+        else:
+            # 旧形式: ["R婚", ...] — URLなし
+            ad_parts = [str(af) for af in affiliates]
+        ad_lines = "\n".join(ad_parts)
 
-    # ── メッセージ1: 記事メタ情報 ────────────────────────────────────────────
-    meta_lines = [f"**タイトルA:** {title}"]
-    if title_b and title_b != title:
-        meta_lines.append(f"**タイトルB:** {title_b}")
-    if today_genre:
-        meta_lines.append(f"**ジャンル:** {today_genre}")
-    if ref_title:
-        meta_lines.append(f"**参考人気記事:** {ref_title}")
-    if abstract_structure:
-        meta_lines.append(f"**抽象構造:** {abstract_structure}")
-    meta_lines.append(f"\n**推奨ハッシュタグ:**\n{tag_str}")
-
-    # ── メッセージ2: 本文全文（4096字ごとに分割）────────────────────────────
-    # Discord embed description 上限 = 4096文字
-    # 本文が長い場合は複数embedに分割する
-    CHUNK = 3900  # 余裕を持って3900文字ずつ
-    body_chunks = [body[i:i+CHUNK] for i in range(0, max(len(body), 1), CHUNK)]
-
+    # ── Embed 1: タイトル・ハッシュタグ・関連広告 ────────────────────────────
+    header_desc = (
+        f"**タイトル:** {title}\n"
+        + (f"**タイトルB案:** {title_b}\n" if title_b and title_b != title else "")
+        + f"\n**ハッシュタグ:** {tag_str}"
+        + (f"\n\n**関連広告:**\n{ad_lines}" if ad_lines else "")
+    )
     embeds = [
         {
-            "title": f"📝 note記事: {title[:80]}",
-            "description": "\n".join(meta_lines)[:4096],
-            "color": 0x41C9E2,  # 水色（note-記事チャンネル専用色）
+            "title": f"📝 【note投稿用記事】{article_num}本目 | {gen_label}",
+            "description": header_desc[:4096],
+            "color": 0x41C9E2,
         }
     ]
 
+    # ── Embed 2〜: 本文（3900字ずつ分割）─────────────────────────────────────
+    CHUNK = 3900
+    body_chunks = [body[i : i + CHUNK] for i in range(0, max(len(body), 1), CHUNK)]
     for idx, chunk in enumerate(body_chunks):
-        chunk_title = "本文" if len(body_chunks) == 1 else f"本文 ({idx+1}/{len(body_chunks)})"
-        embeds.append({
-            "title": chunk_title,
-            "description": chunk,
-            "color": 0x1D9E75,
-        })
+        chunk_label = "本文" if len(body_chunks) == 1 else f"本文 ({idx+1}/{len(body_chunks)})"
+        embeds.append({"title": chunk_label, "description": chunk, "color": 0x1D9E75})
 
-    # Discord は1メッセージに最大10 embed
-    def _post_embeds(embed_list: list) -> None:
+    # ── Discord に送信（10 embed ずつ）──────────────────────────────────────
+    def _post(embed_list: list) -> None:
         try:
-            resp = requests.post(
-                webhook_url,
-                json={"embeds": embed_list},
-                timeout=15,
-            )
+            resp = requests.post(webhook_url, json={"embeds": embed_list}, timeout=15)
             if resp.status_code not in (200, 204):
-                logger.warning("Discord記事送信失敗: %d %s", resp.status_code, resp.text[:200])
+                logger.warning("Discord note-記事送信失敗: %d %s", resp.status_code, resp.text[:200])
         except Exception as exc:
-            logger.warning("Discord記事送信エラー: %s", exc)
+            logger.warning("Discord note-記事送信エラー: %s", exc)
 
-    # 10embed ずつ送信（通常は2〜3枚なので1回）
     for i in range(0, len(embeds), 10):
-        _post_embeds(embeds[i:i+10])
+        _post(embeds[i : i + 10])
 
-    logger.info("Discord記事送信完了 → note-記事ch: %s", title[:50])
+    logger.info("Discord note-記事ch送信完了 (%d本目): %s", article_num, title[:50])
 
 
-def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_meta: dict | None = None) -> list[dict]:
-    """記事リストを note.com に投稿、または下書きとして保存する。"""
+def run_distributor(
+    config: dict,
+    data_dir: Path,
+    articles: list,
+    abstraction_meta: dict | None = None,
+    article_num_offset: int = 0,
+) -> list[dict]:
+    """
+    記事リストを note.com に投稿、または下書きとして保存する。
+
+    article_num_offset: Discord送信時の記事番号オフセット
+      （2本目バッチを処理する時は 1 を渡すと「2本目」と表示される）
+    """
     post_interval_hours = config.get("post_interval_hours", 24)
     published_path = data_dir / "data" / "published.jsonl"
     ready_dir = data_dir / "data" / "drafts" / "ready"
@@ -391,7 +407,7 @@ def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_me
 
     results = []
     for article_idx, article_meta in enumerate(articles):
-        article_num = article_idx + 1  # 1本目・2本目…
+        article_num = article_num_offset + article_idx + 1  # 1本目・2本目…
         draft_path = article_meta.get("path", "")
         if not draft_path or not Path(draft_path).exists():
             logger.warning("Draft file not found: %s", draft_path)
@@ -416,8 +432,9 @@ def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_me
                 }
                 _append_published(published_path, record)
                 results.append(record)
-                _send_discord_article(draft, abstraction_meta or {})
-                # 帝国-レポートチャンネルにも所定フォーマットで送信
+                # note-記事チャンネルに所定フォーマットで送信
+                _send_discord_article(draft, abstraction_meta or {}, article_num)
+                # 帝国-レポートチャンネルにも送信
                 _send_discord_note_article_report(draft, article_num)
                 continue
             logger.warning("API post failed, falling back to markdown save")
@@ -434,8 +451,9 @@ def run_distributor(config: dict, data_dir: Path, articles: list, abstraction_me
         }
         _append_published(published_path, record)
         results.append(record)
-        _send_discord_article(draft, abstraction_meta or {})
-        # 帝国-レポートチャンネルにも所定フォーマットで送信
+        # note-記事チャンネルに所定フォーマットで送信
+        _send_discord_article(draft, abstraction_meta or {}, article_num)
+        # 帝国-レポートチャンネルにも送信
         _send_discord_note_article_report(draft, article_num)
 
     logger.info("Distributor done: %d articles processed", len(results))

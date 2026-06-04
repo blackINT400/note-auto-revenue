@@ -19,16 +19,19 @@ def setup(config: dict, data_dir: Path) -> None:
         published.touch()
 
 
-def run(config: dict, data_dir: Path, mode: str = "daily") -> dict:
+def run(config: dict, data_dir: Path, mode: str = "daily", article_num_offset: int = 0) -> dict:
     """
     daily : scout(STEP1+2) → creator(STEP3) → distributor(STEP4: Discord)
     weekly: pattern_analyzer(note人気記事収集・分析) → analyzer(戦略更新)
+
+    article_num_offset: Discord送信時の記事番号オフセット（2本目=1を渡すと「2本目」と表示）
     """
     setup(config, data_dir)
     if mode == "daily":
         topics, abstraction_meta = run_scout(config, data_dir)
         articles = run_creator(config, data_dir, topics, abstraction_meta)
-        result = run_distributor(config, data_dir, articles, abstraction_meta)
+        result = run_distributor(config, data_dir, articles, abstraction_meta,
+                                 article_num_offset=article_num_offset)
         return {"published": result, "mode": mode, "abstraction": abstraction_meta}
 
     # weekly: パターン分析 → 戦略更新
