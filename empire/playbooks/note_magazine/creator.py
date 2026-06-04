@@ -11,10 +11,17 @@ from pathlib import Path
 
 import anthropic
 
+try:
+    import yaml as _yaml
+    _YAML_AVAILABLE = True
+except ImportError:
+    _YAML_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 PROJECT_ROOT = Path(__file__).parent.parent.parent.parent
 PATTERNS_PATH = PROJECT_ROOT / "owner" / "note_patterns.json"
+AFFILIATES_PATH = PROJECT_ROOT / "owner" / "affiliates.yaml"
 
 
 def _load_patterns() -> dict:
@@ -24,6 +31,66 @@ def _load_patterns() -> dict:
         return json.loads(PATTERNS_PATH.read_text(encoding="utf-8"))
     except Exception:
         return {}
+
+
+def _load_affiliates() -> list[dict]:
+    """owner/affiliates.yaml からアフィリエイトリストを読み込む"""
+    if not AFFILIATES_PATH.exists() or not _YAML_AVAILABLE:
+        return []
+    try:
+        data = _yaml.safe_load(AFFILIATES_PATH.read_text(encoding="utf-8"))
+        return data.get("affiliates", []) if data else []
+    except Exception as exc:
+        logger.debug("affiliates.yaml 読み込み失敗: %s", exc)
+        return []
+
+
+def _select_affiliates(genre: str, topic_title: str, max_count: int = 2) -> list[dict]:
+    """ジャンル・トピックタイトルに合致するアフィリエイトを最大 max_count 件返す"""
+    affiliates = _load_affiliates()
+    if not affiliates:
+        return []
+
+    # マッチング対象テキスト（ジャンル＋タイトルを結合）
+    target = (genre + " " + topic_title).lower()
+
+    scored: list[tuple[int, dict]] = []
+    for af in affiliates:
+        score = 0
+        for cat in af.get("category", []):
+            if cat in target or any(c in cat for c in target.split()):
+                score += 1
+        if score > 0:
+            scored.append((score, af))
+
+    # スコア降順でソートして上位 max_count 件
+    scored.sort(key=lambda x: x[0], reverse=True)
+    selected = [af for _, af in scored[:max_count]]
+
+    # URLがプレースホルダーのもの（"..."含む）はスキップ
+    selected = [af for af in selected if "..." not in af.get("url", "...")]
+
+    return selected
+
+
+def _append_affiliate_section(body: str, affiliates: list[dict]) -> str:
+    """記事本文末尾にアフィリエイトセクションを挿入する"""
+    if not affiliates:
+        return body
+
+    lines = ["\n---", "この記事に関連するサービス"]
+    for af in affiliates:
+        name = af.get("name", "")
+        url = af.get("url", "")
+        desc = af.get("description", "")
+        if desc:
+            lines.append(f"・[{name}]({url})  \n　{desc}")
+        else:
+            lines.append(f"・[{name}]({url})")
+    lines.append("---")
+
+    logger.info("アフィリエイト挿入: %s", [af.get("id") for af in affiliates])
+    return body + "\n".join(lines)
 
 
 def _slugify(text: str) -> str:
@@ -263,12 +330,19 @@ def run_creator(
         slug = _slugify(article["title_a"])
         draft_path = drafts_dir / f"{today}_{slug}.json"
 
+        # アフィリエイトリンクを本文末尾に挿入
+        today_genre = config.get("today_genre", niche)
+        topic_title = topic.get("title", "")
+        matched_affiliates = _select_affiliates(today_genre, topic_title)
+        body_with_affiliates = _append_affiliate_section(article["body"], matched_affiliates)
+
         draft = {
             "title_a": article["title_a"],
             "title_b": article["title_b"],
-            "body": article["body"],
+            "body": body_with_affiliates,
             "hashtags": article["hashtags"],
             "topic": topic,
+            "affiliates_inserted": [af.get("id") for af in matched_affiliates],
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
 
