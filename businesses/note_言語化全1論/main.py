@@ -68,6 +68,7 @@ def load_config() -> dict:
             genre_rotation=genres,
             current_idx=idx,
             affiliates_path=AFFILIATES_PATH,
+            patterns_path=PATTERNS_PATH,  # note_patterns.json の hot_genres (+1) を反映
             client=None,  # API不要のルールベースモード
         )
         cfg["today_genre"] = theme_result["theme"]
