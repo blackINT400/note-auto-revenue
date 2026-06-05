@@ -39,6 +39,18 @@ businesses:
   resource_weight: 1.0
   started_date: '2026-05-15'
   data_dir: businesses/gumroad_全1論PDF
+- id: youtube_副業収益
+  type: youtube_channel
+  name: YouTube副業収益チャンネル
+  status: pending_human_approval
+  niche: 副業・節税・AI活用
+  monthly_revenue: 0
+  monthly_cost: 0
+  roi: 0
+  resource_weight: 0.0
+  started_date: '2026-06-05'
+  data_dir: businesses/youtube_副業収益
+  description: AIチームによる自動コンテンツ生成YouTubeチャンネル
 revenue_pool:
   total_earned: 0.0
   available_budget: 0.0

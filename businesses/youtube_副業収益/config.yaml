@@ -1,0 +1,17 @@
+name: youtube_副業収益
+niche: 副業・節税・AI活用
+target_audience: 20〜40代の副業・資産形成に興味がある会社員
+upload_schedule:
+  - 火曜日
+  - 木曜日
+  - 土曜日
+  - 日曜日
+videos_per_week: 4
+video_length_minutes: 8
+brand_color: "#FF4444"
+monetization_threshold:
+  subscribers: 1000
+  watch_hours: 4000
+data_dir: businesses/youtube_副業収益
+monthly_cost_limit: 1500
+quality_threshold: 70

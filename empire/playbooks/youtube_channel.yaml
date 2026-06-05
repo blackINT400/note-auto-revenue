@@ -1,0 +1,31 @@
+id: youtube_channel
+name: YouTube自動収益チャンネル
+description: Claude AIチームがコンテンツ戦略・台本・SEO・サムネイルを自動生成するYouTubeチャンネル
+revenue_model: AdSense + スーパーチャット + メンバーシップ + 案件
+scale_trigger:
+  metric: subscribers
+  threshold: 1000
+  action: enable_monetization
+initial_budget: 3000
+monthly_cost_estimate: 1500
+time_to_first_revenue: 90
+difficulty: medium
+automation_level: high
+niche_options:
+  - 副業・節税
+  - AI活用術
+  - 投資・資産形成
+setup_steps:
+  - Create YouTube channel
+  - Set up brand account
+  - Configure channel art
+  - Upload first 3 videos
+  - Enable monetization at 1000 subscribers
+kpi_metrics:
+  - subscribers
+  - monthly_views
+  - watch_hours
+  - ctr
+  - monthly_revenue
+phase_requirements:
+  minimum_phase: 1
