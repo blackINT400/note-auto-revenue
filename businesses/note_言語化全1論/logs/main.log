@@ -646,3 +646,82 @@
 2026-06-04 22:26:09,120 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 20 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-06-04 22:26:10,299 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-06-04 22:26:10,300 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-04_07-26.md
+2026-06-05 22:19:20,553 [INFO] agents.genre_engine: 初回: ジャンル選定 → 恋愛・好きな人への気持ちの伝え方（通常ローテーション）
+2026-06-05 22:19:20,561 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 初回選定（通常ローテーション）)
+2026-06-05 22:19:20,571 [INFO] agents.genre_engine: テーマ継続: 恋愛・好きな人への気持ちの伝え方 (level=1, consecutive=1→2)
+2026-06-05 22:19:20,581 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 継続（同テーマ 2回目）)
+2026-06-05 22:19:20,590 [INFO] __main__: 2本目ジャンルを強制変更: 恋愛・好きな人への気持ちの伝え方 → 人間関係・職場のストレス解消
+2026-06-05 22:19:20,590 [INFO] __main__: [note] 起動 mode=daily | 1本目ジャンル=恋愛・好きな人への気持ちの伝え方 | 2本目ジャンル=人間関係・職場のストレス解消
+2026-06-05 22:19:21,698 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-05 22:19:22,779 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-05 22:19:24,252 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-05 22:19:25,372 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-05 22:19:25,372 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-05 22:19:25,373 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-05 22:19:26,295 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-05 22:19:27,181 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-05 22:19:28,006 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-05 22:19:28,903 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-05 22:19:29,755 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-05 22:19:30,031 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-05 22:19:30,146 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-05 22:19:30,540 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-05 22:19:30,540 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-05 22:19:30,540 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-05 22:19:39,826 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-05 22:19:39,845 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1869, output: 431 tokens
+2026-06-05 22:19:39,846 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-05.json
+2026-06-05 22:20:22,700 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-05 22:20:22,701 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 5792, output: 1960 tokens
+2026-06-05 22:20:22,701 [INFO] empire.playbooks.note_magazine.creator: Claude API 生成成功: 命の瀬戸際が愛を確定させる
+2026-06-05 22:20:22,701 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-05_命の瀬戸際が愛を確定させる.json
+2026-06-05 22:20:22,702 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-05.md (mode=claude_api)
+2026-06-05 22:20:23,304 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-05 22:20:23,304 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-05 22:20:23,489 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-05 22:20:23,489 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-05 22:20:23,489 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-05_命の瀬戸際が愛を確定させる.md
+2026-06-05 22:20:23,489 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-05 22:20:23,668 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (1本目): 命の瀬戸際が愛を確定させる
+2026-06-05 22:20:23,868 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (1本目): 命の瀬戸際が愛を確定させる
+2026-06-05 22:20:23,869 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-05 22:20:23,870 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=命の瀬戸際が愛を確定させる
+2026-06-05 22:20:24,892 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-05 22:20:26,487 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-05 22:20:27,557 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-05 22:20:28,554 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-05 22:20:28,554 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-05 22:20:28,554 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-05 22:20:29,440 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-05 22:20:30,350 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-05 22:20:31,406 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-05 22:20:32,404 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-05 22:20:33,805 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-05 22:20:34,002 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-05 22:20:34,347 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-05 22:20:34,460 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-05 22:20:34,460 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-05 22:20:34,460 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-05 22:20:43,204 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-05 22:20:43,205 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 1869, output: 407 tokens
+2026-06-05 22:20:43,206 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-05.json
+2026-06-05 22:21:26,275 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-05 22:21:26,276 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 5783, output: 2037 tokens
+2026-06-05 22:21:26,276 [INFO] empire.playbooks.note_magazine.creator: Claude API 生成成功: 「愛してる」と言えない夫の正体
+2026-06-05 22:21:26,277 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-05_愛してると言えない夫の正体.json
+2026-06-05 22:21:26,277 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-05_01.md (mode=claude_api)
+2026-06-05 22:21:26,655 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-05 22:21:26,655 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-05 22:21:26,842 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-05 22:21:26,843 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-05 22:21:26,843 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-05__愛してる_と言えない夫の正体.md
+2026-06-05 22:21:26,843 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-05 22:21:26,969 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (2本目): 「愛してる」と言えない夫の正体
+2026-06-05 22:21:27,144 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (2本目): 「愛してる」と言えない夫の正体
+2026-06-05 22:21:27,144 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-05 22:21:27,145 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=「愛してる」と言えない夫の正体
+2026-06-05 22:21:27,146 [INFO] __main__: [note] 完了: 2本生成
+2026-06-05 22:21:27,152 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 22 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-05 22:21:27,165 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 22 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-05 22:21:28,339 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-06-05 22:21:28,340 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-05_07-21.md
