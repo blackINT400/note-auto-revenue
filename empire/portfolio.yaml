@@ -6,7 +6,7 @@ businesses:
   monthly_revenue: 0.0
   monthly_cost: 0.0
   roi: 0.0
-  resource_weight: 0.4
+  resource_weight: 0.34
   started_date: '2026-05-14'
   data_dir: .
 - id: note_言語化全1論
@@ -16,7 +16,7 @@ businesses:
   monthly_revenue: 0.0
   monthly_cost: 0.0
   roi: 0.0
-  resource_weight: 0.3
+  resource_weight: 0.33
   started_date: '2026-05-15'
   data_dir: businesses/note_言語化全1論
 - id: affiliate_言語化SEO
@@ -26,7 +26,7 @@ businesses:
   monthly_revenue: 0.0
   monthly_cost: 0.0
   roi: 0.0
-  resource_weight: 0.3
+  resource_weight: 0.33
   started_date: '2026-05-15'
   data_dir: businesses/affiliate_言語化SEO
 - id: gumroad_全1論PDF
