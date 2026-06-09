@@ -59,14 +59,16 @@ jobs:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_YOUTUBE }}
         run: |
           cd youtube_bgm
-          ARGS="--mode ${{ steps.mode.outputs.mode }}"
+          DRY_FLAG=""
           if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
-            ARGS="$ARGS --dry-run"
+            DRY_FLAG="--dry-run"
           fi
-          if [ -n "${{ github.event.inputs.genre }}" ]; then
-            ARGS="$ARGS --genre '${{ github.event.inputs.genre }}'"
+          GENRE_INPUT="${{ github.event.inputs.genre }}"
+          if [ -n "$GENRE_INPUT" ]; then
+            python pipeline.py --mode ${{ steps.mode.outputs.mode }} $DRY_FLAG --genre "$GENRE_INPUT"
+          else
+            python pipeline.py --mode ${{ steps.mode.outputs.mode }} $DRY_FLAG
           fi
-          python pipeline.py $ARGS
 
       - name: Notify Discord on success
         if: success()
