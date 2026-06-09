@@ -38,14 +38,62 @@ def main():
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
         else:
-            flow = InstalledAppFlow.from_client_secrets_file(str(SECRET_FILE), SCOPES)
-            flow.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
-            auth_url, _ = flow.authorization_url(prompt="consent")
-            print("\n以下のURLをブラウザで開いて認証してください:")
-            print(f"\n  {auth_url}\n")
-            code = input("認証後に表示されたコードを貼り付けてください: ").strip()
-            flow.fetch_token(code=code)
-            creds = flow.credentials
+            import sys
+            import urllib.request
+            import urllib.parse
+            import json
+            import secrets as _secrets
+
+            with open(SECRET_FILE) as f:
+                client_config = json.load(f)
+            cfg = client_config.get("installed") or client_config.get("web")
+            client_id = cfg["client_id"]
+            client_secret = cfg["client_secret"]
+            token_uri = cfg["token_uri"]
+
+            # --code が引数で渡された場合はトークン交換のみ行う
+            code_arg = None
+            for arg in sys.argv[1:]:
+                if arg.startswith("--code="):
+                    code_arg = arg.split("=", 1)[1]
+
+            if code_arg:
+                data = urllib.parse.urlencode({
+                    "code": code_arg,
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "redirect_uri": "urn:ietf:wg:oauth:2.0:oob",
+                    "grant_type": "authorization_code",
+                }).encode()
+                req = urllib.request.Request(token_uri, data=data)
+                with urllib.request.urlopen(req) as resp:
+                    token_data = json.loads(resp.read())
+
+                # Credentials オブジェクトを手動構築
+                from google.oauth2.credentials import Credentials
+                creds = Credentials(
+                    token=token_data["access_token"],
+                    refresh_token=token_data.get("refresh_token"),
+                    token_uri=token_uri,
+                    client_id=client_id,
+                    client_secret=client_secret,
+                    scopes=SCOPES,
+                )
+            else:
+                auth_url = (
+                    "https://accounts.google.com/o/oauth2/auth"
+                    f"?response_type=code"
+                    f"&client_id={urllib.parse.quote(client_id)}"
+                    f"&redirect_uri=urn%3Aietf%3Awg%3Aoauth%3A2.0%3Aoob"
+                    f"&scope={urllib.parse.quote(' '.join(SCOPES))}"
+                    f"&access_type=offline"
+                    f"&prompt=consent"
+                )
+                print("\n以下のURLをブラウザで開いて認証してください:")
+                print(f"\n  {auth_url}\n")
+                print("認証後、表示されたコードを使って以下を実行してください:")
+                print(f"  python youtube_bgm/auth_setup.py --code=<コード>\n")
+                return
         with open(TOKEN_FILE, "wb") as f:
             pickle.dump(creds, f)
         print(f"トークン保存完了: {TOKEN_FILE}")
