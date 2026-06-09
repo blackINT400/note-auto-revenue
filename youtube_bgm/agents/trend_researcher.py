@@ -25,13 +25,13 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
 
 _MOCK_RESEARCH = {
     "concepts": [
-        {"title": "【作業用BGM】集中力UP Lo-Fi Hip Hop 1時間", "genre": "lo-fi hip hop",
-         "mood": "集中・リラックス", "duration_minutes": 60,
+        {"title": "【深夜作業 BGM】雨のカフェ - 集中できる Jazzピアノ 1時間", "genre": "cozy jazz cafe",
+         "mood": "居心地よい・集中", "duration_minutes": 60,
          "competition_score": 60, "demand_score": 90, "monetization_score": 80, "total_score": 77,
-         "reasoning": "作業用BGMは常に高需要。Lo-Fiは競合が多いが差別化できる。",
-         "tags": ["作業用BGM", "lo-fi", "集中力", "勉強用"]},
+         "reasoning": "深夜×雨×カフェの組み合わせは競合少なく高需要。",
+         "tags": ["作業用BGM", "lofi jazz", "공부할때듣는음악", "study music", "深夜作業"]},
     ],
-    "market_summary": "作業用・勉強用BGMは安定した需要があり、Lo-Fi/チルホップが人気。",
+    "market_summary": "作業用・勉強用BGMは安定した需要があり、Lo-Fi/Jazzカフェ系が人気。",
     "recommended_index": 0,
 }
 
@@ -42,7 +42,14 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
         logger.info("[DRY-RUN] モックリサーチデータを使用")
         return {**_MOCK_RESEARCH, "cost_jpy": 0.0, "success": True}
 
-    genre_focus = config.get("genre_focus", "lo-fi, study music, relaxing")
+    BGM_GENRES = [
+        config.get("genre_focus", "lo-fi, study music, relaxing"),
+        "cozy indoor jazz cafe night",
+        "late night study lounge music",
+        "midnight chill ambient focus",
+        "japanese city pop lofi work",
+    ]
+    genre_focus = ", ".join(BGM_GENRES)
     target_use = config.get("target_use", "作業用・勉強用・睡眠用")
 
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
@@ -60,11 +67,20 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
 2. 需要の高さ (0-100)
 3. 収益化可能性 (0-100)
 
+』タイトルのルール『
+- 「場所＋時間帯＋用途」の組み合わせにすること
+- 例: 「【深夜作業 BGM】雨のカフェ - 集中できるJazzピアノ1時間」
+- 例: 「【早朝勉強BGM】静かな図書館 - 集中力が上がるLoFi 2時間」
+
+』タグのルール『
+- 日本語・英語・韓国語を混在させること（検索流入を最大化するため）
+- 例: ["作業用BGM", "lofi hip hop", "공부할때듣는음악", "집중력", "study music"]
+
 以下のJSON形式のみで出力（前置き不要）:
 {{
   "concepts": [
     {{
-      "title": "動画タイトル案（日本語）",
+      "title": "動画タイトル案（場所＋時間帯＋用途の組み合わせ）",
       "genre": "ジャンル",
       "mood": "ムード・雰囲気",
       "duration_minutes": 60,
@@ -73,7 +89,7 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
       "monetization_score": 80,
       "total_score": 80,
       "reasoning": "選定理由（2文以内）",
-      "tags": ["tag1", "tag2", "tag3"]
+      "tags": ["日本語タグ", "english tag", "한국어태그", "tag4", "tag5"]
     }}
   ],
   "market_summary": "市場状況の要約（3文以内）",

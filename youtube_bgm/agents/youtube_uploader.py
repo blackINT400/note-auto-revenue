@@ -4,7 +4,6 @@ youtube_uploader.py: YouTube Data API v3 アップロードエージェント
 
 Dry-runモードでは実際のアップロードをスキップする。
 """
-import json
 import logging
 import os
 from pathlib import Path
@@ -13,6 +12,20 @@ logger = logging.getLogger(__name__)
 
 _AI_DISCLOSURE = "\n\n※この動画の映像・音楽はAIで生成されています"
 _AI_TAGS = ["AI生成", "AI BGM"]
+
+_HASHTAGS = (
+    "\n\n"
+    "#作業BGM #勉強BGM #集中BGM #睡眠BGM #カフェBGM "
+    "#深夜作業 #lofi #jazz #bgm #relax "
+    "#study #studymusic #lofihiphop #chillmusic #ambientmusic "
+    "#작업할때듣는음악 #공부할때듣는음악 #집중력 #relaxingmusic #bgmmusic"
+)
+
+_CTA = (
+    "\n\n"
+    "▶ チャンネル登録で毎日新しいBGMをお届けします！\n"
+    "🔔 通知をオンにして聴き逃しなし。毎日投稿中。"
+)
 
 
 def _get_youtube_client():
@@ -45,10 +58,18 @@ def _get_youtube_client():
     return build("youtube", "v3", credentials=creds)
 
 
-def _build_body(package: dict) -> dict:
-    description = package.get("description", "")
+def _build_description_footer(description: str) -> str:
+    if _CTA not in description:
+        description += _CTA
     if _AI_DISCLOSURE not in description:
         description += _AI_DISCLOSURE
+    if _HASHTAGS not in description:
+        description += _HASHTAGS
+    return description
+
+
+def _build_body(package: dict) -> dict:
+    description = _build_description_footer(package.get("description", ""))
 
     tags = package.get("tags", [])
     for tag in _AI_TAGS:
