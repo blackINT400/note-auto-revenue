@@ -23,8 +23,25 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
     return usd * JPY_RATE
 
 
-def research_bgm_trends(config: dict) -> dict:
+_MOCK_RESEARCH = {
+    "concepts": [
+        {"title": "【作業用BGM】集中力UP Lo-Fi Hip Hop 1時間", "genre": "lo-fi hip hop",
+         "mood": "集中・リラックス", "duration_minutes": 60,
+         "competition_score": 60, "demand_score": 90, "monetization_score": 80, "total_score": 77,
+         "reasoning": "作業用BGMは常に高需要。Lo-Fiは競合が多いが差別化できる。",
+         "tags": ["作業用BGM", "lo-fi", "集中力", "勉強用"]},
+    ],
+    "market_summary": "作業用・勉強用BGMは安定した需要があり、Lo-Fi/チルホップが人気。",
+    "recommended_index": 0,
+}
+
+
+def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
     """BGMトレンドを調査し上位5件のコンセプトを返す"""
+    if dry_run:
+        logger.info("[DRY-RUN] モックリサーチデータを使用")
+        return {**_MOCK_RESEARCH, "cost_jpy": 0.0, "success": True}
+
     genre_focus = config.get("genre_focus", "lo-fi, study music, relaxing")
     target_use = config.get("target_use", "作業用・勉強用・睡眠用")
 

@@ -55,7 +55,7 @@ def run_daily_pipeline(config: dict, dry_run: bool = False) -> dict:
     logger.info("[1/4] BGMトレンドリサーチ...")
     sys.path.insert(0, str(Path(__file__).parent))
     from agents.trend_researcher import research_bgm_trends
-    research = research_bgm_trends(config)
+    research = research_bgm_trends(config, dry_run=dry_run)
     if not research.get("success"):
         logger.error(f"リサーチ失敗: {research.get('error')}")
         return {"success": False, "step": "research", **research}
@@ -68,7 +68,7 @@ def run_daily_pipeline(config: dict, dry_run: bool = False) -> dict:
     from agents.music_composer import compose_music_package
     idx = research.get("recommended_index", 0)
     concept = research["concepts"][idx]
-    music = compose_music_package(concept)
+    music = compose_music_package(concept, dry_run=dry_run)
     if not music.get("success"):
         logger.error(f"楽曲生成失敗: {music.get('error')}")
         return {"success": False, "step": "music", **music}
