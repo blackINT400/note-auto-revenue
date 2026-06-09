@@ -77,10 +77,21 @@ def research_trends(channel_config: dict) -> dict:
         cost_jpy = _calc_cost_jpy(input_tokens, output_tokens)
         record_empire_cost("youtube_researcher", input_tokens, output_tokens)
 
-        m = re.search(r"\{.*\}", text, re.DOTALL)
-        if not m:
-            raise ValueError(f"JSON抽出失敗: {text[:200]}")
-        result = json.loads(m.group())
+        # ```json ... ``` コードブロックを優先抽出
+        code_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+        raw = code_block.group(1) if code_block else None
+        if not raw:
+            m = re.search(r"\{.*\}", text, re.DOTALL)
+            if not m:
+                raise ValueError(f"JSON抽出失敗: {text[:200]}")
+            raw = m.group()
+
+        # 末尾カンマを除去して再パース
+        try:
+            result = json.loads(raw)
+        except json.JSONDecodeError:
+            cleaned = re.sub(r",\s*([}\]])", r"\1", raw)
+            result = json.loads(cleaned)
         result["cost_jpy"] = round(cost_jpy, 2)
         result["success"] = True
         return result
