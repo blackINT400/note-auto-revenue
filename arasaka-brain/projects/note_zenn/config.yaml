@@ -1,0 +1,46 @@
+project:
+  name: "note_zenn"
+  display_name: "言語化の技術 — 全1論マガジン"
+  phase: "phase0"
+
+note:
+  magazine_id: "mf82e085b93c9"
+  magazine_name: "言語化の技術 — 全1論で世界を翻訳する"
+  price_jpy: 980
+  articles_per_day: 2
+
+zenn:
+  username: "militech"
+  articles_per_day: 2
+
+kpi:
+  target_subscribers: 50
+  target_monthly_revenue_jpy: 30000
+  quality_threshold: 70
+
+sl:
+  stop_if_zero_subscribers_after_days: 60
+  monthly_cost_limit_jpy: 500
+
+genres:
+  - id: 1
+    name: "恋愛・好きな人への気持ちの伝え方"
+  - id: 2
+    name: "自己成長・自分を変える方法"
+  - id: 3
+    name: "人間関係・職場のストレス解消"
+  - id: 4
+    name: "自己肯定感・自信のつくり方"
+  - id: 5
+    name: "恋愛・別れと向き合い方"
+  - id: 6
+    name: "習慣・毎日を変える小さな行動"
+  - id: 7
+    name: "感情・怒りや不安との付き合い方"
+  - id: 8
+    name: "人間関係・親や家族との距離感"
+  - id: 9
+    name: "恋愛・パートナーシップの長続きする秘訣"
+  - id: 10
+    name: "自己成長・比べることをやめる思考法"
+current_genre_index: 0
