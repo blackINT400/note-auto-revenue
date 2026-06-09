@@ -11,6 +11,9 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+_AI_DISCLOSURE = "\n\n※この動画の映像・音楽はAIで生成されています"
+_AI_TAGS = ["AI生成", "AI BGM"]
+
 
 def _get_youtube_client():
     """OAuth2認証済みYouTubeクライアントを返す"""
@@ -42,6 +45,30 @@ def _get_youtube_client():
     return build("youtube", "v3", credentials=creds)
 
 
+def _build_body(package: dict) -> dict:
+    description = package.get("description", "")
+    if _AI_DISCLOSURE not in description:
+        description += _AI_DISCLOSURE
+
+    tags = package.get("tags", [])
+    for tag in _AI_TAGS:
+        if tag not in tags:
+            tags = tags + [tag]
+
+    return {
+        "snippet": {
+            "title": package["title"],
+            "description": description,
+            "tags": tags,
+            "categoryId": package.get("category_id", "10"),
+        },
+        "status": {
+            "privacyStatus": package.get("privacy_status", "private"),
+            "containsSyntheticMedia": True,
+        },
+    }
+
+
 def upload_video_metadata(package: dict, dry_run: bool = False) -> dict:
     """動画メタデータをYouTubeにアップロード（dry_run=TrueならスキップしてOK返す）"""
     if dry_run:
@@ -56,17 +83,7 @@ def upload_video_metadata(package: dict, dry_run: bool = False) -> dict:
 
     try:
         youtube = _get_youtube_client()
-        body = {
-            "snippet": {
-                "title": package["title"],
-                "description": package["description"],
-                "tags": package.get("tags", []),
-                "categoryId": package.get("category_id", "10"),
-            },
-            "status": {
-                "privacyStatus": package.get("privacy_status", "private"),
-            },
-        }
+        body = _build_body(package)
         response = youtube.videos().insert(
             part="snippet,status",
             body=body,
