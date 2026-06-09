@@ -1,19 +1,36 @@
+# ──────────────────────────────────────────────────────────
+# 機密資産（競合への流出を防ぐ。ローカル専用。）
+# ──────────────────────────────────────────────────────────
+owner/
+owner/affiliates.yaml  # アフィリエイトURL（A8広告タグ）
+
+# 環境変数・シークレット
+.env
+.env.*
+*.key
+*.pem
+secrets/
+
+# ──────────────────────────────────────────────────────────
+# 運用データ（外部に出さない）
+# ──────────────────────────────────────────────────────────
+logs/
+data/
+empire/data/
+
 # Python
 __pycache__/
 *.py[cod]
 *.egg-info/
-dist/
-build/
 .venv/
 venv/
-*.env
+dist/
+build/
 
-# Secrets
-.env
-secrets.yaml
-
-# Claude Code
-.claude/worktrees/
-
-# OS
+# macOS
 .DS_Store
+
+# IDE
+.vscode/
+.idea/
+.claude/worktrees/

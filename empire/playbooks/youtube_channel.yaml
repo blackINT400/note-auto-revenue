@@ -16,11 +16,11 @@ niche_options:
   - AI活用術
   - 投資・資産形成
 setup_steps:
-  - YouTubeチャンネルを作成
-  - ブランドアカウントを設定
-  - チャンネルアートを設定
-  - 最初の3本をアップロード
-  - 1000登録胍達成後に収益化を有効化
+  - Create YouTube channel
+  - Set up brand account
+  - Configure channel art
+  - Upload first 3 videos
+  - Enable monetization at 1000 subscribers
 kpi_metrics:
   - subscribers
   - monthly_views

@@ -50,13 +50,13 @@ jobs:
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: python "businesses/youtube_副業収益/main.py" --mode ${{ steps.mode.outputs.mode }}
+        run: python businesses/youtube_副業収益/main.py --mode ${{ steps.mode.outputs.mode }}
 
       - name: Commit generated packages
         run: |
           git config --global user.email "auto-youtube@note-revenue.bot"
           git config --global user.name "YouTube Auto Producer"
-          git add "businesses/youtube_副業収益/" 2>/dev/null || true
+          git add businesses/youtube_副業収益/ 2>/dev/null || true
           git diff --staged --quiet && echo "変更なし" || \
             git commit -m "chore: youtube package $(date +%Y-%m-%d) [skip ci]"
           git push
