@@ -1,7 +1,3 @@
-"""
-script_writer.py: YouTube台本生成エージェント
-トピックとターゲット視聴者に基づき、完全な動画台本を生成する
-"""
 import json
 import logging
 import os
@@ -29,7 +25,6 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
 
 
 def generate_script(topic: dict, channel_config: dict) -> dict:
-    """完全な動画台本を生成し、scripts/ディレクトリに保存する"""
     channel_name = channel_config.get("name", "youtube_副業収益")
     target_audience = channel_config.get("target_audience", "20〜40代の副業・資産形成に興味がある会社員")
     video_length = channel_config.get("video_length_minutes", 8)
@@ -47,49 +42,22 @@ def generate_script(topic: dict, channel_config: dict) -> dict:
 ターゲット視聴者: {target_audience}
 動画尺: {video_length}分
 
-台本の構成:
-1. フック（最初の15秒）: 視聴者が離脱しないよう強烈な問いかけ・衝撃の事実
-2. 本編: 価値ある情報を段階的に提供
-3. CTA（最後の30秒）: チャンネル登録・概要欄リンクへの誘導
+構成: フック(15秒) → 本編 → CTA(30秒)
 
 以下のJSON形式のみで出力してください:
 {{
-  "title": "動画タイトル（最終版）",
-  "hook": {{
-    "duration_seconds": 15,
-    "script": "フックの台本テキスト（そのまま読めるレベル）",
-    "visual_cue": "映像・テロップの指示"
-  }},
-  "sections": [
-    {{
-      "timestamp": "00:15",
-      "title": "セクションタイトル",
-      "duration_seconds": 120,
-      "script": "台本テキスト",
-      "visual_cue": "映像・Bロール・テロップの指示",
-      "b_roll_suggestion": "挿入映像の提案"
-    }}
-  ],
-  "cta": {{
-    "timestamp": "07:30",
-    "duration_seconds": 30,
-    "script": "CTAの台本テキスト"
-  }},
+  "title": "動画タイトル",
+  "hook": {{"duration_seconds": 15, "script": "フック台本", "visual_cue": "映像指示"}},
+  "sections": [{{"timestamp": "00:15", "title": "セクション名", "duration_seconds": 120, "script": "台本", "visual_cue": "映像指示", "b_roll_suggestion": "挿入映像"}}],
+  "cta": {{"timestamp": "07:30", "duration_seconds": 30, "script": "CTA台本"}},
   "total_word_count": 2400,
   "quality_score": 85,
-  "quality_breakdown": {{
-    "hook_strength": 90,
-    "content_depth": 85,
-    "cta_effectiveness": 80
-  }},
+  "quality_breakdown": {{"hook_strength": 90, "content_depth": 85, "cta_effectiveness": 80}},
   "quality_reason": "スコアの根拠"
 }}"""
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=4096,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        response = client.messages.create(model=model, max_tokens=4096,
+            messages=[{"role": "user", "content": prompt}])
 
         text = response.content[0].text.strip()
         input_tokens = response.usage.input_tokens
@@ -105,13 +73,10 @@ def generate_script(topic: dict, channel_config: dict) -> dict:
         scripts_dir = Path(data_dir) / "scripts"
         scripts_dir.mkdir(parents=True, exist_ok=True)
         filename = f"{date.today()}_{re.sub(r'[^a-zA-Z0-9ぁ-んァ-ン一-龥]', '_', script.get('title', 'script'))[:40]}.json"
-        script_path = scripts_dir / filename
-        script_path.write_text(json.dumps(script, ensure_ascii=False, indent=2), encoding="utf-8")
+        (scripts_dir / filename).write_text(json.dumps(script, ensure_ascii=False, indent=2), encoding="utf-8")
 
         script["cost_jpy"] = round(cost_jpy, 2)
         script["success"] = True
-        script["saved_path"] = str(script_path)
-        logger.info(f"台本生成完了: {script.get('title', '')}（品質: {script.get('quality_score', 0)}点）")
         return script
 
     except Exception as e:

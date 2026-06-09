@@ -1,7 +1,3 @@
-"""
-analyst.py: YouTubeアナリティクスエージェント
-チャンネルKPIを分析し、戦略的提言を生成する
-"""
 import json
 import logging
 import os
@@ -29,7 +25,6 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
 
 
 def analyze_channel(channel_config: dict) -> dict:
-    """チャンネルKPIを分析し、戦略的提言を生成する"""
     channel_name = channel_config.get("name", "youtube_副業収益")
     data_dir = channel_config.get("data_dir", f"businesses/{channel_name}")
 
@@ -46,55 +41,32 @@ def analyze_channel(channel_config: dict) -> dict:
         client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
         model = get_model()
 
-        prompt = f"""あなたはYouTubeチャンネル分析の専門家です。
-以下のKPIデータを分析し、戦略的提言を作成してください。
+        prompt = f"""あなたはYouTubeチャンネル分析の専門家です。以下のKPIデータを分析してください。
 
 チャンネル名: {channel_name}
 ニッチ: {channel_config.get('niche', '副業・節税・AI活用')}
 分析日: {date.today()}
 
-KPIデータ:
+KPI:
 {json.dumps(kpi, ensure_ascii=False, indent=2)}
-
-分析してください:
-1. CTRトレンド（平均CTR vs 最高/最低CTR）
-2. 視聴維持率パターン
-3. 登録者成長トレンド
-4. 収益/視聴回数比率
-5. ベスト/ワーストパフォーマンス動画のパターン
 
 以下のJSON形式のみで出力してください:
 {{
   "analysis_date": "{date.today()}",
-  "channel_health": "good/warning/critical",
-  "key_metrics": {{
-    "avg_ctr": 0.0,
-    "avg_watch_time_percent": 0.0,
-    "subscriber_growth_rate": 0.0,
-    "revenue_per_view_jpy": 0.0
-  }},
-  "best_performing_patterns": ["パターン1", "パターン2"],
-  "worst_performing_patterns": ["パターン1", "パターン2"],
-  "opportunities": ["機会1", "機会2", "機会3"],
-  "risks": ["リスク1", "リスク2"],
-  "recommendations": [
-    {{
-      "priority": 1,
-      "action": "推奨アクション",
-      "reason": "理由",
-      "expected_impact": "期待される効果"
-    }}
-  ],
+  "channel_health": "good",
+  "key_metrics": {{"avg_ctr": 0.0, "avg_watch_time_percent": 0.0, "subscriber_growth_rate": 0.0, "revenue_per_view_jpy": 0.0}},
+  "best_performing_patterns": [],
+  "worst_performing_patterns": [],
+  "opportunities": [],
+  "risks": [],
+  "recommendations": [{{"priority": 1, "action": "推奨アクション", "reason": "理由", "expected_impact": "期待効果"}}],
   "niche_pivot_needed": false,
   "niche_pivot_suggestion": "",
   "config_updates": {{}}
 }}"""
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        response = client.messages.create(model=model, max_tokens=2048,
+            messages=[{"role": "user", "content": prompt}])
 
         text = response.content[0].text.strip()
         input_tokens = response.usage.input_tokens
@@ -109,12 +81,11 @@ KPIデータ:
 
         analysis_dir = Path(data_dir) / "data"
         analysis_dir.mkdir(parents=True, exist_ok=True)
-        analysis_path = analysis_dir / f"analysis_{date.today()}.json"
-        analysis_path.write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+        (analysis_dir / f"analysis_{date.today()}.json").write_text(
+            json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
 
         result["cost_jpy"] = round(cost_jpy, 2)
         result["success"] = True
-        logger.info(f"分析完了: チャンネル健全度={result.get('channel_health', 'unknown')}（コスト: {cost_jpy:.1f}円）")
         return result
 
     except Exception as e:

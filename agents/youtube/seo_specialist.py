@@ -1,7 +1,3 @@
-"""
-seo_specialist.py: YouTube SEOエージェント
-最適化されたタイトル・説明・タグ・チャプターを生成する
-"""
 import json
 import logging
 import os
@@ -28,7 +24,6 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
 
 
 def generate_seo_package(topic: dict, script: dict, channel_config: dict) -> dict:
-    """SEO最適化されたタイトル・説明・タグ・チャプターを生成する"""
     niche = channel_config.get("niche", "副業・節税・AI活用")
 
     try:
@@ -47,39 +42,28 @@ def generate_seo_package(topic: dict, script: dict, channel_config: dict) -> dic
 動画タイトル案: {script.get('title', topic.get('title', ''))}
 メインキーワード: {topic.get('keyword', '')}
 ニッチ: {niche}
-動画セクション構成:
+動画セクション:
 {sections_summary}
 
-要件:
-- タイトル: 60文字以内、主要キーワードを含む、クリックしたくなる表現
-- 説明文: 最初の150文字が最重要（キーワードを自然に含む）、合計500〜800文字
-- タグ: 15個（広義〜狭義を混合）
-- 最適アップロード時間: JST基準、ニッチに合わせた推奨時間帯
-- チャプタータイムスタンプ: 視聴者が戻りやすい構成
+要件: タイトル60文字以内、説明500〜800文字、タグ15個、最適アップロード時間帯(JST)
 
 以下のJSON形式のみで出力してください:
 {{
   "title": "最終タイトル（60文字以内）",
   "title_length": 45,
-  "description": "動画の説明文（500〜800文字、キーワードを自然に含む）\n\n⏱ チャプター\n00:00 イントロ\n...",
-  "description_first_150": "最初の150文字の抜粋",
-  "tags": ["タグ1", "タグ2", "タグ3"],
+  "description": "説明文",
+  "description_first_150": "最初150文字",
+  "tags": ["タグ1"],
   "optimal_upload_time_jst": "19:00",
   "optimal_upload_day": "土曜日",
   "upload_reason": "推奨理由",
-  "chapters": [
-    {{"timestamp": "00:00", "title": "イントロ"}},
-    {{"timestamp": "00:15", "title": "セクション名"}}
-  ],
+  "chapters": [{{"timestamp": "00:00", "title": "イントロ"}}],
   "primary_keyword": "メインキーワード",
-  "secondary_keywords": ["サブキーワード1", "サブキーワード2"]
+  "secondary_keywords": ["サブキーワード1"]
 }}"""
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=2048,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        response = client.messages.create(model=model, max_tokens=2048,
+            messages=[{"role": "user", "content": prompt}])
 
         text = response.content[0].text.strip()
         input_tokens = response.usage.input_tokens
@@ -93,7 +77,6 @@ def generate_seo_package(topic: dict, script: dict, channel_config: dict) -> dic
         result = json.loads(m.group())
         result["cost_jpy"] = round(cost_jpy, 2)
         result["success"] = True
-        logger.info(f"SEOパッケージ生成完了（コスト: {cost_jpy:.1f}円）")
         return result
 
     except Exception as e:

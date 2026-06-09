@@ -1,7 +1,3 @@
-"""
-researcher.py: YouTubeトレンドリサーチエージェント
-ビジネス/副業/節税/AI/投資ニッチのトレンドトピックを分析し、上位5件を返す
-"""
 import json
 import logging
 import os
@@ -29,7 +25,6 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
 
 
 def research_trends(channel_config: dict) -> dict:
-    """YouTubeトレンドトピックを調査し、上位5件のトピック機会を返す"""
     niche = channel_config.get("niche", "副業・節税・AI活用")
     target_audience = channel_config.get("target_audience", "20〜40代の副業・資産形成に興味がある会社員")
 
@@ -42,12 +37,12 @@ def research_trends(channel_config: dict) -> dict:
 
 ニッチ: {niche}
 ターゲット視聴者: {target_audience}
-分析対象ジャンル: ビジネス、副業、節税、AI活用、投資・資産形成
+分析対象: ビジネス、副業、節税、AI活用、投資・資産形成
 
 以下の基準でトピックをスコアリングし、上位5件を選定してください:
-1. 競合少なさ (0-100): 競合動画が少なく差別化できるか
-2. 需要の高さ (0-100): 検索ボリュームと視聴者の関心度
-3. 収益化可能性 (0-100): 広告収益・スポンサー・商品販売への転換可能性
+1. 競合少なさ (0-100)
+2. 需要の高さ (0-100)
+3. 収益化可能性 (0-100)
 
 今日の日付: {date.today()}
 
@@ -57,16 +52,16 @@ def research_trends(channel_config: dict) -> dict:
     {{
       "title": "動画タイトル案（日本語・具体的）",
       "keyword": "メインキーワード",
-      "estimated_monthly_searches": "月間検索数の推定（例: 5,000〜10,000）",
+      "estimated_monthly_searches": "月間検索数の推定",
       "competition_score": 75,
       "demand_score": 85,
       "monetization_score": 80,
       "total_score": 80,
-      "reasoning": "このトピックを選んだ理由（2〜3文）",
-      "content_angle": "差別化できる切り口・アングル"
+      "reasoning": "このトピックを選んだ理由",
+      "content_angle": "差別化できる切り口"
     }}
   ],
-  "market_summary": "現在の市場状況の要約（3文以内）",
+  "market_summary": "現在の市場状況の要約",
   "recommended_topic_index": 0
 }}"""
 
@@ -88,7 +83,6 @@ def research_trends(channel_config: dict) -> dict:
         result = json.loads(m.group())
         result["cost_jpy"] = round(cost_jpy, 2)
         result["success"] = True
-        logger.info(f"リサーチ完了: {len(result.get('topics', []))}件のトピック取得（コスト: {cost_jpy:.1f}円）")
         return result
 
     except Exception as e:
