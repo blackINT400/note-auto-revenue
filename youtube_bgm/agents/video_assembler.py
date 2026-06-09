@@ -8,6 +8,8 @@ import os
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
+from agents.video_generator import generate_bgm_video
+
 logger = logging.getLogger(__name__)
 
 JST = timezone(timedelta(hours=9))
@@ -49,6 +51,18 @@ def assemble_video_package(music_package: dict, config: dict) -> dict:
         "cost_jpy": music_package.get("cost_jpy", 0),
         "success": True,
     }
+
+    # 動画ファイル生成（dry_run でなければ実際に生成）
+    duration_min = concept.get("duration_minutes", 60)
+    duration_sec = duration_min * 60
+    video_output_dir = Path(config.get("data_dir", "youtube_bgm/data")) / "videos"
+
+    video_path = generate_bgm_video(concept, video_output_dir, duration_sec)
+    if video_path:
+        package["video_file_path"] = video_path
+        logger.info(f"動画ファイル生成完了: {video_path}")
+    else:
+        logger.warning("動画ファイル生成失敗 - フォールバック動画を使用")
 
     # Save package
     output_dir = Path(config.get("data_dir", "youtube_bgm/data")) / "ready"
