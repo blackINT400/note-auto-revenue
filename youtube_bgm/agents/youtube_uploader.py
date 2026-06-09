@@ -10,6 +10,55 @@ from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
+_CREDENTIALS_DIR = Path(__file__).parent.parent / ".credentials"
+_TOKEN_PKL = _CREDENTIALS_DIR / "youtube_token.pkl"
+_SCOPES = ["https://www.googleapis.com/auth/youtube.upload",
+           "https://www.googleapis.com/auth/youtube"]
+
+
+def _get_youtube_client():
+    """認証済みYouTubeクライアントを返す。
+    優先順位:
+      1. 環境変数 YOUTUBE_CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN (GitHub Actions)
+      2. .credentials/youtube_token.pkl (ローカル開発)
+    """
+    try:
+        from google.auth.transport.requests import Request
+        from google.oauth2.credentials import Credentials
+        from googleapiclient.discovery import build
+    except ImportError as e:
+        raise ImportError(f"google-api-python-client が未インストール: {e}") from e
+
+    client_id = os.environ.get("YOUTUBE_CLIENT_ID")
+    client_secret = os.environ.get("YOUTUBE_CLIENT_SECRET")
+    refresh_token = os.environ.get("YOUTUBE_REFRESH_TOKEN")
+
+    if client_id and client_secret and refresh_token:
+        creds = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri="https://oauth2.googleapis.com/token",
+            client_id=client_id,
+            client_secret=client_secret,
+            scopes=_SCOPES,
+        )
+        creds.refresh(Request())
+    elif _TOKEN_PKL.exists():
+        import pickle
+        with open(_TOKEN_PKL, "rb") as f:
+            creds = pickle.load(f)
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+    else:
+        raise RuntimeError(
+            "YouTube 認証情報が見つかりません。\n"
+            "環境変数 YOUTUBE_CLIENT_ID / YOUTUBE_CLIENT_SECRET / YOUTUBE_REFRESH_TOKEN を設定するか、\n"
+            "python youtube_bgm/auth_setup.py を実行してください。"
+        )
+
+    return build("youtube", "v3", credentials=creds)
+
+
 _AI_DISCLOSURE = "\n\n※この動画の映像・音楽はAIで生成されています"
 _AI_TAGS = ["AI生成", "AI BGM"]
 
@@ -26,36 +75,6 @@ _CTA = (
     "▶ チャンネル登録で毎日新しいBGMをお届けします！\n"
     "🔔 通知をオンにして聴き逃しなし。毎日投稿中。"
 )
-
-
-def _get_youtube_client():
-    """OAuth2認証済みYouTubeクライアントを返す"""
-    try:
-        from google.auth.transport.requests import Request
-        from google.oauth2.credentials import Credentials
-        from google_auth_oauthlib.flow import InstalledAppFlow
-        from googleapiclient.discovery import build
-    except ImportError as e:
-        raise ImportError(f"google-api-python-client が未インストール: {e}") from e
-
-    SCOPES = ["https://www.googleapis.com/auth/youtube.upload",
-              "https://www.googleapis.com/auth/youtube"]
-    token_path = Path("token.json")
-    creds = None
-
-    if token_path.exists():
-        creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
-
-    if not creds or not creds.valid:
-        if creds and creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-        else:
-            secret_file = os.environ.get("YOUTUBE_CLIENT_SECRET_FILE", "client_secret.json")
-            flow = InstalledAppFlow.from_client_secrets_file(secret_file, SCOPES)
-            creds = flow.run_local_server(port=0)
-        token_path.write_text(creds.to_json())
-
-    return build("youtube", "v3", credentials=creds)
 
 
 def _build_description_footer(description: str) -> str:
@@ -105,10 +124,22 @@ def upload_video_metadata(package: dict, dry_run: bool = False) -> dict:
     try:
         youtube = _get_youtube_client()
         body = _build_body(package)
+
+        # 実際の動画ファイルパスを探す（パッケージに含まれていれば使用、なければテスト動画）
+        video_file = package.get("video_file_path")
+        if not video_file or not Path(video_file).exists():
+            video_file = os.environ.get("YOUTUBE_TEST_VIDEO", "/tmp/test_upload.mp4")
+
+        if not Path(video_file).exists():
+            return {"success": False, "error": f"動画ファイルが見つかりません: {video_file}"}
+
+        from googleapiclient.http import MediaFileUpload
+        media = MediaFileUpload(video_file, mimetype="video/mp4", resumable=True)
+
         response = youtube.videos().insert(
             part="snippet,status",
             body=body,
-            # media_body は実際の動画ファイルが必要 — ここではメタデータのみ
+            media_body=media,
         ).execute()
         video_id = response.get("id")
         logger.info(f"アップロード完了: https://youtu.be/{video_id}")
