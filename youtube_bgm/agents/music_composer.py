@@ -22,8 +22,23 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
     return usd * JPY_RATE
 
 
-def compose_music_package(concept: dict) -> dict:
+def compose_music_package(concept: dict, dry_run: bool = False) -> dict:
     """コンセプトから楽曲生成プロンプトと構成を作成"""
+    if dry_run:
+        logger.info("[DRY-RUN] モック楽曲パッケージを使用")
+        return {
+            "suno_prompt": "lo-fi hip hop, 90bpm, piano, soft drums, chill, study music",
+            "udio_prompt": "relaxing lo-fi, piano melody, gentle beats, 90bpm",
+            "structure": {"bpm": 90, "key": "C major", "instruments": ["piano", "drums"], "sections": ["intro", "main_loop", "outro"]},
+            "visual_concept": "コーヒーカップと本が置かれた落ち着いた部屋のアニメーション",
+            "thumbnail_text": "作業用BGM Lo-Fi",
+            "description_jp": "集中力を高めるLo-Fi BGMです。作業・勉強・読書のお供に。",
+            "tags": ["作業用BGM", "lo-fi", "集中", "勉強"],
+            "cost_jpy": 0.0,
+            "success": True,
+            "concept": concept,
+        }
+
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
     model = os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-8")
 
