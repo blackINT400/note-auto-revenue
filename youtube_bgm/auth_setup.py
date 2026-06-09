@@ -39,7 +39,13 @@ def main():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(str(SECRET_FILE), SCOPES)
-            creds = flow.run_local_server(port=0)
+            flow.redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
+            auth_url, _ = flow.authorization_url(prompt="consent")
+            print("\n以下のURLをブラウザで開いて認証してください:")
+            print(f"\n  {auth_url}\n")
+            code = input("認証後に表示されたコードを貼り付けてください: ").strip()
+            flow.fetch_token(code=code)
+            creds = flow.credentials
         with open(TOKEN_FILE, "wb") as f:
             pickle.dump(creds, f)
         print(f"トークン保存完了: {TOKEN_FILE}")
