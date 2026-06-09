@@ -1,0 +1,62 @@
+name: YouTube Daily Producer
+
+on:
+  schedule:
+    - cron: '0 23 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: '実行モード (daily / weekly)'
+        required: true
+        default: 'daily'
+        type: choice
+        options:
+          - daily
+          - weekly
+
+jobs:
+  produce:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Determine run mode
+        id: mode
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "mode=${{ inputs.mode }}" >> $GITHUB_OUTPUT
+          elif [ "$(date -u +%u)" = "1" ]; then
+            echo "mode=weekly" >> $GITHUB_OUTPUT
+          else
+            echo "mode=daily" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run YouTube producer
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: python "businesses/youtube_副業収益/main.py" --mode ${{ steps.mode.outputs.mode }}
+
+      - name: Commit generated packages
+        run: |
+          git config --global user.email "auto-youtube@note-revenue.bot"
+          git config --global user.name "YouTube Auto Producer"
+          git add "businesses/youtube_副業収益/" 2>/dev/null || true
+          git diff --staged --quiet && echo "変更なし" || \
+            git commit -m "chore: youtube package $(date +%Y-%m-%d) [skip ci]"
+          git push
