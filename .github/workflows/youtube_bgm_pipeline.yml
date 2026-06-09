@@ -17,6 +17,8 @@ on:
 jobs:
   pipeline:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -26,7 +28,7 @@ jobs:
           cache: pip
 
       - name: Install system dependencies
-        run: sudo apt-get install -y ffmpeg
+        run: sudo apt-get install -y ffmpeg --fix-missing
 
       - name: Install Python dependencies
         run: |
