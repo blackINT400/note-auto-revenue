@@ -5,6 +5,7 @@ pipeline.py: YouTube BGMパイプライン オーケストレーター
   python pipeline.py               # 本番実行
   python pipeline.py --dry-run     # ドライラン（アップロードスキップ）
   python pipeline.py --mode weekly # 週次分析モード
+  python pipeline.py --genre "cozy indoor jazz cafe night"  # ジャンル上書き
 """
 import argparse
 import json

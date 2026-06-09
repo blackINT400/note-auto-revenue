@@ -4,13 +4,11 @@ youtube_uploader.py: YouTube Data API v3 アップロードエージェント
 
 Dry-runモードでは実際のアップロードをスキップする。
 """
-import json
 import logging
 import os
 from pathlib import Path
 
 logger = logging.getLogger(__name__)
-
 
 _CREDENTIALS_DIR = Path(__file__).parent.parent / ".credentials"
 _TOKEN_PKL = _CREDENTIALS_DIR / "youtube_token.pkl"
@@ -19,7 +17,7 @@ _SCOPES = ["https://www.googleapis.com/auth/youtube.upload",
 
 
 def _get_youtube_client():
-    """OAuth2認証済みYouTubeクライアントを返す。
+    """認証済みYouTubeクライアントを返す。
     優先順位:
       1. 環境変数 YOUTUBE_CLIENT_ID / CLIENT_SECRET / REFRESH_TOKEN (GitHub Actions)
       2. .credentials/youtube_token.pkl (ローカル開発)
