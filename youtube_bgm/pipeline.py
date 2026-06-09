@@ -123,9 +123,12 @@ def main():
     parser = argparse.ArgumentParser(description="YouTube BGM Pipeline")
     parser.add_argument("--dry-run", action="store_true", help="アップロードをスキップ")
     parser.add_argument("--mode", choices=["daily", "weekly"], default="daily")
+    parser.add_argument("--genre", default=None, help="ジャンルを上書き指定")
     args = parser.parse_args()
 
     config = load_config()
+    if args.genre:
+        config["genre_focus"] = args.genre
 
     if args.mode == "weekly":
         result = run_weekly_analysis(config)

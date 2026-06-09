@@ -4,6 +4,7 @@
 !config*.json
 client_secret*.json
 token.json
+.credentials/
 
 # Output
 output/
