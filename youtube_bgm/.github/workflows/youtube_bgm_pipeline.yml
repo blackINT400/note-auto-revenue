@@ -1,0 +1,60 @@
+name: YouTube BGM Pipeline
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 毎日 09:00 JST
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry-run (skip upload)'
+        required: false
+        default: 'true'
+      mode:
+        description: 'Mode: daily or weekly'
+        required: false
+        default: 'daily'
+
+jobs:
+  pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd youtube_bgm
+          pip install -r requirements.txt
+
+      - name: Determine mode
+        id: mode
+        run: |
+          DOW=$(date +%u)  # 1=Mon
+          if [ "$DOW" = "1" ]; then
+            echo "mode=weekly" >> $GITHUB_OUTPUT
+          else
+            echo "mode=${{ github.event.inputs.mode || 'daily' }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Run pipeline
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          YOUTUBE_CLIENT_SECRET_FILE: client_secret.json
+        run: |
+          cd youtube_bgm
+          DRY_RUN_FLAG=""
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            DRY_RUN_FLAG="--dry-run"
+          fi
+          python pipeline.py --mode ${{ steps.mode.outputs.mode }} $DRY_RUN_FLAG
+
+      - name: Commit generated packages
+        run: |
+          git config user.email noreply@anthropic.com
+          git config user.name Claude
+          git add youtube_bgm/data/ || true
+          git diff --cached --quiet || git commit -m "chore: youtube_bgm auto-generated packages [skip ci]"
+          git push || true
