@@ -73,24 +73,10 @@ jobs:
       - name: Verify generated video with ffprobe
         if: success()
         run: |
-          VIDEO=$(python3 -c "
-import json, glob
-files = sorted(glob.glob('youtube_bgm/data/ready/*.json'), reverse=True)
-if files:
-    d = json.load(open(files[0]))
-    print(d.get('video_file_path', ''))
-" 2>/dev/null || echo "")
+          VIDEO=$(python3 -c "import json,glob; f=sorted(glob.glob('youtube_bgm/data/ready/*.json'),reverse=True); print(json.load(open(f[0])).get('video_file_path','') if f else '')" 2>/dev/null || echo "")
           if [ -n "$VIDEO" ] && [ -f "$VIDEO" ]; then
             echo "=== ffprobe: $VIDEO ==="
-            ffprobe -v quiet -print_format json -show_streams "$VIDEO" | python3 -c "
-import json, sys
-info = json.load(sys.stdin)
-for s in info.get('streams', []):
-    if s['codec_type'] == 'video':
-        print(f'VIDEO: {s[\"codec_name\"]} {s.get(\"width\")}x{s.get(\"height\")} @ {s.get(\"r_frame_rate\")} fps')
-    elif s['codec_type'] == 'audio':
-        print(f'AUDIO: {s[\"codec_name\"]} {s.get(\"bit_rate\",\"?\")} bps sample_rate={s.get(\"sample_rate\")}')
-"
+            ffprobe -v quiet -print_format json -show_streams "$VIDEO" | python3 -c "import json,sys; [print(f'VIDEO: {s[chr(34)]}{s[\"codec_name\"]}{chr(34)} {s.get(\"width\")}x{s.get(\"height\")} @ {s.get(\"r_frame_rate\")} fps') if s['codec_type']=='video' else print(f'AUDIO: {s[\"codec_name\"]} {s.get(\"bit_rate\",\"?\")} bps sr={s.get(\"sample_rate\")}') if s['codec_type']=='audio' else None for s in json.load(sys.stdin).get('streams',[])]"
           else
             echo "動画ファイルが見つかりません（dry_runまたはエラー）"
           fi
