@@ -41,8 +41,21 @@ def _generate_weekly_calendar(topics, channel_config, client, model):
   "weekly_theme": "今週のテーマ", "content_mix": "コンテンツミックス"}}"""
         response = client.messages.create(model=model, max_tokens=1024, messages=[{"role": "user", "content": prompt}])
         record_empire_cost("youtube_producer_calendar", response.usage.input_tokens, response.usage.output_tokens)
-        m = re.search(r"\{.*\}", response.content[0].text.strip(), re.DOTALL)
-        return json.loads(m.group()) if m else {"error": "JSON抽出失敗"}
+        _text = response.content[0].text.strip()
+        # ```json ... ``` コードブロックを優先抽出
+        _code_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", _text, re.DOTALL)
+        _raw = _code_block.group(1) if _code_block else None
+        if not _raw:
+            _m = re.search(r"\{.*\}", _text, re.DOTALL)
+            _raw = _m.group() if _m else None
+        if not _raw:
+            return {"error": "JSON抽出失敗"}
+        # 末尾カンマを除去して再パース
+        try:
+            return json.loads(_raw)
+        except json.JSONDecodeError:
+            _cleaned = re.sub(r",\s*([}\]])", r"\1", _raw)
+            return json.loads(_cleaned)
     except Exception as e:
         return {"error": str(e)}
 

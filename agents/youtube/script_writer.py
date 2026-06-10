@@ -65,10 +65,21 @@ def generate_script(topic: dict, channel_config: dict) -> dict:
         cost_jpy = _calc_cost_jpy(input_tokens, output_tokens)
         record_empire_cost("youtube_script_writer", input_tokens, output_tokens)
 
-        m = re.search(r"\{.*\}", text, re.DOTALL)
-        if not m:
-            raise ValueError(f"JSON抽出失敗: {text[:200]}")
-        script = json.loads(m.group())
+        # ```json ... ``` コードブロックを優先抽出
+        code_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+        raw = code_block.group(1) if code_block else None
+        if not raw:
+            m = re.search(r"\{.*\}", text, re.DOTALL)
+            if not m:
+                raise ValueError(f"JSON抽出失敗: {text[:200]}")
+            raw = m.group()
+
+        # 末尾カンマを除去して再パース
+        try:
+            script = json.loads(raw)
+        except json.JSONDecodeError:
+            cleaned = re.sub(r",\s*([}\]])", r"\1", raw)
+            script = json.loads(cleaned)
 
         scripts_dir = Path(data_dir) / "scripts"
         scripts_dir.mkdir(parents=True, exist_ok=True)
