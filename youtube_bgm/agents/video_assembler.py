@@ -35,6 +35,10 @@ def assemble_video_package(music_package: dict, config: dict) -> dict:
         hour=18, minute=0, second=0, microsecond=0
     )
 
+    genre = concept.get("genre", "lofi")
+    mood = concept.get("mood", "relaxing")
+    visual_concept = music_package.get("visual_concept", "") or f"{genre} scene: {mood}"
+
     package = {
         "title": title,
         "description": description,
@@ -43,7 +47,7 @@ def assemble_video_package(music_package: dict, config: dict) -> dict:
         "privacy_status": "public",
         "scheduled_publish_at": upload_dt.isoformat(),
         "thumbnail_text": music_package.get("thumbnail_text", title),
-        "visual_concept": music_package.get("visual_concept", ""),
+        "visual_concept": visual_concept,
         "suno_prompt": music_package.get("suno_prompt", ""),
         "udio_prompt": music_package.get("udio_prompt", ""),
         "music_structure": music_package.get("structure", {}),

@@ -5,6 +5,7 @@
 client_secret*.json
 token.json
 .credentials/
+*.pkl
 
 # Output
 output/
