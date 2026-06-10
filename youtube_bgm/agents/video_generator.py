@@ -216,6 +216,7 @@ def _build_crossfade_cycle(
     clip_paths: list[Path],
     durations: list[int],
     tmp: Path,
+    fade_dur: int = FADE_DUR,
 ) -> Path | None:
     """複数クリップを xfade で結合してサイクル動画を作成する"""
     if len(clip_paths) == 1:
@@ -227,19 +228,19 @@ def _build_crossfade_cycle(
 
     filter_parts: list[str] = []
     prev_label = "[0:v]"
-    offset = durations[0] - FADE_DUR
+    offset = durations[0] - fade_dur
 
     for i in range(1, len(clip_paths)):
         transition = random.choice(["dissolve", "fadeblack", "fade"])
         out_label = f"[xf{i}]" if i < len(clip_paths) - 1 else "[vout]"
         filter_parts.append(
             f"{prev_label}[{i}:v]xfade=transition={transition}"
-            f":duration={FADE_DUR}:offset={max(0, offset)}{out_label}"
+            f":duration={fade_dur}:offset={max(0, offset)}{out_label}"
         )
-        offset += durations[i] - FADE_DUR
+        offset += durations[i] - fade_dur
         prev_label = out_label
 
-    total_dur = sum(durations) - FADE_DUR * (len(clip_paths) - 1)
+    total_dur = sum(durations) - fade_dur * (len(clip_paths) - 1)
     cycle_path = tmp / "cycle.mp4"
 
     cmd = [
@@ -369,6 +370,7 @@ def generate_bgm_video(
     concept: dict,
     output_dir: Path,
     duration_sec: int = DEFAULT_DURATION_SEC,
+    duration_mode: str = "short",
 ) -> str | None:
     genre = concept.get("genre", "lofi")
     mood = concept.get("mood", "relaxing calm")
@@ -381,13 +383,23 @@ def generate_bgm_video(
         logger.info(f"既存動画を再利用: {output_path}")
         return str(output_path)
 
+    # モード別パラメータ
+    if duration_mode == "short":
+        n_scenes_range = (3, 3)   # 固定3枚
+        clip_dur_range = (20, 20) # 固定20秒
+        xfade_dur = 2             # クロスフェード2秒
+    else:
+        n_scenes_range = (5, 8)
+        clip_dur_range = (20, 40)
+        xfade_dur = FADE_DUR      # 3秒
+
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
         audio_path = tmp / "music.aac"
         cycle_video: Path | None = None
 
         # Step 1: 音楽生成
-        logger.info("アンビエント音楽を生成中...")
+        logger.info(f"アンビエント音楽を生成中... ({duration_sec}秒, mode={duration_mode})")
         if not _generate_ambient_audio(audio_path, duration_sec, genre):
             logger.error("音楽生成失敗")
             return None
@@ -395,7 +407,8 @@ def generate_bgm_video(
         # Step 2: Pollinations.AI で画像を複数枚生成してサイクル動画を作る
         scene_keywords = _get_scene_keywords(genre, mood)
         random.shuffle(scene_keywords)
-        n_scenes = random.randint(5, min(8, len(scene_keywords)))
+        n_scenes = random.randint(*n_scenes_range)
+        n_scenes = min(n_scenes, len(scene_keywords))
         keywords = scene_keywords[:n_scenes]
 
         # 始点と終点を同じseedにしてシームレスループを設計
@@ -413,11 +426,11 @@ def generate_bgm_video(
                 logger.warning(f"シーン{idx}の画像生成スキップ")
 
         # Step 3: 各画像にzoompanを適用してクリップ化
-        if len(image_paths) >= 3:
+        if len(image_paths) >= 2:
             clip_paths: list[Path] = []
             durations: list[int] = []
             for idx, img_path in enumerate(image_paths):
-                dur = random.randint(20, 40)
+                dur = random.randint(*clip_dur_range)
                 zoom_in = (idx % 2 == 0)  # 交互にin/out
                 clip_path = tmp / f"clip_{idx:02d}.mp4"
                 logger.info(f"クリップ生成中: scene_{idx:02d} ({dur}秒, zoom_{'in' if zoom_in else 'out'})")
@@ -428,8 +441,8 @@ def generate_bgm_video(
                     logger.warning(f"クリップ{idx}生成失敗、スキップ")
 
             if len(clip_paths) >= 2:
-                logger.info(f"クロスフェード結合中... ({len(clip_paths)}クリップ)")
-                cycle_video = _build_crossfade_cycle(clip_paths, durations, tmp)
+                logger.info(f"クロスフェード結合中... ({len(clip_paths)}クリップ, fade={xfade_dur}s)")
+                cycle_video = _build_crossfade_cycle(clip_paths, durations, tmp, fade_dur=xfade_dur)
 
         # Pixabay フォールバック
         if cycle_video is None:

@@ -13,6 +13,10 @@ on:
         description: 'Genre override (e.g. "cozy jazz cafe")'
         required: false
         default: ''
+      duration:
+        description: 'Duration mode: short (60s test) or long (3600s production)'
+        required: false
+        default: 'short'
 
 jobs:
   pipeline:
@@ -64,10 +68,13 @@ jobs:
             DRY_FLAG="--dry-run"
           fi
           GENRE_INPUT="${{ github.event.inputs.genre }}"
+          DURATION="${{ github.event.inputs.duration }}"
+          DURATION="${DURATION:-short}"
+          DURATION_FLAG="--duration $DURATION"
           if [ -n "$GENRE_INPUT" ]; then
-            python pipeline.py --mode ${{ steps.mode.outputs.mode }} $DRY_FLAG --genre "$GENRE_INPUT"
+            python pipeline.py --mode ${{ steps.mode.outputs.mode }} $DRY_FLAG $DURATION_FLAG --genre "$GENRE_INPUT"
           else
-            python pipeline.py --mode ${{ steps.mode.outputs.mode }} $DRY_FLAG
+            python pipeline.py --mode ${{ steps.mode.outputs.mode }} $DRY_FLAG $DURATION_FLAG
           fi
 
       - name: Verify generated video with ffprobe

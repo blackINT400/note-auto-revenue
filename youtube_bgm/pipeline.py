@@ -125,11 +125,18 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="アップロードをスキップ")
     parser.add_argument("--mode", choices=["daily", "weekly"], default="daily")
     parser.add_argument("--genre", default=None, help="ジャンルを上書き指定")
+    parser.add_argument(
+        "--duration",
+        choices=["short", "long"],
+        default="short",
+        help="short=60秒テスト用 / long=3600秒本番用",
+    )
     args = parser.parse_args()
 
     config = load_config()
     if args.genre:
         config["genre_focus"] = args.genre
+    config["duration_mode"] = args.duration  # "short" or "long"
 
     if args.mode == "weekly":
         result = run_weekly_analysis(config)
