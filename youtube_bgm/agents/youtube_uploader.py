@@ -1,10 +1,9 @@
 """
 youtube_uploader.py: YouTube Data API v3 アップロードエージェント
-動画パッケージのメタデータをYouTubeにアップロードする
+動画パッケージの動画ファイルをYouTubeにアップロードする
 
 Dry-runモードでは実際のアップロードをスキップする。
 """
-import json
 import logging
 import os
 from datetime import datetime, timezone, timedelta
@@ -143,7 +142,7 @@ def _notify_discord(package: dict, video_id: str) -> None:
 
 
 def upload_video_metadata(package: dict, dry_run: bool = False) -> dict:
-    """動画メタデータをYouTubeにアップロード（dry_run=TrueならスキップしてOK返す）"""
+    """動画ファイルをYouTubeにアップロード（dry_run=TrueならスキップしてOK返す）"""
     if dry_run:
         logger.info(f"[DRY-RUN] アップロードスキップ: {package.get('title')}")
         return {
@@ -154,14 +153,31 @@ def upload_video_metadata(package: dict, dry_run: bool = False) -> dict:
             "message": "Dry-run: アップロードはスキップされました",
         }
 
+    video_file = package.get("video_file_path", "")
+    if not video_file or not Path(video_file).exists():
+        logger.error(f"動画ファイルが見つかりません: {video_file}")
+        return {"success": False, "error": f"動画ファイルがありません: {video_file}"}
+
     try:
+        from googleapiclient.http import MediaFileUpload
         youtube = _get_youtube_client()
         body = _build_body(package)
-        response = youtube.videos().insert(
+        media = MediaFileUpload(
+            video_file,
+            mimetype="video/mp4",
+            resumable=True,
+            chunksize=1024 * 1024 * 10,  # 10MB chunks
+        )
+        request = youtube.videos().insert(
             part="snippet,status",
             body=body,
-            # media_body は実際の動画ファイルが必要 — ここではメタデータのみ
-        ).execute()
+            media_body=media,
+        )
+        response = None
+        while response is None:
+            status, response = request.next_chunk()
+            if status:
+                logger.info(f"アップロード進捗: {int(status.progress() * 100)}%")
         video_id = response.get("id")
         logger.info(f"アップロード完了: https://youtu.be/{video_id}")
         result = {"success": True, "video_id": video_id, "title": package["title"]}
