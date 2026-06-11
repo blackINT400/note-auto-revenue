@@ -27,13 +27,13 @@ def compose_music_package(concept: dict, dry_run: bool = False) -> dict:
     if dry_run:
         logger.info("[DRY-RUN] モック楽曲パッケージを使用")
         return {
-            "suno_prompt": "lo-fi hip hop, 90bpm, piano, soft drums, chill, study music",
-            "udio_prompt": "relaxing lo-fi, piano melody, gentle beats, 90bpm",
-            "structure": {"bpm": 90, "key": "C major", "instruments": ["piano", "drums"], "sections": ["intro", "main_loop", "outro"]},
-            "visual_concept": "コーヒーカップと本が置かれた落ち着いた部屋のアニメーション",
-            "thumbnail_text": "作業用BGM Lo-Fi",
-            "description_jp": "集中力を高めるLo-Fi BGMです。作業・勉強・読書のお供に。",
-            "tags": ["作業用BGM", "lo-fi", "集中", "勉強"],
+            "suno_prompt": "smooth jazz, 75bpm, piano, soft bass, muted trumpet, late night lounge",
+            "udio_prompt": "relaxing smooth jazz, piano melody, gentle bass, 75bpm, cozy night",
+            "structure": {"bpm": 75, "key": "F major", "instruments": ["piano", "bass", "trumpet"], "sections": ["intro", "main_loop", "outro"]},
+            "visual_concept": "luxury living room: morning forest",
+            "thumbnail_text": "朝の室内ジャズ BGM",
+            "description_jp": "朝日が差し込む、森と湖が見える高級リビングルーム。\n静かに仕事を始めたい朝、コーヒーを片手にゆっくりしたい時間に。\nSmooth JazzとAmbientを融合させた、集中と癒しのBGMです。",
+            "tags": ["作業BGM", "smooth jazz", "朝BGM", "집중력"],
             "cost_jpy": 0.0,
             "success": True,
             "concept": concept,
@@ -55,15 +55,15 @@ def compose_music_package(concept: dict, dry_run: bool = False) -> dict:
   "suno_prompt": "Suno AIへの楽曲生成プロンプト（英語・詳細）",
   "udio_prompt": "Udio AIへの楽曲生成プロンプト（英語・詳細）",
   "structure": {{
-    "bpm": 90,
-    "key": "C major",
-    "instruments": ["piano", "strings"],
+    "bpm": 75,
+    "key": "F major",
+    "instruments": ["piano", "bass"],
     "sections": ["intro", "main_loop", "outro"]
   }},
-  "visual_concept": "動画の映像コンセプト（背景・アニメーション）",
-  "thumbnail_text": "サムネイルのメインテキスト",
-  "description_jp": "YouTube概要欄（日本語・500字以内）",
-  "tags": ["tag1", "tag2"]
+  "visual_concept": "動画の映像コンセプト（背景・シーン）",
+  "thumbnail_text": "サムネイルのメインテキスト（日本語・短く）",
+  "description_jp": "YouTube概要欄冒頭3行（以下フォーマット厳守）:\n1行目: 情景の詩的な描写（例: 朝日が差し込む、森と湖が見える高級リビングルーム。）\n2行目: どんな時間・気持ちの人向けか（例: 静かに仕事を始めたい朝、コーヒーを片手にゆっくりしたい時間に。）\n3行目: 音楽のスタイル説明（例: Smooth JazzとAmbientを融合させた、集中と癒しのBGMです。）\n（3行で500字以内）",
+  "tags": ["日本語タグ", "english tag", "한국어태그"]
 }}"""
 
     response = client.messages.create(

@@ -39,19 +39,19 @@ def _get_next_vol(data_dir: str) -> int:
 _MOCK_RESEARCH = {
     "concepts": [
         {
-            "title": "Smooth Jazz & R&B – 深夜のペントハウス — 御影射すネオンとウィスキー | Vol. 1",
+            "title": "朝の静けさに包まれる室内ジャズ｜森と湖が見える高級リビングで過ごす穏やかな時間",
             "genre": "smooth jazz",
-            "mood": "深夜・リラックス",
+            "mood": "朝・穏やか・リラックス",
             "duration_minutes": 60,
             "competition_score": 60,
             "demand_score": 90,
             "monetization_score": 80,
             "total_score": 77,
-            "reasoning": "Smooth Jazzは安定高需要。競合が少なニッチの試聴。",
-            "tags": ["作業BGM", "smooth jazz", "jazz bgm", "공부할때듣는음악", "relax"]
+            "reasoning": "朝の作業BGMは高需要。日本語タイトルで差別化できる。",
+            "tags": ["作業BGM", "smooth jazz", "朝BGM", "공부할때듣는음악", "relax"]
         },
     ],
-    "market_summary": "Smooth Jazzは安定高需要。",
+    "market_summary": "日本語タイトルのSmooth Jazzは競合が少なく高需要。",
     "recommended_index": 0,
 }
 
@@ -63,8 +63,7 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
 
     if dry_run:
         logger.info("[DRY-RUN] モックリサーチデータを使用")
-        mock = {**_MOCK_RESEARCH, "cost_jpy": 0.0, "success": True, "next_vol": next_vol}
-        return mock
+        return {**_MOCK_RESEARCH, "cost_jpy": 0.0, "success": True, "next_vol": next_vol}
 
     BGM_GENRES = [
         config.get("genre_focus", "smooth jazz, R&B, relaxing"),
@@ -86,22 +85,23 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
 用途: {target_use}
 今日の日付: {date.today()}
 
-【タイトルフォーマット】 — 以下の形式を厳守すること：
-"Smooth Jazz & R&B – [季節/時間帯] [情景の詩的な説明] | Vol. {next_vol}"
+【タイトル生成ルール — 厳守】
+フォーマット: "[感情/目的] × [場所の詩的描写] | [ジャンル] BGM"
 
-例1: "Smooth Jazz & R&B – 夏の深夜 — 雨返りのペントハウスとウィスキー | Vol. {next_vol}"
-例2: "Smooth Jazz & R&B – 冬の朝 — 雪山が見える暮らしとコーヒー | Vol. {next_vol}"
-例3: "Smooth Jazz & R&B – 秋の夕方 — オーシャンビューの晴れたリビングルーム | Vol. {next_vol}"
+例1: "朝の静けさに包まれる室内ジャズ｜森と湖が見える高級リビングで過ごす穏やかな時間"
+例2: "深夜の集中タイムに｜暖炉と雨音が心地よいラグジュアリーラウンジBGM"
+例3: "秋の夕暮れ、静かに仕事を終える時間｜海が見える崖の上の別荘で聴くJazz"
+例4: "雪山の朝、コーヒーと共に始まる一日｜暖炉が燃えるシャレーで流れるAmbient"
 
 【タグのルール】
 - 日本語・英語・韓国語を混在させること（検索流入を最大化するため）
-- 例: ["作業BGM", "smooth jazz", "공부할때듣는음악", "jazz for study", "relaxing music"]
+- 例: ["作業BGM", "jazz bgm", "공부할때듣는음악", "relaxing music", "朝BGM"]
 
 以下のJSON形式のみで出力（前置き不要）:
 {{
   "concepts": [
     {{
-      "title": "タイトル（上記フォーマットを厳守）",
+      "title": "タイトル（上記フォーマットを厳守、日本語メイン）",
       "genre": "ジャンル",
       "mood": "ムード・雰囲気",
       "duration_minutes": 60,
@@ -113,7 +113,7 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
       "tags": ["日本語タグ", "english tag", "한국어태그", "tag4", "tag5"]
     }}
   ],
-  "market_summary": "市場状況の要約3文以内）",
+  "market_summary": "市場状況の要約（3文以内）",
   "recommended_index": 0
 }}"""
 
@@ -126,7 +126,6 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
     text = response.content[0].text.strip()
     cost_jpy = _calc_cost_jpy(response.usage.input_tokens, response.usage.output_tokens)
 
-    # JSON抽出（コードブロック → 裸JSONの順で試行）
     code_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
     raw = code_block.group(1) if code_block else None
     if not raw:
