@@ -7,6 +7,7 @@ import logging
 import os
 import re
 from datetime import date
+from pathlib import Path
 
 import anthropic
 
@@ -23,37 +24,59 @@ def _calc_cost_jpy(input_tokens: int, output_tokens: int) -> float:
     return usd * JPY_RATE
 
 
+def _get_next_vol(data_dir: str) -> int:
+    """video_count.jsonから次のVol番号を返す"""
+    count_path = Path(data_dir) / "video_count.json"
+    try:
+        if count_path.exists():
+            data = json.loads(count_path.read_text())
+            return data.get("count", 0) + 1
+    except Exception:
+        pass
+    return 1
+
+
 _MOCK_RESEARCH = {
     "concepts": [
-        {"title": "【深夜作業 BGM】雨のカフェ - 集中できる Jazzピアノ 1時間", "genre": "cozy jazz cafe",
-         "mood": "居心地よい・集中", "duration_minutes": 60,
-         "competition_score": 60, "demand_score": 90, "monetization_score": 80, "total_score": 77,
-         "reasoning": "深夜×雨×カフェの組み合わせは競合少なく高需要。",
-         "tags": ["作業用BGM", "lofi jazz", "공부할때듣는음악", "study music", "深夜作業"]},
+        {
+            "title": "朝の静けさに包まれる室内ジャズ｜森と湖が見える高級リビングで過ごす穏やかな時間",
+            "genre": "smooth jazz",
+            "mood": "朝・穏やか・リラックス",
+            "duration_minutes": 60,
+            "competition_score": 60,
+            "demand_score": 90,
+            "monetization_score": 80,
+            "total_score": 77,
+            "reasoning": "朝の作業BGMは高需要。日本語タイトルで差別化できる。",
+            "tags": ["作業BGM", "smooth jazz", "朝BGM", "공부할때듣는음악", "relax"]
+        },
     ],
-    "market_summary": "作業用・勉強用BGMは安定した需要があり、Lo-Fi/Jazzカフェ系が人気。",
+    "market_summary": "日本語タイトルのSmooth Jazzは競合が少なく高需要。",
     "recommended_index": 0,
 }
 
 
 def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
     """BGMトレンドを調査し上位5件のコンセプトを返す"""
+    data_dir = config.get("data_dir", "youtube_bgm/data")
+    next_vol = _get_next_vol(data_dir)
+
     if dry_run:
         logger.info("[DRY-RUN] モックリサーチデータを使用")
-        return {**_MOCK_RESEARCH, "cost_jpy": 0.0, "success": True}
+        return {**_MOCK_RESEARCH, "cost_jpy": 0.0, "success": True, "next_vol": next_vol}
 
     BGM_GENRES = [
-        config.get("genre_focus", "lo-fi, study music, relaxing"),
+        config.get("genre_focus", "smooth jazz, R&B, relaxing"),
         "cozy indoor jazz cafe night",
-        "late night study lounge music",
-        "midnight chill ambient focus",
-        "japanese city pop lofi work",
+        "late night smooth jazz lounge",
+        "midnight chill R&B ambient",
+        "luxury hotel lobby jazz",
     ]
     genre_focus = ", ".join(BGM_GENRES)
     target_use = config.get("target_use", "作業用・勉強用・睡眠用")
 
     client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    model = os.environ.get("ANTHROPIC_MODEL", "claude-opus-4-8")
+    model = os.environ.get("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001")
 
     prompt = f"""あなたはYouTube BGMチャンネルのコンテンツ戦略専門家です。
 以下のジャンルにおけるYouTube BGM動画のトレンドを分析してください。
@@ -62,25 +85,23 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
 用途: {target_use}
 今日の日付: {date.today()}
 
-以下の基準でトップ5コンセプトをスコアリングしてください:
-1. 競合少なさ (0-100)
-2. 需要の高さ (0-100)
-3. 収益化可能性 (0-100)
+【タイトル生成ルール — 厳守】
+フォーマット: "[感情/目的] × [場所の詩的描写] | [ジャンル] BGM"
 
-』タイトルのルール『
-- 「場所＋時間帯＋用途」の組み合わせにすること
-- 例: 「【深夜作業 BGM】雨のカフェ - 集中できるJazzピアノ1時間」
-- 例: 「【早朝勉強BGM】静かな図書館 - 集中力が上がるLoFi 2時間」
+例1: "朝の静けさに包まれる室内ジャズ｜森と湖が見える高級リビングで過ごす穏やかな時間"
+例2: "深夜の集中タイムに｜暖炉と雨音が心地よいラグジュアリーラウンジBGM"
+例3: "秋の夕暮れ、静かに仕事を終える時間｜海が見える崖の上の別荘で聴くJazz"
+例4: "雪山の朝、コーヒーと共に始まる一日｜暖炉が燃えるシャレーで流れるAmbient"
 
-』タグのルール『
+【タグのルール】
 - 日本語・英語・韓国語を混在させること（検索流入を最大化するため）
-- 例: ["作業用BGM", "lofi hip hop", "공부할때듣는음악", "집중력", "study music"]
+- 例: ["作業BGM", "jazz bgm", "공부할때듣는음악", "relaxing music", "朝BGM"]
 
 以下のJSON形式のみで出力（前置き不要）:
 {{
   "concepts": [
     {{
-      "title": "動画タイトル案（場所＋時間帯＋用途の組み合わせ）",
+      "title": "タイトル（上記フォーマットを厳守、日本語メイン）",
       "genre": "ジャンル",
       "mood": "ムード・雰囲気",
       "duration_minutes": 60,
@@ -105,12 +126,22 @@ def research_bgm_trends(config: dict, dry_run: bool = False) -> dict:
     text = response.content[0].text.strip()
     cost_jpy = _calc_cost_jpy(response.usage.input_tokens, response.usage.output_tokens)
 
-    m = re.search(r"\{.*\}", text, re.DOTALL)
-    if not m:
-        raise ValueError(f"JSON抽出失敗: {text[:200]}")
+    code_block = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
+    raw = code_block.group(1) if code_block else None
+    if not raw:
+        m = re.search(r"\{.*\}", text, re.DOTALL)
+        if not m:
+            raise ValueError(f"JSON抽出失敗: {text[:200]}")
+        raw = m.group()
 
-    result = json.loads(m.group())
+    try:
+        result = json.loads(raw)
+    except json.JSONDecodeError:
+        cleaned = re.sub(r",\s*([}\]])", r"\1", raw)
+        result = json.loads(cleaned)
+
     result["cost_jpy"] = round(cost_jpy, 2)
     result["success"] = True
-    logger.info(f"BGMトレンドリサーチ完了: {len(result.get('concepts', []))}件")
+    result["next_vol"] = next_vol
+    logger.info(f"BGMトレンドリサーチ完了: {len(result.get('concepts', []))}件 / Vol.{next_vol}")
     return result

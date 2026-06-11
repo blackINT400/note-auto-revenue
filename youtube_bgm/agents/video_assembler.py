@@ -18,17 +18,16 @@ JST = timezone(timedelta(hours=9))
 def assemble_video_package(music_package: dict, config: dict) -> dict:
     """楽曲パッケージから動画アップロードパッケージを組み立てる"""
     concept = music_package.get("concept", {})
-    channel_name = config.get("channel_name", "BGM Channel")
+    channel_name = config.get("channel_name", os.environ.get("CHANNEL_NAME", "BGM Channel"))
 
     title = concept.get("title", "Relaxing BGM")
     tags = music_package.get("tags", []) + concept.get("tags", [])
-    tags = list(dict.fromkeys(tags))[:15]  # dedup, max 15
+    tags = list(dict.fromkeys(tags))[:15]
 
     description = music_package.get("description_jp", "")
     description += f"\n\n▶ チャンネル登録: {channel_name}\n"
     description += "\n🎵 This music is free to use with credit."
 
-    # Optimal upload time: weekday 18:00 JST
     now = datetime.now(JST)
     days_to_weekday = (0 - now.weekday()) % 7 or 7
     upload_dt = (now + timedelta(days=days_to_weekday)).replace(
@@ -43,7 +42,7 @@ def assemble_video_package(music_package: dict, config: dict) -> dict:
         "title": title,
         "description": description,
         "tags": tags,
-        "category_id": "10",  # Music
+        "category_id": "10",
         "privacy_status": "public",
         "scheduled_publish_at": upload_dt.isoformat(),
         "thumbnail_text": music_package.get("thumbnail_text", title),
@@ -56,19 +55,29 @@ def assemble_video_package(music_package: dict, config: dict) -> dict:
         "success": True,
     }
 
-    # 動画ファイル生成（dry_run でなければ実際に生成）
-    duration_min = concept.get("duration_minutes", 60)
-    duration_sec = duration_min * 60
+    # 動画ファイル生成
+    duration_mode = config.get("duration_mode", "short")
+    if duration_mode == "short":
+        duration_sec = 60
+    elif duration_mode == "medium":
+        duration_sec = 1800  # 30分
+    else:
+        duration_sec = 7200  # 2時間
     video_output_dir = Path(config.get("data_dir", "youtube_bgm/data")) / "videos"
 
-    video_path = generate_bgm_video(concept, video_output_dir, duration_sec)
+    video_path = generate_bgm_video(
+        concept,
+        video_output_dir,
+        duration_sec,
+        duration_mode=duration_mode,
+        channel_name=channel_name,
+    )
     if video_path:
         package["video_file_path"] = video_path
         logger.info(f"動画ファイル生成完了: {video_path}")
     else:
-        logger.warning("動画ファイル生成失敗 - フォールバック動画を使用")
+        logger.warning("動画ファイル生成失敗")
 
-    # Save package
     output_dir = Path(config.get("data_dir", "youtube_bgm/data")) / "ready"
     output_dir.mkdir(parents=True, exist_ok=True)
     date_str = datetime.now(JST).strftime("%Y%m%d")
