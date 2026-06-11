@@ -1,13 +1,12 @@
 """
-video_generator.py: 映像ループ品質大幅改善版
+video_generator.py: Smooth Operator風 高級リビングルーム映像生成
 
 処理:
-  1. Pollinations.AI でジャンル別シーン画像を複数枚生成
-     （始点と終点を同一seedにしてシームレスループを設計）
-  2. 各画像に zoompan（ゆっくりズームイン/アウト）を適用してクリップ化
-  3. xfade フィルターで3秒クロスフェード結合（dissolve/fadeblack をランダム選択）
-  4. 生成したサイクル動画を stream_loop でループして1時間動画に仕上げ
-  5. アンビエント音楽（ffmpeg sine波合成）と合成
+  1. Pollinations.AI で高級リビングルーム4シーンを生成
+  2. 各画像に超低速zoompan(z+0.0002)を適用
+  3. xfadeクロスフェード結合
+  4. チャンネル名テキストオーバーレイ(5秒後フェードイン)
+  5. アンビエント音楽と合成
 """
 import logging
 import os
@@ -22,91 +21,59 @@ import requests
 logger = logging.getLogger(__name__)
 
 DEFAULT_DURATION_SEC = 3600
-FADE_DUR = 3  # crossfade seconds
+FADE_DUR = 3
 FPS = 24
 POLLINATIONS_BASE = "https://image.pollinations.ai/prompt"
 
-QUALITY_SUFFIX = (
-    "4K cinematic, shallow depth of field, golden hour lighting, "
-    "luxury hotel atmosphere, seamless loop ready, photorealistic, "
-    "high detail, no motion blur, dramatic lighting"
-)
-NEGATIVE_PROMPT = "text, watermark, people, faces, hands, logos, words, signature, ugly, blurry"
+NEGATIVE_PROMPT = "text, watermark, people, faces, hands, logos, words, signature, ugly, blurry, cartoon, anime"
 
-# mood/genre 別シーンキーワード
-SCENE_CATEGORIES: dict[str, list[str]] = {
-    "lofi": [
-        "luxury hotel fireplace warm glow cozy interior",
-        "rain drops streaming down window glass night city bokeh",
-        "cozy cafe candle bokeh warm amber light",
-        "vintage record player turntable warm wood bokeh",
-        "warm reading lamp antique books library shelves",
-        "steaming coffee cup window rain blur",
-    ],
-    "jazz": [
-        "luxury hotel bar fireplace warm amber glow",
-        "jazz club neon sign rain reflection puddle",
-        "elegant candlelit dinner table wine glass bokeh",
-        "vintage vinyl record spinning warm light",
-        "rainy window city lights bokeh night blue",
-        "saxophone silhouette stage spotlight smoke",
-    ],
-    "ambient": [
-        "ocean waves shoreline long exposure misty sunrise",
-        "mountain lake surface ripples morning mist fog",
-        "starry night sky milky way mountain reflection",
-        "forest waterfall long exposure silky water",
-        "northern lights aurora borealis reflection lake",
-        "desert sand dunes golden hour dramatic shadows",
-    ],
-    "cyberpunk": [
-        "wet city street neon sign reflection puddle night",
-        "rainy window neon lights blur bokeh cyberpunk",
-        "futuristic alley glowing signs rain night fog",
-        "neon lit bridge city skyline rain reflection",
-        "cyberpunk market street lights fog rain bokeh",
-        "glowing holographic signs wet pavement night",
-    ],
-    "piano": [
-        "single white candle flame dark room warm bokeh",
-        "window city night lights rain bokeh dark room",
-        "moonlight streaming through sheer curtains floor",
-        "close up candle wax melting warm glow dark",
-        "window sill rain drops candle reflection night",
-        "grand piano keys soft spotlight bokeh",
-    ],
-    "focus": [
-        "bamboo forest morning light rays mist green",
-        "shallow stream flowing over mossy rocks peaceful",
-        "sunlight filtering through forest canopy leaves rays",
-        "zen garden raked sand stone morning mist",
-        "mountain valley fog rolling clouds sunrise",
-        "japanese garden koi pond water lily reflections",
-    ],
-}
+# Smooth Operator風 高級リビングルームシーン（全ジャンル共通）
+LUXURY_SCENES = [
+    (
+        "luxury_living_fireplace",
+        "ultra-luxury modern living room, floor-to-ceiling windows, "
+        "Eames lounge chair, warm fireplace burning, "
+        "ocean view at sunset, golden hour lighting, "
+        "4K cinematic, shallow depth of field, no people",
+    ),
+    (
+        "luxury_living_ocean",
+        "modern cliff-top villa interior, panoramic ocean view, "
+        "Eames chair, hanging fireplace, city lights in distance, "
+        "dusk lighting, warm amber tones, cinematic, no people",
+    ),
+    (
+        "luxury_living_mountain",
+        "minimalist luxury chalet, floor-to-ceiling windows, "
+        "snow mountain view, fireplace, warm interior lighting, "
+        "golden sunset outside, 4K, no text, no people",
+    ),
+    (
+        "luxury_living_night",
+        "high-rise penthouse living room, city skyline at night, "
+        "neon reflections, warm lamp light, Eames chair, "
+        "luxury interior, cinematic, no people",
+    ),
+]
 
 PIXABAY_API_URL = "https://pixabay.com/api/videos/"
 
 
-# ─── 画像ダウンロード ───────────────────────────────────────────────
+# ─── 画像ダウンロード ──────────────────────────────────────────────
 
-def _get_scene_keywords(genre: str, mood: str) -> list[str]:
-    genre_lower = genre.lower()
-    for key in SCENE_CATEGORIES:
-        if key in genre_lower:
-            return SCENE_CATEGORIES[key]
-    mood_lower = mood.lower()
-    if any(w in mood_lower for w in ["ocean", "wave", "lake", "rain", "water"]):
-        return SCENE_CATEGORIES["ambient"]
-    if any(w in mood_lower for w in ["cyber", "neon", "city", "urban"]):
-        return SCENE_CATEGORIES["cyberpunk"]
-    return SCENE_CATEGORIES["lofi"]
+def _get_luxury_scenes(n: int) -> tuple[list[str], list[int]]:
+    """n枚の高級リビングルームシーンを選抜し、プロンプトとseedリストを返す"""
+    selected = random.sample(LUXURY_SCENES, min(n, len(LUXURY_SCENES)))
+    base_seed = random.randint(1000, 9999)
+    seeds = [base_seed + i for i in range(len(selected))]
+    seeds[-1] = base_seed  # 最後 = 最初と同じseedでシームレスループ
+    prompts = [p for _, p in selected]
+    return prompts, seeds
 
 
 def _download_pollinations_image(prompt: str, seed: int, dest: Path) -> bool:
-    full_prompt = f"{prompt}, {QUALITY_SUFFIX}"
     url = (
-        f"{POLLINATIONS_BASE}/{urllib.parse.quote(full_prompt)}"
+        f"{POLLINATIONS_BASE}/{urllib.parse.quote(prompt)}"
         f"?width=1280&height=720&seed={seed}&nologo=true"
         f"&negative={urllib.parse.quote(NEGATIVE_PROMPT)}"
     )
@@ -167,7 +134,7 @@ def _search_pixabay_video(keyword: str, api_key: str) -> str | None:
     return None
 
 
-# ─── クリップ生成 ──────────────────────────────────────────────────
+# ─── クリップ生成 ──────────────────────────────────────────────
 
 def _make_zoompan_clip(
     image_path: Path,
@@ -175,16 +142,15 @@ def _make_zoompan_clip(
     duration: int,
     zoom_in: bool,
 ) -> bool:
-    """画像に zoompan を適用して動画クリップを生成する"""
+    """Smooth Operator風 超低速zoompanクリップを生成"""
     nb_frames = duration * FPS
     if zoom_in:
-        z_expr = "min(zoom+0.0003,1.3)"
+        z_expr = "min(zoom+0.0002,1.2)"  # 超低速ズームイン
     else:
-        # zoom out: フレーム1で1.3にセットし、毎フレーム減少
-        z_expr = "if(eq(on,1),1.3,max(1.001,zoom-0.0003))"
+        z_expr = "if(eq(on,1),1.2,max(1.001,zoom-0.0002))"  # 超低速ズームアウト
 
     vf = (
-        f"scale=2560:1440,"  # 高解像度で読み込んでzoompanの品質を確保
+        f"scale=2560:1440,"
         f"zoompan="
         f"z='{z_expr}':"
         f"x='iw/2-(iw/zoom/2)':"
@@ -218,7 +184,6 @@ def _build_crossfade_cycle(
     tmp: Path,
     fade_dur: int = FADE_DUR,
 ) -> Path | None:
-    """複数クリップを xfade で結合してサイクル動画を作成する"""
     if len(clip_paths) == 1:
         return clip_paths[0]
 
@@ -263,7 +228,7 @@ def _build_crossfade_cycle(
     return cycle_path
 
 
-# ─── 音楽生成 ──────────────────────────────────────────────────────
+# ─── 音楽生成 ──────────────────────────────────────────────
 
 def _generate_ambient_audio(output_path: Path, duration_sec: int, genre: str = "lofi") -> bool:
     presets = {
@@ -332,14 +297,52 @@ def _generate_ambient_audio(output_path: Path, duration_sec: int, genre: str = "
     return True
 
 
-# ─── 最終合成 ──────────────────────────────────────────────────────
+# ─── 最終合成 ──────────────────────────────────────────────
 
 def _combine_video_audio(
     video_path: Path,
     audio_path: Path,
     output_path: Path,
     duration_sec: int,
+    channel_name: str = "",
 ) -> bool:
+    """stream_loopでループし、チャンネル名テキストオーバーレイを付加して最終動画を出力"""
+    base_vf = (
+        "scale=1280:720:force_original_aspect_ratio=decrease,"
+        "pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1"
+    )
+
+    if channel_name:
+        # 安全な文字列に整形（ffmpeg drawtext用）
+        safe_name = (
+            channel_name
+            .replace("\\", "")
+            .replace("'", "")
+            .replace(":", "")
+            .replace(",", "")
+            .replace("[", "").replace("]", "")
+        )
+        # 5秒後にフェードイン（3秒）→表示（3秒）→フェードアウト（3秒）、不透明度80%
+        alpha = (
+            "if(lt(t\\,5)\\,0\\"
+            ",if(lt(t\\,8)\\,(t-5)/3*0.8\\"
+            ",if(lt(t\\,11)\\,0.8\\"
+            ",if(lt(t\\,14)\\,(14-t)/3*0.8\\,0))))"
+        )
+        drawtext = (
+            f"drawtext="
+            f"fontfile=/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+            f":text='{safe_name}'"
+            f":fontsize=52"
+            f":fontcolor=white"
+            f":x=(w-text_w)/2"
+            f":y=(h-text_h)/2"
+            f":alpha='{alpha}'"
+        )
+        vf = f"{base_vf},{drawtext}"
+    else:
+        vf = base_vf
+
     cmd = [
         "ffmpeg", "-y",
         "-stream_loop", "-1",
@@ -348,7 +351,7 @@ def _combine_video_audio(
         "-c:v", "libx264",
         "-preset", "fast",
         "-crf", "23",
-        "-vf", "scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,setsar=1",
+        "-vf", vf,
         "-c:a", "copy",
         "-map", "0:v:0",
         "-map", "1:a:0",
@@ -359,24 +362,28 @@ def _combine_video_audio(
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=7200)
     if result.returncode != 0:
         logger.error(f"動画合成エラー: {result.stderr[-500:]}")
+        # drawtext失敗時はテキストなしで再試
+        if channel_name:
+            logger.warning("テキストなしで再実行...")
+            return _combine_video_audio(video_path, audio_path, output_path, duration_sec, channel_name="")
         return False
     logger.info(f"動画合成完了: {output_path}")
     return True
 
 
-# ─── メインエントリ ────────────────────────────────────────────────
+# ─── メインエントリ ────────────────────────────────────────────
 
 def generate_bgm_video(
     concept: dict,
     output_dir: Path,
     duration_sec: int = DEFAULT_DURATION_SEC,
     duration_mode: str = "short",
+    channel_name: str = "",
 ) -> str | None:
     genre = concept.get("genre", "lofi")
-    mood = concept.get("mood", "relaxing calm")
     title_slug = concept.get("title", "bgm")[:30].replace(" ", "_").replace("/", "-")
     output_dir.mkdir(parents=True, exist_ok=True)
-    duration_sec = min(duration_sec, 3600)
+    duration_sec = min(duration_sec, 7200)  # max 2h
     output_path = output_dir / f"{title_slug}.mp4"
 
     if output_path.exists():
@@ -385,13 +392,17 @@ def generate_bgm_video(
 
     # モード別パラメータ
     if duration_mode == "short":
-        n_scenes_range = (3, 3)   # 固定3枚
-        clip_dur_range = (20, 20) # 固定20秒
-        xfade_dur = 2             # クロスフェード2秒
-    else:
-        n_scenes_range = (5, 8)
-        clip_dur_range = (20, 40)
-        xfade_dur = FADE_DUR      # 3秒
+        n_scenes = 3
+        clip_dur_range = (20, 20)
+        xfade_dur = 2
+    elif duration_mode == "medium":
+        n_scenes = 4
+        clip_dur_range = (25, 35)
+        xfade_dur = 3
+    else:  # long
+        n_scenes = 4
+        clip_dur_range = (25, 40)
+        xfade_dur = 3
 
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp = Path(tmpdir)
@@ -404,23 +415,13 @@ def generate_bgm_video(
             logger.error("音楽生成失敗")
             return None
 
-        # Step 2: Pollinations.AI で画像を複数枚生成してサイクル動画を作る
-        scene_keywords = _get_scene_keywords(genre, mood)
-        random.shuffle(scene_keywords)
-        n_scenes = random.randint(*n_scenes_range)
-        n_scenes = min(n_scenes, len(scene_keywords))
-        keywords = scene_keywords[:n_scenes]
-
-        # 始点と終点を同じseedにしてシームレスループを設計
-        base_seed = random.randint(1000, 9999)
-        seeds = [base_seed + i for i in range(n_scenes)]
-        seeds[-1] = base_seed  # 最後 = 最初と同じseed
-
-        logger.info(f"Pollinations.AI で {n_scenes} 枚の画像を生成中...")
+        # Step 2: Pollinations.AI で高級リビングルーム画像を生成
+        prompts, seeds = _get_luxury_scenes(n_scenes)
+        logger.info(f"Pollinations.AI で {len(prompts)} 枚の高級リビングルーム画像を生成中...")
         image_paths: list[Path] = []
-        for idx, (kw, seed) in enumerate(zip(keywords, seeds)):
+        for idx, (prompt, seed) in enumerate(zip(prompts, seeds)):
             img_path = tmp / f"scene_{idx:02d}.jpg"
-            if _download_pollinations_image(kw, seed, img_path):
+            if _download_pollinations_image(prompt, seed, img_path):
                 image_paths.append(img_path)
             else:
                 logger.warning(f"シーン{idx}の画像生成スキップ")
@@ -431,7 +432,7 @@ def generate_bgm_video(
             durations: list[int] = []
             for idx, img_path in enumerate(image_paths):
                 dur = random.randint(*clip_dur_range)
-                zoom_in = (idx % 2 == 0)  # 交互にin/out
+                zoom_in = (idx % 2 == 0)
                 clip_path = tmp / f"clip_{idx:02d}.mp4"
                 logger.info(f"クリップ生成中: scene_{idx:02d} ({dur}秒, zoom_{'in' if zoom_in else 'out'})")
                 if _make_zoompan_clip(img_path, clip_path, dur, zoom_in):
@@ -450,23 +451,19 @@ def generate_bgm_video(
             pixabay_key = os.environ.get("PIXABAY_API_KEY")
             bg_video_path = tmp / "background.mp4"
             if pixabay_key:
-                video_url = _search_pixabay_video(mood, pixabay_key)
+                video_url = _search_pixabay_video("luxury interior fireplace", pixabay_key)
                 if video_url and _download_file(video_url, bg_video_path):
                     cycle_video = bg_video_path
 
-        # 最終フォールバック: 単色グラデーション背景
+        # 最終フォールバック: 単色背景
         if cycle_video is None:
             logger.info("最終フォールバック: グラデーション背景を生成")
             bg_video_path = tmp / "background.mp4"
-            cmd = [
-                "ffmpeg", "-y",
-                "-f", "lavfi",
+            subprocess.run([
+                "ffmpeg", "-y", "-f", "lavfi",
                 "-i", "color=c=0x1a1a2e:size=1280x720:rate=1",
-                "-t", "10",
-                "-c:v", "libx264",
-                str(bg_video_path),
-            ]
-            subprocess.run(cmd, capture_output=True)
+                "-t", "10", "-c:v", "libx264", str(bg_video_path),
+            ], capture_output=True)
             if bg_video_path.exists():
                 cycle_video = bg_video_path
 
@@ -474,9 +471,9 @@ def generate_bgm_video(
             logger.error("背景動画の準備に全て失敗")
             return None
 
-        # Step 4: サイクル動画 + 音楽を合成（stream_loopで1時間にループ）
-        logger.info(f"最終合成中: {cycle_video.name} x loop -> {duration_sec}秒")
-        if not _combine_video_audio(cycle_video, audio_path, output_path, duration_sec):
+        # Step 4: サイクル動画 + 音楽を合成（stream_loopで指定時間にループ）
+        logger.info(f"最終合成中: {cycle_video.name} -> {duration_sec}秒 / channel={channel_name!r}")
+        if not _combine_video_audio(cycle_video, audio_path, output_path, duration_sec, channel_name=channel_name):
             return None
 
     size_mb = output_path.stat().st_size / 1024 / 1024

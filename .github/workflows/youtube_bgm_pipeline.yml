@@ -10,11 +10,11 @@ on:
         required: false
         default: 'false'
       genre:
-        description: 'Genre override (e.g. "cozy jazz cafe")'
+        description: 'Genre override (e.g. "smooth jazz")'
         required: false
         default: ''
       duration:
-        description: 'Duration mode: short (60s test) or long (3600s production)'
+        description: 'Duration: short (60s) / medium (30min) / long (2h)'
         required: false
         default: 'short'
 
@@ -61,6 +61,7 @@ jobs:
           YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
           YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_YOUTUBE }}
+          CHANNEL_NAME: ${{ secrets.CHANNEL_NAME }}
         run: |
           cd youtube_bgm
           DRY_FLAG=""
@@ -85,7 +86,7 @@ jobs:
             echo "=== ffprobe: $VIDEO ==="
             ffprobe -v quiet -print_format json -show_streams "$VIDEO" | python3 -c "import json,sys; [print('VIDEO: '+s['codec_name']+' '+str(s.get('width'))+'x'+str(s.get('height'))+' @ '+str(s.get('r_frame_rate'))+' fps') if s['codec_type']=='video' else print('AUDIO: '+s['codec_name']+' '+str(s.get('bit_rate','?'))+' bps sr='+str(s.get('sample_rate'))) if s['codec_type']=='audio' else None for s in json.load(sys.stdin).get('streams',[])]" || true
           else
-            echo "動画ファイルが見つかりません（dry_runまたはエラー）"
+            echo "動画ファイルが見つかりません"
           fi
 
       - name: Notify Discord on success
@@ -122,6 +123,6 @@ jobs:
         run: |
           git config user.email noreply@anthropic.com
           git config user.name Claude
-          git add youtube_bgm/data/ready/ || true
+          git add youtube_bgm/data/ || true
           git diff --cached --quiet || git commit -m "chore: youtube_bgm auto-generated packages [skip ci]"
           git push || true
