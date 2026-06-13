@@ -1199,3 +1199,82 @@
 2026-06-12 22:30:16,202 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 34 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-06-12 22:30:17,166 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-06-12 22:30:17,167 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-12_07-30.md
+2026-06-13 22:10:02,893 [INFO] agents.genre_engine: 初回: ジャンル選定 → 恋愛・好きな人への気持ちの伝え方（通常ローテーション）
+2026-06-13 22:10:02,900 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 初回選定（通常ローテーション）)
+2026-06-13 22:10:02,905 [INFO] agents.genre_engine: テーマ継続: 恋愛・好きな人への気持ちの伝え方 (level=1, consecutive=1→2)
+2026-06-13 22:10:02,911 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 継続（同テーマ 2回目）)
+2026-06-13 22:10:02,918 [INFO] __main__: 2本目ジャンルを強制変更: 恋愛・好きな人への気持ちの伝え方 → 人間関係・職場のストレス解消
+2026-06-13 22:10:02,918 [INFO] __main__: [note] 起動 mode=daily | 1本目ジャンル=恋愛・好きな人への気持ちの伝え方 | 2本目ジャンル=人間関係・職場のストレス解消
+2026-06-13 22:10:03,980 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-13 22:10:05,074 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-13 22:10:06,074 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-13 22:10:07,263 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-13 22:10:07,263 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-13 22:10:07,263 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-13 22:10:08,018 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-13 22:10:08,984 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-13 22:10:09,884 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-13 22:10:10,705 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-13 22:10:11,467 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-13 22:10:12,450 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-13 22:10:12,705 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-13 22:10:13,307 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-13 22:10:13,308 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-13 22:10:13,308 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-13 22:10:21,048 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-13 22:10:21,067 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2040, output: 388 tokens
+2026-06-13 22:10:21,068 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-13.json
+2026-06-13 22:11:01,896 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-13 22:11:01,898 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 5787, output: 2003 tokens
+2026-06-13 22:11:01,898 [INFO] empire.playbooks.note_magazine.creator: Claude API 生成成功: 仕事しながら婚活は無理じゃない
+2026-06-13 22:11:01,898 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-13_仕事しながら婚活は無理じゃない.json
+2026-06-13 22:11:01,899 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-13.md (mode=claude_api)
+2026-06-13 22:11:02,460 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-13 22:11:02,460 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-13 22:11:02,692 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-13 22:11:02,693 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-13 22:11:02,693 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-13_仕事しながら婚活は無理じゃない.md
+2026-06-13 22:11:02,693 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-13 22:11:02,970 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (1本目): 仕事しながら婚活は無理じゃない
+2026-06-13 22:11:03,319 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (1本目): 仕事しながら婚活は無理じゃない
+2026-06-13 22:11:03,319 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-13 22:11:03,320 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=仕事しながら婚活は無理じゃない
+2026-06-13 22:11:04,418 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-13 22:11:05,636 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-13 22:11:06,622 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-13 22:11:07,733 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-13 22:11:07,733 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-13 22:11:07,733 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-13 22:11:08,498 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-13 22:11:09,400 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-13 22:11:10,280 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-13 22:11:11,076 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-13 22:11:11,948 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-13 22:11:12,198 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-13 22:11:12,402 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-13 22:11:12,582 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-13 22:11:12,582 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-13 22:11:12,582 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-13 22:11:19,985 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-13 22:11:19,986 [INFO] empire.playbooks.note_magazine.scout: Claude usage — input: 2040, output: 389 tokens
+2026-06-13 22:11:19,987 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-13.json
+2026-06-13 22:11:57,829 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 200 OK"
+2026-06-13 22:11:57,830 [INFO] empire.playbooks.note_magazine.creator: Claude usage — input: 5778, output: 1876 tokens
+2026-06-13 22:11:57,830 [INFO] empire.playbooks.note_magazine.creator: Claude API 生成成功: 仕事しながら婚活が無理な理由
+2026-06-13 22:11:57,831 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-13_仕事しながら婚活が無理な理由.json
+2026-06-13 22:11:57,831 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-13_01.md (mode=claude_api)
+2026-06-13 22:11:58,192 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-13 22:11:58,192 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-13 22:11:58,381 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-13 22:11:58,381 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-13 22:11:58,381 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-13_仕事しながら婚活が無理な理由.md
+2026-06-13 22:11:58,382 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-13 22:11:58,561 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (2本目): 仕事しながら婚活が無理な理由
+2026-06-13 22:11:58,778 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (2本目): 仕事しながら婚活が無理な理由
+2026-06-13 22:11:58,779 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-13 22:11:58,780 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=仕事しながら婚活が無理な理由
+2026-06-13 22:11:58,780 [INFO] __main__: [note] 完了: 2本生成
+2026-06-13 22:11:58,787 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 36 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-13 22:11:58,796 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 36 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-13 22:11:59,445 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-06-13 22:11:59,445 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-13_07-11.md
