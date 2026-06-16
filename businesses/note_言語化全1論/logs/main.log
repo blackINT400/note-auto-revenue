@@ -1543,3 +1543,86 @@ We can't connect to the server for this app or website at this time. There might
 2026-06-15 23:06:08,400 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 42 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-06-15 23:06:09,395 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-06-15 23:06:09,395 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-15_08-06.md
+2026-06-16 22:55:00,899 [INFO] agents.genre_engine: 初回: ジャンル選定 → 恋愛・好きな人への気持ちの伝え方（通常ローテーション）
+2026-06-16 22:55:00,906 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 初回選定（通常ローテーション）)
+2026-06-16 22:55:00,911 [INFO] agents.genre_engine: テーマ継続: 恋愛・好きな人への気持ちの伝え方 (level=1, consecutive=1→2)
+2026-06-16 22:55:00,917 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 継続（同テーマ 2回目）)
+2026-06-16 22:55:00,924 [INFO] __main__: 2本目ジャンルを強制変更: 恋愛・好きな人への気持ちの伝え方 → 人間関係・職場のストレス解消
+2026-06-16 22:55:00,924 [INFO] __main__: [note] 起動 mode=daily | 1本目ジャンル=恋愛・好きな人への気持ちの伝え方 | 2本目ジャンル=人間関係・職場のストレス解消
+2026-06-16 22:55:02,052 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-16 22:55:03,240 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-16 22:55:04,448 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-16 22:55:05,573 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-16 22:55:05,574 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-16 22:55:05,574 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-16 22:55:06,342 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-16 22:55:08,234 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-16 22:55:09,089 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-16 22:55:09,971 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-16 22:55:10,899 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-16 22:55:11,101 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-16 22:55:11,351 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-16 22:55:11,538 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-16 22:55:11,538 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-16 22:55:11,539 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-16 22:55:11,669 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-06-16 22:55:11,669 [ERROR] empire.playbooks.note_magazine.scout: Claude topic selection failed: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cc7mCS7GfthDVfAz5CUMQ'}
+2026-06-16 22:55:11,766 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-06-16 22:55:11,766 [ERROR] empire.playbooks.note_magazine.scout: Fallback topic generation also failed: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cc7mCSY4o7mjD95SzjRbD'}
+2026-06-16 22:55:11,767 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-16.json
+2026-06-16 22:55:11,896 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-06-16 22:55:11,897 [WARNING] empire.playbooks.note_magazine.creator: API生成失敗 → テンプレートフォールバック: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cc7mCT7YNfUafG5KMKmed'}
+2026-06-16 22:55:11,897 [INFO] empire.playbooks.note_magazine.creator: テンプレートベース記事生成を開始 (genre=恋愛・好きな人への気持ちの伝え方)...
+2026-06-16 22:55:11,897 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-16_なぜ恋愛好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか.json
+2026-06-16 22:55:11,897 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-16.md (mode=template)
+2026-06-16 22:55:12,347 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-16 22:55:12,347 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-16 22:55:12,525 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-16 22:55:12,525 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-16 22:55:12,525 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-16_なぜ恋愛_好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか.md
+2026-06-16 22:55:12,525 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-16 22:55:12,688 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (1本目): なぜ恋愛・好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか
+2026-06-16 22:55:12,881 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (1本目): なぜ恋愛・好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか
+2026-06-16 22:55:12,882 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-16 22:55:12,883 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=なぜ恋愛・好きな人への気持ちの伝え方に悩む人ほど構造を見失う
+2026-06-16 22:55:13,984 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-16 22:55:15,114 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-16 22:55:16,198 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-16 22:55:17,222 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-16 22:55:17,222 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-06-16 22:55:17,222 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-06-16 22:55:18,009 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-06-16 22:55:18,956 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-06-16 22:55:20,103 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-06-16 22:55:20,964 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-06-16 22:55:21,821 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-06-16 22:55:21,963 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-06-16 22:55:22,088 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-06-16 22:55:22,203 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-06-16 22:55:22,204 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-06-16 22:55:22,204 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-06-16 22:55:22,310 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-06-16 22:55:22,310 [ERROR] empire.playbooks.note_magazine.scout: Claude topic selection failed: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cc7mDDciR4fQcjyCs2rFx'}
+2026-06-16 22:55:22,416 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-06-16 22:55:22,417 [ERROR] empire.playbooks.note_magazine.scout: Fallback topic generation also failed: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cc7mDE4zr9pyCYnc5grN4'}
+2026-06-16 22:55:22,417 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-06-16.json
+2026-06-16 22:55:22,541 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 400 Bad Request"
+2026-06-16 22:55:22,542 [WARNING] empire.playbooks.note_magazine.creator: API生成失敗 → テンプレートフォールバック: Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits.'}, 'request_id': 'req_011Cc7mDEdjY9CiCDaXfe3D6'}
+2026-06-16 22:55:22,542 [INFO] empire.playbooks.note_magazine.creator: テンプレートベース記事生成を開始 (genre=人間関係・職場のストレス解消)...
+2026-06-16 22:55:22,542 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-06-16_なぜ人間関係職場のストレス解消に悩む人ほど構造を見失うのか.json
+2026-06-16 22:55:22,543 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-06-16_01.md (mode=template)
+2026-06-16 22:55:22,943 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-06-16 22:55:22,943 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-06-16 22:55:23,130 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-06-16 22:55:23,130 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-06-16 22:55:23,130 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-06-16_なぜ人間関係_職場のストレス解消に悩む人ほど構造を見失うのか.md
+2026-06-16 22:55:23,130 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-06-16 22:55:23,386 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (2本目): なぜ人間関係・職場のストレス解消に悩む人ほど構造を見失うのか
+2026-06-16 22:55:23,656 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (2本目): なぜ人間関係・職場のストレス解消に悩む人ほど構造を見失うのか
+2026-06-16 22:55:23,656 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-06-16 22:55:23,658 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=なぜ人間関係・職場のストレス解消に悩む人ほど構造を見失うのか
+2026-06-16 22:55:23,658 [INFO] __main__: [note] 完了: 2本生成
+2026-06-16 22:55:23,665 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 44 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-16 22:55:23,674 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 44 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-06-16 22:55:24,477 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-06-16 22:55:24,477 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-06-16_07-55.md
