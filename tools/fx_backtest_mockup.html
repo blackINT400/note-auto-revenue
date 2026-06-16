@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FX自動バックテスター — モックアップ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Source Sans Pro", "Helvetica Neue", sans-serif; background: #0e1117; color: #fafafa; min-height: 100vh; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    position: fixed; top: 0; left: 0; width: 260px; height: 100vh;
+    background: #1a1c24; border-right: 1px solid #2d2f3d; padding: 24px 16px;
+    overflow-y: auto;
+  }
+  .sidebar-logo { font-size: 18px; font-weight: 700; color: #ffd700; margin-bottom: 24px; display: flex; align-items: center; gap: 8px; }
+  .sidebar-section { font-size: 11px; font-weight: 700; color: #808495; text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 8px; }
+  .sidebar-item { padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; color: #c0c3cf; transition: background 0.15s; margin-bottom: 2px; }
+  .sidebar-item:hover { background: #2a2d3a; }
+  .sidebar-item.active { background: #ffd70022; color: #ffd700; font-weight: 600; }
+  .sidebar-divider { border: none; border-top: 1px solid #2d2f3d; margin: 16px 0; }
+
+  /* ── Main ── */
+  .main { margin-left: 260px; padding: 32px 40px; max-width: 1100px; }
+
+  /* Header */
+  .page-title { font-size: 28px; font-weight: 700; margin-bottom: 4px; }
+  .page-subtitle { color: #808495; font-size: 15px; margin-bottom: 28px; }
+
+  /* Input Section */
+  .card { background: #1a1c24; border: 1px solid #2d2f3d; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+  .card-title { font-size: 13px; font-weight: 600; color: #808495; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+  textarea {
+    width: 100%; background: #0e1117; border: 1px solid #3d4050; border-radius: 6px;
+    color: #fafafa; font-size: 15px; padding: 12px 14px; resize: vertical; min-height: 80px;
+    font-family: inherit; outline: none; transition: border-color 0.2s;
+  }
+  textarea:focus { border-color: #ffd700; }
+
+  .examples { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+  .example-chip {
+    background: #ffd70015; border: 1px solid #ffd70044; border-radius: 20px;
+    padding: 5px 12px; font-size: 12px; color: #ffd700; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .example-chip:hover { background: #ffd70030; }
+
+  .run-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #0e1117; border: none; border-radius: 8px; padding: 12px 28px;
+    font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 16px;
+    transition: opacity 0.2s; width: 100%;
+    justify-content: center;
+  }
+  .run-btn:hover { opacity: 0.9; }
+
+  /* Params Row */
+  .params-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .param-group label { display: block; font-size: 12px; color: #808495; margin-bottom: 6px; }
+  .param-group select, .param-group input {
+    width: 100%; background: #0e1117; border: 1px solid #3d4050; border-radius: 6px;
+    color: #fafafa; font-size: 14px; padding: 8px 10px; outline: none;
+  }
+
+  /* Result Banner */
+  .result-banner {
+    background: linear-gradient(135deg, #ffd70018, #ffaa0008);
+    border: 1px solid #ffd70044; border-radius: 10px;
+    padding: 20px 24px; margin-bottom: 20px;
+    display: flex; align-items: center; gap: 16px;
+  }
+  .result-banner .icon { font-size: 32px; }
+  .result-banner .text h2 { font-size: 18px; font-weight: 700; color: #ffd700; }
+  .result-banner .text p { font-size: 13px; color: #808495; margin-top: 2px; }
+
+  /* Metric Cards */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+  .metric { background: #1a1c24; border: 1px solid #2d2f3d; border-radius: 10px; padding: 16px; }
+  .metric-label { font-size: 11px; color: #808495; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+  .metric-value { font-size: 26px; font-weight: 700; }
+  .metric-sub { font-size: 12px; color: #808495; margin-top: 4px; }
+  .green { color: #00c06b; }
+  .red { color: #ff4b4b; }
+  .yellow { color: #ffd700; }
+  .blue { color: #4c9be8; }
+
+  /* Chart Area */
+  .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .chart-box { background: #1a1c24; border: 1px solid #2d2f3d; border-radius: 10px; padding: 16px; }
+  .chart-title { font-size: 13px; font-weight: 600; color: #808495; margin-bottom: 12px; }
+
+  /* SVG Chart */
+  svg { display: block; }
+  .chart-axis text { fill: #808495; font-size: 10px; font-family: monospace; }
+  .chart-axis line, .chart-axis path { stroke: #2d2f3d; }
+  .grid-line { stroke: #2d2f3d; stroke-dasharray: 3 3; }
+
+  /* Stats Detail */
+  .stats-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 9px 0; border-bottom: 1px solid #2d2f3d; font-size: 14px; }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-row .key { color: #c0c3cf; }
+  .stat-row .val { font-weight: 600; }
+
+  /* Trade Table */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { text-align: left; padding: 10px 12px; font-size: 11px; font-weight: 700; color: #808495; text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid #2d2f3d; }
+  td { padding: 10px 12px; border-bottom: 1px solid #2d2f3d22; }
+  tr:hover td { background: #ffffff08; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-long { background: #00c06b22; color: #00c06b; }
+  .badge-short { background: #ff4b4b22; color: #ff4b4b; }
+  .badge-sl { background: #ff4b4b22; color: #ff4b4b; }
+  .badge-tp { background: #00c06b22; color: #00c06b; }
+  .badge-sig { background: #4c9be822; color: #4c9be8; }
+
+  /* Processing animation */
+  .processing { display: none; }
+  .spinner { width: 20px; height: 20px; border: 2px solid #ffd70044; border-top-color: #ffd700; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Download buttons */
+  .dl-row { display: flex; gap: 10px; margin-top: 16px; }
+  .dl-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: #2a2d3a; border: 1px solid #3d4050; border-radius: 6px;
+    padding: 8px 16px; font-size: 13px; color: #c0c3cf; cursor: pointer;
+    transition: background 0.15s;
+  }
+  .dl-btn:hover { background: #3d4050; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: #0e1117; }
+  ::-webkit-scrollbar-thumb { background: #2d2f3d; border-radius: 3px; }
+
+  .strategy-parsed {
+    background: #1a1c24; border: 1px solid #2d2f3d; border-radius: 8px;
+    padding: 12px 16px; margin-top: 12px; font-size: 13px;
+  }
+  .parsed-tag { display: inline-flex; align-items: center; gap: 4px; background: #ffd70015; border: 1px solid #ffd70044; border-radius: 4px; padding: 3px 8px; margin: 3px; font-size: 12px; color: #ffd700; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="sidebar-logo">⚡ FX Backtester</div>
+
+  <div class="sidebar-section">メニュー</div>
+  <div class="sidebar-item active">🔍 新規バックテスト</div>
+  <div class="sidebar-item">📁 過去の結果</div>
+  <div class="sidebar-item">📊 戦略比較</div>
+
+  <hr class="sidebar-divider">
+  <div class="sidebar-section">対応インジケーター</div>
+  <div class="sidebar-item">RSI</div>
+  <div class="sidebar-item">MA / EMA / MACD</div>
+  <div class="sidebar-item">ボリンジャーバンド</div>
+  <div class="sidebar-item">ストキャスティクス</div>
+
+  <hr class="sidebar-divider">
+  <div class="sidebar-section">対応通貨ペア</div>
+  <div style="padding: 6px 12px; font-size: 12px; color: #808495; line-height: 2;">
+    USDJPY · EURUSD · GBPJPY<br>
+    AUDUSD · XAUUSD（ゴールド）<br>
+    BTCUSD（BTC/USD）
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+  <div class="page-title">⚡ FX自動バックテスター</div>
+  <div class="page-subtitle">検証したい戦略を日本語で入力するだけ — Claude AIが自動解析して過去データで検証します</div>
+
+  <!-- Input Section -->
+  <div class="card">
+    <div class="card-title">🧠 検証内容を入力</div>
+    <textarea id="strategy-input" placeholder="例：ゴールド（XAUUSD）の4時間足で、RSIが30以下になったら買い、70以上で決済。SLは30ドル、TPは60ドル。2022年1月から2024年12月で検証したい。">ゴールド（XAUUSD）の4時間足で、RSIが30以下になったら買いエントリー、RSI70以上で決済。ショートはRSI70超えでエントリー、30以下で決済。ストップロス30ドル、テイクプロフィット60ドル。2022年から2024年で検証。</textarea>
+
+    <div style="margin-top: 10px;">
+      <div style="font-size: 12px; color: #808495; margin-bottom: 6px;">▼ クイック入力例</div>
+      <div class="examples">
+        <div class="example-chip" onclick="setExample('gold-rsi')">🥇 ゴールド RSI逆張り</div>
+        <div class="example-chip" onclick="setExample('usdjpy-ma')">💴 ドル円 MAクロス</div>
+        <div class="example-chip" onclick="setExample('eurusd-macd')">💶 ユーロドル MACD</div>
+        <div class="example-chip" onclick="setExample('gbpjpy-bb')">💷 ポンド円 ボリンジャー</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 16px;">
+      <div class="card-title">詳細設定（任意）</div>
+      <div class="params-row">
+        <div class="param-group">
+          <label>初期資金</label>
+          <input type="text" value="¥1,000,000">
+        </div>
+        <div class="param-group">
+          <label>pip価値 / 1pip</label>
+          <input type="text" value="¥1,000">
+        </div>
+        <div class="param-group">
+          <label>手数料 / 往復</label>
+          <input type="text" value="0 pips（スプレッド込み）">
+        </div>
+      </div>
+    </div>
+
+    <button class="run-btn" onclick="showResults()">
+      ▶ バックテスト実行
+    </button>
+  </div>
+
+  <!-- Claude Parsed Result (shows after run) -->
+  <div id="parsed-section" style="display:none;">
+    <div class="card">
+      <div class="card-title">🤖 Claude AIが解析した戦略パラメータ</div>
+      <div class="strategy-parsed">
+        <div style="margin-bottom: 8px; font-size: 12px; color: #808495;">以下の条件で検証します。意図と異なる場合は入力文を修正してください。</div>
+        <span class="parsed-tag">📌 XAUUSD（ゴールド）</span>
+        <span class="parsed-tag">⏱ 4時間足</span>
+        <span class="parsed-tag">📅 2022-01-01 → 2024-12-31</span>
+        <span class="parsed-tag">📈 ロング: RSI ≤ 30</span>
+        <span class="parsed-tag">📉 ショート: RSI ≥ 70</span>
+        <span class="parsed-tag">🛑 SL: 30ドル</span>
+        <span class="parsed-tag">🎯 TP: 60ドル</span>
+        <span class="parsed-tag">💹 RSI期間: 14</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Section (shows after run) -->
+  <div id="results-section" style="display:none;">
+
+    <!-- Result Banner -->
+    <div class="result-banner">
+      <div class="icon">📊</div>
+      <div class="text">
+        <h2>バックテスト完了 — XAUUSD 4時間足（2022-01-01〜2024-12-31）</h2>
+        <p>データ: 5,832本のローソク足 | 処理時間: 3.2秒</p>
+      </div>
+    </div>
+
+    <!-- KPI Metrics -->
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-label">トレード数</div>
+        <div class="metric-value blue">84<span style="font-size:16px;color:#808495;">回</span></div>
+        <div class="metric-sub">ロング 47回 / ショート 37回</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">勝率</div>
+        <div class="metric-value green">57.1<span style="font-size:16px;">%</span></div>
+        <div class="metric-sub">48勝 36敗</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">損益合計</div>
+        <div class="metric-value green">+1,240<span style="font-size:16px;">ドル</span></div>
+        <div class="metric-sub">¥1,240,000相当</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">プロフィットファクター</div>
+        <div class="metric-value yellow">1.68</div>
+        <div class="metric-sub">1.0以上で黒字</div>
+      </div>
+    </div>
+
+    <div class="metrics-grid">
+      <div class="metric">
+        <div class="metric-label">最大ドローダウン</div>
+        <div class="metric-value red">-12.3<span style="font-size:16px;">%</span></div>
+        <div class="metric-sub">¥123,000</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">シャープレシオ</div>
+        <div class="metric-value blue">0.87</div>
+        <div class="metric-sub">1.0以上が理想</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">最終資金</div>
+        <div class="metric-value green">¥2,240,000</div>
+        <div class="metric-sub">初期 ¥1,000,000</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">総収益率</div>
+        <div class="metric-value green">+124.0<span style="font-size:16px;">%</span></div>
+        <div class="metric-sub">3年間</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-grid">
+      <!-- Equity Curve -->
+      <div class="chart-box">
+        <div class="chart-title">📈 エクイティカーブ（資金推移）</div>
+        <svg viewBox="0 0 520 200" width="100%" height="200">
+          <!-- Grid -->
+          <line x1="40" y1="20" x2="40" y2="175" stroke="#2d2f3d" stroke-width="1"/>
+          <line x1="40" y1="175" x2="510" y2="175" stroke="#2d2f3d" stroke-width="1"/>
+          <line x1="40" y1="50" x2="510" y2="50" class="grid-line" stroke-width="1"/>
+          <line x1="40" y1="80" x2="510" y2="80" class="grid-line" stroke-width="1"/>
+          <line x1="40" y1="110" x2="510" y2="110" class="grid-line" stroke-width="1"/>
+          <line x1="40" y1="140" x2="510" y2="140" class="grid-line" stroke-width="1"/>
+          <!-- Y axis labels -->
+          <text x="5" y="54" fill="#808495" font-size="9" font-family="monospace">¥2.2M</text>
+          <text x="5" y="84" fill="#808495" font-size="9" font-family="monospace">¥1.8M</text>
+          <text x="5" y="114" fill="#808495" font-size="9" font-family="monospace">¥1.4M</text>
+          <text x="5" y="144" fill="#808495" font-size="9" font-family="monospace">¥1.0M</text>
+          <!-- X axis labels -->
+          <text x="40" y="188" fill="#808495" font-size="9" font-family="monospace">2022/01</text>
+          <text x="160" y="188" fill="#808495" font-size="9" font-family="monospace">2022/07</text>
+          <text x="280" y="188" fill="#808495" font-size="9" font-family="monospace">2023/01</text>
+          <text x="390" y="188" fill="#808495" font-size="9" font-family="monospace">2023/07</text>
+          <text x="470" y="188" fill="#808495" font-size="9" font-family="monospace">2024</text>
+          <!-- Equity Line (fill) -->
+          <defs>
+            <linearGradient id="equityGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00c06b" stop-opacity="0.3"/>
+              <stop offset="100%" stop-color="#00c06b" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
+          <path d="M40,143 L70,138 L100,130 L115,142 L130,145 L150,135 L170,128 L190,125 L210,120 L230,118 L250,112 L265,122 L280,115 L300,108 L320,100 L340,95 L360,88 L380,82 L400,78 L420,70 L440,65 L460,58 L480,52 L510,50 L510,175 L40,175 Z"
+                fill="url(#equityGrad)" stroke="none"/>
+          <path d="M40,143 L70,138 L100,130 L115,142 L130,145 L150,135 L170,128 L190,125 L210,120 L230,118 L250,112 L265,122 L280,115 L300,108 L320,100 L340,95 L360,88 L380,82 L400,78 L420,70 L440,65 L460,58 L480,52 L510,50"
+                fill="none" stroke="#00c06b" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Initial capital line -->
+          <line x1="40" y1="143" x2="510" y2="143" stroke="#ffd700" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+          <text x="515" y="146" fill="#ffd700" font-size="8" opacity="0.6">初期</text>
+        </svg>
+      </div>
+
+      <!-- Win/Loss Donut -->
+      <div class="chart-box">
+        <div class="chart-title">🎯 勝敗分布</div>
+        <svg viewBox="0 0 220 200" width="100%" height="200">
+          <!-- Donut chart: 57.1% win (green), 42.9% loss (red) -->
+          <!-- Win arc: 0 to 205.6 degrees (57.1% of 360) -->
+          <circle cx="110" cy="95" r="70" fill="none" stroke="#00c06b" stroke-width="28"
+                  stroke-dasharray="251.2 188.5" stroke-dashoffset="0" transform="rotate(-90 110 95)" opacity="0.85"/>
+          <circle cx="110" cy="95" r="70" fill="none" stroke="#ff4b4b" stroke-width="28"
+                  stroke-dasharray="188.5 251.2" stroke-dashoffset="-251.2" transform="rotate(-90 110 95)" opacity="0.75"/>
+          <circle cx="110" cy="95" r="44" fill="#1a1c24"/>
+          <text x="110" y="89" text-anchor="middle" fill="#fafafa" font-size="20" font-weight="700">57.1%</text>
+          <text x="110" y="107" text-anchor="middle" fill="#808495" font-size="11">勝率</text>
+          <!-- Legend -->
+          <rect x="30" y="175" width="10" height="10" fill="#00c06b" rx="2"/>
+          <text x="44" y="184" fill="#c0c3cf" font-size="11">勝ち 48回</text>
+          <rect x="120" y="175" width="10" height="10" fill="#ff4b4b" rx="2"/>
+          <text x="134" y="184" fill="#c0c3cf" font-size="11">負け 36回</text>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Trade PnL Bar Chart -->
+    <div class="chart-box" style="margin-bottom: 20px;">
+      <div class="chart-title">📊 各トレード損益（ドル）</div>
+      <svg viewBox="0 0 900 120" width="100%" height="120">
+        <line x1="0" y1="60" x2="900" y2="60" stroke="#2d2f3d" stroke-width="1"/>
+        <!-- Sample bars (positive = green above center, negative = red below center) -->
+        <rect x="5" y="20" width="8" height="40" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="15" y="30" width="8" height="30" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="25" y="60" width="8" height="25" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="35" y="15" width="8" height="45" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="45" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="55" y="25" width="8" height="35" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="65" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="75" y="10" width="8" height="50" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="85" y="60" width="8" height="20" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="95" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="105" y="22" width="8" height="38" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="115" y="35" width="8" height="25" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="125" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="135" y="18" width="8" height="42" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="145" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="155" y="5" width="8" height="55" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="165" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="175" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="185" y="28" width="8" height="32" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="195" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="205" y="20" width="8" height="40" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="215" y="32" width="8" height="28" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="225" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="235" y="15" width="8" height="45" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="245" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="255" y="25" width="8" height="35" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="265" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="275" y="8" width="8" height="52" fill="#00c06b" opacity="0.8" rx="1"/>
+        <rect x="285" y="60" width="8" height="20" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <rect x="295" y="60" width="8" height="30" fill="#ff4b4b" opacity="0.8" rx="1"/>
+        <!-- Y labels -->
+        <text x="310" y="25" fill="#808495" font-size="9" font-family="monospace">+60</text>
+        <text x="310" y="65" fill="#808495" font-size="9" font-family="monospace">0</text>
+        <text x="310" y="95" fill="#808495" font-size="9" font-family="monospace">-30</text>
+        <text x="310" y="115" fill="#808495" font-size="9" font-family="monospace">（ドル）</text>
+      </svg>
+    </div>
+
+    <!-- Detail Stats + Exit Breakdown -->
+    <div class="stats-2col">
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title">📋 詳細統計</div>
+        <div class="stat-row"><span class="key">平均利益</span><span class="val green">+45.2 ドル</span></div>
+        <div class="stat-row"><span class="key">平均損失</span><span class="val red">-27.8 ドル</span></div>
+        <div class="stat-row"><span class="key">最大利益（1回）</span><span class="val green">+128 ドル</span></div>
+        <div class="stat-row"><span class="key">最大損失（1回）</span><span class="val red">-30 ドル（SL）</span></div>
+        <div class="stat-row"><span class="key">リスクリワード比</span><span class="val yellow">1.63</span></div>
+        <div class="stat-row"><span class="key">期待値 / 1トレード</span><span class="val green">+14.7 ドル</span></div>
+        <div class="stat-row"><span class="key">連勝最大</span><span class="val">7連勝</span></div>
+        <div class="stat-row"><span class="key">連敗最大</span><span class="val red">5連敗</span></div>
+      </div>
+      <div class="card" style="margin-bottom:0;">
+        <div class="card-title">🔔 決済理由の内訳</div>
+        <div class="stat-row"><span class="key">🛑 ストップロス</span><span class="val red">22回 (26.2%)</span></div>
+        <div class="stat-row"><span class="key">🎯 テイクプロフィット</span><span class="val green">38回 (45.2%)</span></div>
+        <div class="stat-row"><span class="key">📡 シグナル決済</span><span class="val blue">24回 (28.6%)</span></div>
+        <hr style="border-color:#2d2f3d; margin:12px 0;">
+        <div class="card-title" style="margin-top:0;">📅 月別収益</div>
+        <div class="stat-row"><span class="key">最良の月</span><span class="val green">2024/03: +312 ドル</span></div>
+        <div class="stat-row"><span class="key">最悪の月</span><span class="val red">2022/09: -142 ドル</span></div>
+        <div class="stat-row"><span class="key">黒字月 / 全月</span><span class="val">28 / 36ヶ月 (77.8%)</span></div>
+      </div>
+    </div>
+
+    <!-- Trade Log Table -->
+    <div class="card" style="margin-top:20px;">
+      <div class="card-title">📝 直近のトレードログ</div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>方向</th>
+            <th>エントリー日時</th>
+            <th>決済日時</th>
+            <th>エントリー価格</th>
+            <th>決済価格</th>
+            <th>損益（ドル）</th>
+            <th>決済理由</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#808495;">84</td>
+            <td><span class="badge badge-short">SHORT</span></td>
+            <td>2024-11-18 20:00</td>
+            <td>2024-11-22 08:00</td>
+            <td>2,648.30</td>
+            <td>2,588.30</td>
+            <td class="green">+60.0</td>
+            <td><span class="badge badge-tp">TP</span></td>
+          </tr>
+          <tr>
+            <td style="color:#808495;">83</td>
+            <td><span class="badge badge-long">LONG</span></td>
+            <td>2024-11-10 04:00</td>
+            <td>2024-11-12 16:00</td>
+            <td>2,601.50</td>
+            <td>2,631.50</td>
+            <td class="green">+30.0</td>
+            <td><span class="badge badge-sig">シグナル</span></td>
+          </tr>
+          <tr>
+            <td style="color:#808495;">82</td>
+            <td><span class="badge badge-long">LONG</span></td>
+            <td>2024-10-28 08:00</td>
+            <td>2024-10-30 12:00</td>
+            <td>2,748.20</td>
+            <td>2,718.20</td>
+            <td class="red">-30.0</td>
+            <td><span class="badge badge-sl">SL</span></td>
+          </tr>
+          <tr>
+            <td style="color:#808495;">81</td>
+            <td><span class="badge badge-short">SHORT</span></td>
+            <td>2024-10-15 16:00</td>
+            <td>2024-10-18 00:00</td>
+            <td>2,692.80</td>
+            <td>2,632.80</td>
+            <td class="green">+60.0</td>
+            <td><span class="badge badge-tp">TP</span></td>
+          </tr>
+          <tr>
+            <td style="color:#808495;">80</td>
+            <td><span class="badge badge-long">LONG</span></td>
+            <td>2024-09-30 04:00</td>
+            <td>2024-10-04 08:00</td>
+            <td>2,641.70</td>
+            <td>2,700.70</td>
+            <td class="green">+59.0</td>
+            <td><span class="badge badge-sig">シグナル</span></td>
+          </tr>
+          <tr>
+            <td colspan="8" style="text-align:center; color:#808495; padding:14px; font-size:13px;">
+              … 全84件のトレード
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="dl-row">
+        <div class="dl-btn">⬇ CSVダウンロード（全トレード）</div>
+        <div class="dl-btn">🖼 チャート保存（PNG）</div>
+        <div class="dl-btn">📋 統計データ（JSON）</div>
+      </div>
+    </div>
+
+  </div><!-- /results-section -->
+
+</div><!-- /main -->
+
+<script>
+function showResults() {
+  document.getElementById('parsed-section').style.display = 'block';
+  document.getElementById('results-section').style.display = 'block';
+  document.getElementById('parsed-section').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+const examples = {
+  'gold-rsi': 'ゴールド（XAUUSD）の4時間足で、RSIが30以下になったら買いエントリー、RSI70以上で決済。ショートはRSI70超えでエントリー、30以下で決済。ストップロス30ドル、テイクプロフィット60ドル。2022年から2024年で検証。',
+  'usdjpy-ma': 'ドル円の1時間足で、5EMAが20EMAを上抜いたらロング、下抜いたらショート。SL20pips、TP40pips。2023年1月から2024年12月で検証。',
+  'eurusd-macd': 'ユーロドルの4時間足で、MACDがゴールデンクロスしたらロング、デッドクロスでクローズしてショート。SL30pips、TP60pips。2022年から2024年。',
+  'gbpjpy-bb': 'ポンド円の1時間足で、価格がボリンジャーバンド下限を下抜けたら買い、上限を上抜けたら売り。SL40pips、TP80pips。2023年から2024年。',
+};
+
+function setExample(key) {
+  document.getElementById('strategy-input').value = examples[key];
+}
+</script>
+
+</body>
+</html>
