@@ -1,0 +1,20 @@
+arasaka:
+  name: "ARASAKA DIGITAL HOLDINGS"
+  sovereign: "ミリテク"
+
+cost:
+  monthly_limit_jpy: 1000
+  monthly_limit_usd: 6.5
+  alert_threshold: 0.8
+  sl_threshold: 1.0
+
+models:
+  default: "claude-haiku-4-5-20251001"
+  architect: "claude-haiku-4-5-20251001"
+  use_batch: true
+
+discord:
+  webhook_url: "${DISCORD_WEBHOOK_URL}"
+  channels:
+    report: "${DISCORD_REPORT_CHANNEL}"
+    alert: "${DISCORD_ALERT_CHANNEL}"

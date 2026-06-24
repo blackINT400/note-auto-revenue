@@ -1,0 +1,43 @@
+fractal_template:
+  functions:
+    - id: strategy
+      name: "戦略・設計"
+      agent: "architect_agent"
+      inputs: ["project_goal", "constraints"]
+      outputs: ["roadmap", "kpi_definitions", "sl_conditions"]
+
+    - id: research
+      name: "調達・情報"
+      agent: "researcher_agent"
+      inputs: ["research_query", "depth"]
+      outputs: ["market_data", "competitor_analysis", "raw_materials"]
+
+    - id: execute
+      name: "生産・実行"
+      agent: "executor_agent"
+      inputs: ["instructions", "materials"]
+      outputs: ["artifacts"]
+
+    - id: distribute
+      name: "販売・配布"
+      agent: "publisher_agent"
+      inputs: ["artifacts", "seo_keywords"]
+      outputs: ["published_urls", "distribution_report"]
+
+    - id: finance
+      name: "財務・KPI"
+      agent: "monitor_agent"
+      inputs: ["kpi_definitions", "published_urls"]
+      outputs: ["kpi_report", "revenue_data"]
+
+    - id: learn
+      name: "学習・改善"
+      agent: "learner_agent"
+      inputs: ["kpi_report", "artifacts"]
+      outputs: ["improvement_suggestions", "updated_prompts"]
+
+    - id: govern
+      name: "統治・判断"
+      agent: "governor_agent"
+      inputs: ["all_reports", "cost_data"]
+      outputs: ["decisions", "sovereign_requests"]

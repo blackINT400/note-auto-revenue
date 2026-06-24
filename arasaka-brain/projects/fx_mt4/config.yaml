@@ -1,0 +1,16 @@
+project:
+  name: "fx_mt4"
+  display_name: "FXトレード分析・EA管理"
+  phase: "phase0"
+
+analysis:
+  pairs: ["USDJPY", "EURJPY", "EURUSD"]
+  frequency: "daily"
+
+kpi:
+  target_win_rate: 0.55
+  target_monthly_pips: 100
+
+sl:
+  stop_if_drawdown_exceeds_pct: 20
+  monthly_cost_limit_jpy: 200

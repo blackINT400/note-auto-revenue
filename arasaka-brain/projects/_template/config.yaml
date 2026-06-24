@@ -1,0 +1,11 @@
+project:
+  name: "_template"
+  display_name: "新プロジェクト名"
+  phase: "phase0"
+
+kpi:
+  target_monthly_revenue_jpy: 0
+
+sl:
+  monthly_cost_limit_jpy: 300
+  stop_condition: "未定義"

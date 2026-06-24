@@ -1,0 +1,43 @@
+name: ARASAKA Daily Run
+
+on:
+  schedule:
+    - cron: '0 21 * * *'   # 毎日 JST 06:00
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'プロジェクト名'
+        required: false
+        default: 'note_zenn'
+      mode:
+        description: '実行モード'
+        required: false
+        default: 'daily'
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: arasaka-brain
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install anthropic pyyaml requests
+      - name: Run note_zenn project
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_REPORT_CHANNEL: ${{ secrets.DISCORD_REPORT_CHANNEL }}
+          DISCORD_ALERT_CHANNEL: ${{ secrets.DISCORD_ALERT_CHANNEL }}
+        run: python brain.py --project ${{ github.event.inputs.project || 'note_zenn' }} --mode ${{ github.event.inputs.mode || 'daily' }}
+      - name: Commit cost log
+        run: |
+          git config user.name "arasaka-brain-bot"
+          git config user.email "arasaka@auto-revenue.bot"
+          git add .cost_log.json projects/note_zenn/config.yaml || true
+          git diff --staged --quiet || git commit -m "chore: update cost log and genre index [skip ci]"
+          git push || true
