@@ -55,7 +55,7 @@ revenue_pool:
   total_earned: 0.0
   available_budget: 0.0
   monthly_cost_limit: 5000
-  last_updated: '2026-06-24'
+  last_updated: '2026-06-25'
   breakdown:
     operating_cost: 0.0
     growth_investment: 0
@@ -66,7 +66,7 @@ empire_kpi:
   total_monthly_cost: 0.0
   business_count: 3
   best_performer: zenn_副業節税
-  last_updated: '2026-06-24'
+  last_updated: '2026-06-25'
 safety:
   new_business_last_launched: ''
   max_new_per_day: 1
