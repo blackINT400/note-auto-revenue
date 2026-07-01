@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FX描画ツール</title>
+<style>
+  :root {
+    --bg: #1e1e28;
+    --panel: #2a2a38;
+    --panel-2: #33333f;
+    --accent: #4a9eff;
+    --text: #e8e8ee;
+    --border: #444455;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%;
+    font-family: "Segoe UI", "Hiragino Sans", "Meiryo", sans-serif;
+    background: var(--bg); color: var(--text);
+    overflow: hidden;
+  }
+  #app { display: flex; flex-direction: column; height: 100vh; }
+
+  #toolbar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    padding: 8px 12px; background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    user-select: none;
+  }
+  .group {
+    display: flex; align-items: center; gap: 4px;
+    padding: 4px 8px; background: var(--panel-2);
+    border-radius: 8px;
+  }
+  .group .label { font-size: 11px; color: #9aa; margin-right: 2px; }
+  .sep { width: 1px; align-self: stretch; background: var(--border); margin: 2px 2px; }
+
+  button.tool, button.act {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 38px; height: 34px; padding: 0 8px;
+    background: transparent; color: var(--text);
+    border: 1px solid transparent; border-radius: 7px;
+    cursor: pointer; font-size: 16px; line-height: 1;
+  }
+  button.tool:hover, button.act:hover { background: rgba(255,255,255,0.08); }
+  button.tool.active {
+    background: var(--accent); color: #fff;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.15) inset;
+  }
+  button.act { font-size: 13px; }
+  button:disabled { opacity: 0.35; cursor: default; }
+
+  input[type="color"] {
+    width: 34px; height: 34px; padding: 0; border: none;
+    background: none; cursor: pointer; border-radius: 6px;
+  }
+  input[type="range"] { width: 110px; cursor: pointer; }
+  .swatch {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.25); cursor: pointer;
+  }
+  .swatch:hover { transform: scale(1.12); }
+  #sizeVal { font-size: 12px; width: 26px; text-align: right; color: #9aa; }
+
+  #stage {
+    flex: 1; position: relative; overflow: hidden;
+    background:
+      linear-gradient(45deg, #26262f 25%, transparent 25%),
+      linear-gradient(-45deg, #26262f 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #26262f 75%),
+      linear-gradient(-45deg, transparent 75%, #26262f 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+  }
+  #board {
+    position: absolute; inset: 0; margin: auto;
+    background: #ffffff;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+    touch-action: none; cursor: crosshair;
+  }
+  #hint {
+    position: absolute; bottom: 10px; right: 14px;
+    font-size: 11px; color: #778; background: rgba(0,0,0,0.35);
+    padding: 4px 8px; border-radius: 6px; pointer-events: none;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="toolbar">
+    <div class="group">
+      <button class="tool active" data-tool="pen"    title="ペン (P)">✏️</button>
+      <button class="tool" data-tool="eraser" title="消しゴム (E)">⌫</button>
+      <button class="tool" data-tool="line"   title="直線 (L)">╱</button>
+      <button class="tool" data-tool="arrow"  title="矢印 (A)">➜</button>
+      <button class="tool" data-tool="rect"   title="四角 (R)">▭</button>
+      <button class="tool" data-tool="ellipse" title="円 (C)">◯</button>
+    </div>
+
+    <div class="group">
+      <span class="label">色</span>
+      <input type="color" id="color" value="#ff3b30">
+      <div class="swatch" style="background:#ff3b30" data-color="#ff3b30" title="赤(売り)"></div>
+      <div class="swatch" style="background:#34c759" data-color="#34c759" title="緑(買い)"></div>
+      <div class="swatch" style="background:#ffcc00" data-color="#ffcc00" title="黄"></div>
+      <div class="swatch" style="background:#4a9eff" data-color="#4a9eff" title="青"></div>
+      <div class="swatch" style="background:#000000" data-color="#000000" title="黒"></div>
+    </div>
+
+    <div class="group">
+      <span class="label">太さ</span>
+      <input type="range" id="size" min="1" max="40" value="3">
+      <span id="sizeVal">3</span>
+    </div>
+
+    <div class="group">
+      <button class="act" id="undo" title="元に戻す (Ctrl+Z)">↶ 戻す</button>
+      <button class="act" id="redo" title="やり直し (Ctrl+Y)">↷ 進む</button>
+    </div>
+
+    <div class="group">
+      <button class="act" id="loadBtn" title="画像を読み込む">🖼 画像</button>
+      <button class="act" id="saveBtn" title="PNGで保存">💾 保存</button>
+      <button class="act" id="clearBtn" title="全消去">🗑 消去</button>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" style="display:none">
+  </div>
+
+  <div id="stage">
+    <canvas id="board"></canvas>
+    <div id="hint">Ctrl+V でチャート画像を貼り付け / ドラッグで描画</div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const stage  = document.getElementById("stage");
+  const canvas = document.getElementById("board");
+  const ctx    = canvas.getContext("2d");
+
+  // ---- 状態 ----
+  const state = {
+    tool: "pen",
+    color: "#ff3b30",
+    size: 3,
+    drawing: false,
+    startX: 0, startY: 0,
+    snapshot: null,      // 図形描画中の下地
+  };
+
+  const history = [];    // ImageData のスタック
+  const redoStack = [];
+  const MAX_HISTORY = 60;
+
+  // ---- キャンバスの初期化 / リサイズ ----
+  function fitCanvas() {
+    const prev = canvas.width ? ctx.getImageData(0, 0, canvas.width, canvas.height) : null;
+    const w = Math.max(100, stage.clientWidth  - 40);
+    const h = Math.max(100, stage.clientHeight - 40);
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = w + "px";
+    canvas.style.height = h + "px";
+    // 白背景で塗り直し
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, w, h);
+    if (prev) ctx.putImageData(prev, 0, 0);
+  }
+
+  function pushHistory() {
+    try {
+      history.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      if (history.length > MAX_HISTORY) history.shift();
+      redoStack.length = 0;
+    } catch (e) { /* 画像サイズ0など */ }
+    updateUndoRedo();
+  }
+
+  function updateUndoRedo() {
+    document.getElementById("undo").disabled = history.length <= 1;
+    document.getElementById("redo").disabled = redoStack.length === 0;
+  }
+
+  // ---- 座標取得 ----
+  function pos(e) {
+    const r = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - r.left) * (canvas.width  / r.width),
+      y: (e.clientY - r.top)  * (canvas.height / r.height),
+    };
+  }
+
+  // ---- 描画補助 ----
+  function applyStroke() {
+    ctx.lineWidth = state.size;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    if (state.tool === "eraser") {
+      ctx.strokeStyle = "#ffffff";
+      ctx.fillStyle = "#ffffff";
+    } else {
+      ctx.strokeStyle = state.color;
+      ctx.fillStyle = state.color;
+    }
+  }
+
+  function drawArrow(x1, y1, x2, y2) {
+    const head = Math.max(10, state.size * 3);
+    const ang = Math.atan2(y2 - y1, x2 - x1);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - head * Math.cos(ang - Math.PI / 6), y2 - head * Math.sin(ang - Math.PI / 6));
+    ctx.lineTo(x2 - head * Math.cos(ang + Math.PI / 6), y2 - head * Math.sin(ang + Math.PI / 6));
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  // ---- ポインタイベント ----
+  function onDown(e) {
+    e.preventDefault();
+    const p = pos(e);
+    state.drawing = true;
+    state.startX = p.x; state.startY = p.y;
+    applyStroke();
+
+    if (state.tool === "pen" || state.tool === "eraser") {
+      ctx.beginPath();
+      ctx.moveTo(p.x, p.y);
+      // 点だけでも描けるように
+      ctx.lineTo(p.x + 0.01, p.y + 0.01);
+      ctx.stroke();
+    } else {
+      state.snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    }
+    canvas.setPointerCapture(e.pointerId);
+  }
+
+  function onMove(e) {
+    if (!state.drawing) return;
+    const p = pos(e);
+    applyStroke();
+
+    if (state.tool === "pen" || state.tool === "eraser") {
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+      return;
+    }
+    // 図形: 下地を戻してプレビュー
+    ctx.putImageData(state.snapshot, 0, 0);
+    const x0 = state.startX, y0 = state.startY;
+    if (state.tool === "line") {
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(p.x, p.y); ctx.stroke();
+    } else if (state.tool === "arrow") {
+      drawArrow(x0, y0, p.x, p.y);
+    } else if (state.tool === "rect") {
+      ctx.strokeRect(x0, y0, p.x - x0, p.y - y0);
+    } else if (state.tool === "ellipse") {
+      ctx.beginPath();
+      ctx.ellipse((x0 + p.x) / 2, (y0 + p.y) / 2,
+                  Math.abs(p.x - x0) / 2, Math.abs(p.y - y0) / 2,
+                  0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
+  }
+
+  function onUp(e) {
+    if (!state.drawing) return;
+    state.drawing = false;
+    state.snapshot = null;
+    pushHistory();
+  }
+
+  canvas.addEventListener("pointerdown", onDown);
+  canvas.addEventListener("pointermove", onMove);
+  canvas.addEventListener("pointerup", onUp);
+  canvas.addEventListener("pointercancel", onUp);
+
+  // ---- ツール選択 ----
+  document.querySelectorAll("button.tool").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("button.tool").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      state.tool = btn.dataset.tool;
+    });
+  });
+
+  // ---- 色 / 太さ ----
+  const colorInput = document.getElementById("color");
+  colorInput.addEventListener("input", () => { state.color = colorInput.value; });
+  document.querySelectorAll(".swatch").forEach(s => {
+    s.addEventListener("click", () => {
+      state.color = s.dataset.color;
+      colorInput.value = s.dataset.color;
+    });
+  });
+  const sizeInput = document.getElementById("size");
+  const sizeVal = document.getElementById("sizeVal");
+  sizeInput.addEventListener("input", () => {
+    state.size = parseInt(sizeInput.value, 10);
+    sizeVal.textContent = sizeInput.value;
+  });
+
+  // ---- undo / redo ----
+  function undo() {
+    if (history.length <= 1) return;
+    redoStack.push(history.pop());
+    ctx.putImageData(history[history.length - 1], 0, 0);
+    updateUndoRedo();
+  }
+  function redo() {
+    if (redoStack.length === 0) return;
+    const img = redoStack.pop();
+    history.push(img);
+    ctx.putImageData(img, 0, 0);
+    updateUndoRedo();
+  }
+  document.getElementById("undo").addEventListener("click", undo);
+  document.getElementById("redo").addEventListener("click", redo);
+
+  // ---- 消去 ----
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    pushHistory();
+  });
+
+  // ---- 保存 ----
+  document.getElementById("saveBtn").addEventListener("click", () => {
+    const a = document.createElement("a");
+    const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+    a.download = "fx-drawing-" + ts + ".png";
+    a.href = canvas.toDataURL("image/png");
+    a.click();
+  });
+
+  // ---- 画像読み込み（ファイル） ----
+  const fileInput = document.getElementById("fileInput");
+  document.getElementById("loadBtn").addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", () => {
+    const f = fileInput.files[0];
+    if (f) loadImageFile(f);
+    fileInput.value = "";
+  });
+
+  function drawImageFit(img) {
+    // アスペクト比を保ってキャンバスに収める
+    const scale = Math.min(canvas.width / img.width, canvas.height / img.height, 1);
+    const w = img.width * scale, h = img.height * scale;
+    const x = (canvas.width - w) / 2, y = (canvas.height - h) / 2;
+    ctx.drawImage(img, x, y, w, h);
+    pushHistory();
+  }
+
+  function loadImageFile(file) {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { drawImageFit(img); URL.revokeObjectURL(url); };
+    img.src = url;
+  }
+
+  // ---- クリップボード貼り付け（チャートのスクショ） ----
+  window.addEventListener("paste", (e) => {
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+    for (const it of items) {
+      if (it.type.indexOf("image") === 0) {
+        loadImageFile(it.getAsFile());
+        e.preventDefault();
+        break;
+      }
+    }
+  });
+
+  // ---- キーボードショートカット ----
+  window.addEventListener("keydown", (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      const k = e.key.toLowerCase();
+      if (k === "z" && !e.shiftKey) { e.preventDefault(); undo(); }
+      else if ((k === "z" && e.shiftKey) || k === "y") { e.preventDefault(); redo(); }
+      return;
+    }
+    const map = { p: "pen", e: "eraser", l: "line", a: "arrow", r: "rect", c: "ellipse" };
+    const t = map[e.key.toLowerCase()];
+    if (t) {
+      state.tool = t;
+      document.querySelectorAll("button.tool").forEach(b =>
+        b.classList.toggle("active", b.dataset.tool === t));
+    }
+  });
+
+  // ---- 起動 ----
+  let resizeTimer = null;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fitCanvas, 150);
+  });
+
+  fitCanvas();
+  pushHistory();   // 初期の白紙状態を履歴に
+})();
+</script>
+</body>
+</html>
