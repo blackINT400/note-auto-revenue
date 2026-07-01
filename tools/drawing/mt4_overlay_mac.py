@@ -50,7 +50,8 @@ try:
         NSApplicationActivationPolicyAccessory,
         NSWindowStyleMaskBorderless, NSWindowStyleMaskTitled,
         NSWindowStyleMaskUtilityWindow, NSWindowStyleMaskHUDWindow,
-        NSBackingStoreBuffered, NSStatusWindowLevel,
+        NSWindowStyleMaskNonactivatingPanel, NSWindowStyleMaskClosable,
+        NSBackingStoreBuffered, NSStatusWindowLevel, NSPopUpMenuWindowLevel,
         NSWindowCollectionBehaviorCanJoinAllSpaces,
         NSWindowCollectionBehaviorStationary,
         NSWindowCollectionBehaviorFullScreenAuxiliary,
@@ -261,12 +262,15 @@ class AppController(NSObject):
         W, H = 760, 58
         x = (frame.size.width - W) / 2
         y = frame.size.height - H - 40
+        # NonactivatingPanel: 他ウィンドウ(オーバーレイやMT4)がキーのままでも
+        # ボタンが押せるパレット。PopUpメニューレベルでオーバーレイより確実に前面。
         style = (NSWindowStyleMaskTitled | NSWindowStyleMaskUtilityWindow
-                 | NSWindowStyleMaskHUDWindow)
+                 | NSWindowStyleMaskHUDWindow | NSWindowStyleMaskClosable
+                 | NSWindowStyleMaskNonactivatingPanel)
         self.panel = NSPanel.alloc().initWithContentRect_styleMask_backing_defer_(
             NSMakeRect(x, y, W, H), style, NSBackingStoreBuffered, False)
         self.panel.setTitle_("FX描画")
-        self.panel.setLevel_(NSStatusWindowLevel + 1)
+        self.panel.setLevel_(NSPopUpMenuWindowLevel)
         self.panel.setFloatingPanel_(True)
         self.panel.setHidesOnDeactivate_(False)
         self.panel.setBecomesKeyOnlyIfNeeded_(True)
