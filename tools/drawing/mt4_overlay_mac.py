@@ -113,6 +113,7 @@ class OverlayView(NSView):
         return True
 
     # ---- 描画本体 ----
+    @objc.python_method
     def _make_path(self, s):
         path = NSBezierPath.bezierPath()
         path.setLineWidth_(s["width"])
@@ -139,6 +140,7 @@ class OverlayView(NSView):
                 NSMakeRect(min(x0, x1), min(y0, y1), abs(x1 - x0), abs(y1 - y0)))
         return path
 
+    @objc.python_method
     def _draw_arrowhead(self, s):
         (x0, y0), (x1, y1) = s["points"][0], s["points"][-1]
         if (x0, y0) == (x1, y1):
@@ -153,6 +155,7 @@ class OverlayView(NSView):
         p.closePath()
         p.fill()
 
+    @objc.python_method
     def _render(self, s):
         s["color"].setStroke()
         s["color"].setFill()
@@ -167,6 +170,7 @@ class OverlayView(NSView):
             self._render(self.current)
 
     # ---- マウス操作 ----
+    @objc.python_method
     def _pt(self, event):
         p = self.convertPoint_fromView_(event.locationInWindow(), None)
         return (p.x, p.y)
@@ -198,11 +202,13 @@ class OverlayView(NSView):
             self.setNeedsDisplay_(True)
 
     # ---- 編集 ----
+    @objc.python_method
     def undo(self):
         if self.strokes:
             self.strokes.pop()
             self.setNeedsDisplay_(True)
 
+    @objc.python_method
     def clearAll(self):
         self.strokes = []
         self.current = None
@@ -227,6 +233,7 @@ class AppController(NSObject):
         return self
 
     # ---- 構築 ----
+    @objc.python_method
     def build(self):
         frame = NSScreen.mainScreen().frame()
 
@@ -249,6 +256,7 @@ class AppController(NSObject):
         self._install_hotkeys()
         self._highlight_tool("pen")
 
+    @objc.python_method
     def _build_toolbar(self, frame):
         W, H = 760, 58
         x = (frame.size.width - W) / 2
@@ -315,6 +323,7 @@ class AppController(NSObject):
 
         self.panel.orderFrontRegardless()
 
+    @objc.python_method
     def _button(self, title, x, y, w, h, action, parent):
         b = NSButton.alloc().initWithFrame_(NSMakeRect(x, y, w, h))
         b.setTitle_(title)
@@ -324,6 +333,7 @@ class AppController(NSObject):
         parent.addSubview_(b)
         return b
 
+    @objc.python_method
     def _highlight_tool(self, tool):
         for t, b in self.tool_buttons.items():
             b.setBezelColor_(nscolor((0.29, 0.62, 1.00)) if t == tool else NSColor.controlColor())
@@ -374,6 +384,7 @@ class AppController(NSObject):
         NSApp.terminate_(None)
 
     # ---- ショートカット（描画中に有効） ----
+    @objc.python_method
     def _install_hotkeys(self):
         def handler(event):
             chars = (event.charactersIgnoringModifiers() or "").lower()
