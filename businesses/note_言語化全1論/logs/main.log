@@ -4051,3 +4051,86 @@ We can't connect to the server for this app or website at this time. There might
 2026-07-12 21:57:14,643 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 102 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
 2026-07-12 21:57:15,644 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
 2026-07-12 21:57:15,644 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-07-12_06-57.md
+2026-07-12 23:51:21,161 [INFO] agents.genre_engine: 初回: ジャンル選定 → 恋愛・好きな人への気持ちの伝え方（通常ローテーション）
+2026-07-12 23:51:21,168 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 初回選定（通常ローテーション）)
+2026-07-12 23:51:21,173 [INFO] agents.genre_engine: テーマ継続: 恋愛・好きな人への気持ちの伝え方 (level=1, consecutive=1→2)
+2026-07-12 23:51:21,180 [INFO] __main__: ジャンル選定: 恋愛・好きな人への気持ちの伝え方 (level=1, 継続（同テーマ 2回目）)
+2026-07-12 23:51:21,186 [INFO] __main__: 2本目ジャンルを強制変更: 恋愛・好きな人への気持ちの伝え方 → 人間関係・職場のストレス解消
+2026-07-12 23:51:21,187 [INFO] __main__: [note] 起動 mode=daily | 1本目ジャンル=恋愛・好きな人への気持ちの伝え方 | 2本目ジャンル=人間関係・職場のストレス解消
+2026-07-12 23:51:22,515 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-07-12 23:51:23,753 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-07-12 23:51:24,983 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-07-12 23:51:26,097 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-07-12 23:51:26,097 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-07-12 23:51:26,097 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-07-12 23:51:27,254 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-07-12 23:51:28,491 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-07-12 23:51:29,349 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-07-12 23:51:30,248 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-07-12 23:51:31,588 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-07-12 23:51:31,729 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-07-12 23:51:32,371 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-07-12 23:51:32,807 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-07-12 23:51:32,807 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-07-12 23:51:32,807 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-07-12 23:51:32,968 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 401 Unauthorized"
+2026-07-12 23:51:32,969 [ERROR] empire.playbooks.note_magazine.scout: Claude topic selection failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011Ccy4XVHDYeTfVKCdKu4Fe'}
+2026-07-12 23:51:33,109 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 401 Unauthorized"
+2026-07-12 23:51:33,110 [ERROR] empire.playbooks.note_magazine.scout: Fallback topic generation also failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011Ccy4XVvQdnMcb5zHGUdQA'}
+2026-07-12 23:51:33,110 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-07-12.json
+2026-07-12 23:51:33,256 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 401 Unauthorized"
+2026-07-12 23:51:33,257 [WARNING] empire.playbooks.note_magazine.creator: API生成失敗 → テンプレートフォールバック: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011Ccy4XWcpvGHDH6czdjUXe'}
+2026-07-12 23:51:33,257 [INFO] empire.playbooks.note_magazine.creator: テンプレートベース記事生成を開始 (genre=恋愛・好きな人への気持ちの伝え方)...
+2026-07-12 23:51:33,258 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-07-12_なぜ恋愛好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか.json
+2026-07-12 23:51:33,258 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-07-12_02.md (mode=template)
+2026-07-12 23:51:33,507 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-07-12 23:51:33,507 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-07-12 23:51:33,642 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-07-12 23:51:33,642 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-07-12 23:51:33,642 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-07-12_なぜ恋愛_好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか.md
+2026-07-12 23:51:33,643 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-07-12 23:51:33,850 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (1本目): なぜ恋愛・好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか
+2026-07-12 23:51:34,098 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (1本目): なぜ恋愛・好きな人への気持ちの伝え方に悩む人ほど構造を見失うのか
+2026-07-12 23:51:34,098 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-07-12 23:51:34,099 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=なぜ恋愛・好きな人への気持ちの伝え方に悩む人ほど構造を見失う
+2026-07-12 23:51:35,234 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-07-12 23:51:36,319 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-07-12 23:51:37,367 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-07-12 23:51:38,405 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-07-12 23:51:38,405 [INFO] empire.playbooks.note_magazine.scout: STEP1 完了: note人気記事 0件取得
+2026-07-12 23:51:38,405 [WARNING] empire.playbooks.note_magazine.scout: STEP2 スキップ: トレンド記事が取得できませんでした
+2026-07-12 23:51:39,329 [INFO] empire.playbooks.note_magazine.scout: note RSS 副業: 0 entries
+2026-07-12 23:51:40,303 [INFO] empire.playbooks.note_magazine.scout: note RSS 節税: 0 entries
+2026-07-12 23:51:41,405 [INFO] empire.playbooks.note_magazine.scout: note RSS フリーランス: 0 entries
+2026-07-12 23:51:42,180 [INFO] empire.playbooks.note_magazine.scout: note RSS 投資: 0 entries
+2026-07-12 23:51:42,998 [INFO] empire.playbooks.note_magazine.scout: note RSS 節約: 0 entries
+2026-07-12 23:51:43,144 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS life: 30 entries
+2026-07-12 23:51:43,368 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS it: 30 entries
+2026-07-12 23:51:43,488 [INFO] empire.playbooks.note_magazine.scout: Hatena RSS economics: 30 entries
+2026-07-12 23:51:43,488 [INFO] empire.playbooks.note_magazine.scout: Total candidates: 30
+2026-07-12 23:51:43,488 [INFO] empire.playbooks.note_magazine.scout: note_patterns.json なし — パターンなしで実行
+2026-07-12 23:51:43,621 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 401 Unauthorized"
+2026-07-12 23:51:43,621 [ERROR] empire.playbooks.note_magazine.scout: Claude topic selection failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011Ccy4YGw6FJB9NHsrym6Mz'}
+2026-07-12 23:51:43,740 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 401 Unauthorized"
+2026-07-12 23:51:43,741 [ERROR] empire.playbooks.note_magazine.scout: Fallback topic generation also failed: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011Ccy4YHTLcrpUQhYR9MLqP'}
+2026-07-12 23:51:43,742 [INFO] empire.playbooks.note_magazine.scout: Saved topics to /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/topics_2026-07-12.json
+2026-07-12 23:51:43,898 [INFO] httpx: HTTP Request: POST https://api.anthropic.com/v1/messages "HTTP/1.1 401 Unauthorized"
+2026-07-12 23:51:43,899 [WARNING] empire.playbooks.note_magazine.creator: API生成失敗 → テンプレートフォールバック: Error code: 401 - {'type': 'error', 'error': {'type': 'authentication_error', 'message': 'invalid x-api-key'}, 'request_id': 'req_011Ccy4YJ53ojB47iBqpo1GM'}
+2026-07-12 23:51:43,899 [INFO] empire.playbooks.note_magazine.creator: テンプレートベース記事生成を開始 (genre=人間関係・職場のストレス解消)...
+2026-07-12 23:51:43,899 [INFO] empire.playbooks.note_magazine.creator: Saved draft: 2026-07-12_なぜ人間関係職場のストレス解消に悩む人ほど構造を見失うのか.json
+2026-07-12 23:51:43,899 [INFO] empire.playbooks.note_magazine.creator: Saved ready: 2026-07-12_03.md (mode=template)
+2026-07-12 23:51:44,126 [WARNING] empire.playbooks.note_magazine.distributor: note.com: CSRFトークンが見つかりません（投稿可能な場合もあります）
+2026-07-12 23:51:44,126 [INFO] empire.playbooks.note_magazine.distributor: note.com: Cookie認証セッションを初期化しました
+2026-07-12 23:51:44,268 [WARNING] empire.playbooks.note_magazine.distributor: Post failed: 422 {"error":"Unprocessable Entity"}
+2026-07-12 23:51:44,269 [WARNING] empire.playbooks.note_magazine.distributor: API post failed, falling back to markdown save
+2026-07-12 23:51:44,269 [INFO] empire.playbooks.note_magazine.distributor: Saved ready markdown: /home/runner/work/note-auto-revenue/note-auto-revenue/businesses/note_言語化全1論/data/drafts/ready/2026-07-12_なぜ人間関係_職場のストレス解消に悩む人ほど構造を見失うのか.md
+2026-07-12 23:51:44,269 [WARNING] empire.playbooks.note_magazine.distributor: GMAIL_ADDRESS / GMAIL_APP_PASSWORD が未設定。メール通知をスキップします。
+2026-07-12 23:51:44,483 [INFO] empire.playbooks.note_magazine.distributor: Discord note-記事ch送信完了 (2本目): なぜ人間関係・職場のストレス解消に悩む人ほど構造を見失うのか
+2026-07-12 23:51:44,690 [INFO] empire.playbooks.note_magazine.distributor: Discord帝国レポート送信完了 (2本目): なぜ人間関係・職場のストレス解消に悩む人ほど構造を見失うのか
+2026-07-12 23:51:44,691 [INFO] empire.playbooks.note_magazine.distributor: Distributor done: 1 articles processed
+2026-07-12 23:51:44,692 [INFO] agents.genre_engine: 記事記録: theme=恋愛・好きな人への気持ちの伝え方 level=1 title=なぜ人間関係・職場のストレス解消に悩む人ほど構造を見失うのか
+2026-07-12 23:51:44,692 [INFO] __main__: [note] 完了: 2本生成
+2026-07-12 23:51:44,700 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 104 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-07-12 23:51:44,711 [INFO] empire.phase_manager: [PhaseManager] フェーズ0（種まき） | 記事 104 本 | フォロワー 0 人 | 月収 ¥0 | 有料機能解禁まで: あと 0 記事 / フォロワー 50 人
+2026-07-12 23:51:45,724 [INFO] empire.report_generator: [Report] Discord送信完了（daily モード）
+2026-07-12 23:51:45,724 [INFO] empire.report_generator: [Report] 生成完了: /home/runner/work/note-auto-revenue/note-auto-revenue/logs/report_2026-07-12_08-51.md
