@@ -1,9 +1,10 @@
 name: API Service Auto Runner
 
 on:
-  schedule:
-    - cron: '0 23 * * *'   # 毎日 08:00 JST（メトリクス収集）
-    - cron: '0 3 * * 1'    # 毎週月曜 12:00 JST（新サービス探索・生成）
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   - cron: '0 23 * * *'   # 毎日 08:00 JST（メトリクス収集）
+  #   - cron: '0 3 * * 1'    # 毎週月曜 12:00 JST（新サービス探索・生成）
   workflow_dispatch:
     inputs:
       mode:

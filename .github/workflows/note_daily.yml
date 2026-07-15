@@ -1,9 +1,10 @@
 name: Note Daily Publisher
 
 on:
-  schedule:
-    # 毎日 06:00 JST = 21:00 UTC（前日）
-    - cron: '0 21 * * *'
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   # 毎日 06:00 JST = 21:00 UTC（前日）
+  #   - cron: '0 21 * * *'
   workflow_dispatch:
     inputs:
       mode:

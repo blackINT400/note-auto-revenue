@@ -1,9 +1,10 @@
 name: Gumroad Product Auto Runner
 
 on:
-  schedule:
-    - cron: '0 22 * * *'   # 毎日 07:00 JST（商品更新チェック）
-    - cron: '0 1 * * 1'    # 毎週月曜 10:00 JST（新商品生成）
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   - cron: '0 22 * * *'   # 毎日 07:00 JST（商品更新チェック）
+  #   - cron: '0 1 * * 1'    # 毎週月曜 10:00 JST（新商品生成）
   workflow_dispatch:
     inputs:
       mode:

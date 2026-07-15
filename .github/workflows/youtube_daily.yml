@@ -1,8 +1,9 @@
 name: YouTube Daily Producer
 
 on:
-  schedule:
-    - cron: '0 23 * * *'
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   - cron: '0 23 * * *'
   workflow_dispatch:
     inputs:
       mode:

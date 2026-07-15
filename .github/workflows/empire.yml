@@ -1,15 +1,16 @@
 name: Empire Orchestrator
 
 on:
-  schedule:
-    # 毎日 07:00 JST = 22:00 UTC（前日）
-    - cron: '0 22 * * *'
-    # 毎週月曜 08:30 JST = 23:30 UTC（日曜）: 市場分析（weekly直前）
-    - cron: '30 23 * * 0'
-    # 毎週月曜 09:00 JST = 00:00 UTC 月曜
-    - cron: '0 0 * * 1'
-    # 毎月1日 10:00 JST = 01:00 UTC
-    - cron: '0 1 1 * *'
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   # 毎日 07:00 JST = 22:00 UTC（前日）
+  #   - cron: '0 22 * * *'
+  #   # 毎週月曜 08:30 JST = 23:30 UTC（日曜）: 市場分析（weekly直前）
+  #   - cron: '30 23 * * 0'
+  #   # 毎週月曜 09:00 JST = 00:00 UTC 月曜
+  #   - cron: '0 0 * * 1'
+  #   # 毎月1日 10:00 JST = 01:00 UTC
+  #   - cron: '0 1 1 * *'
   workflow_dispatch:
     inputs:
       mode:

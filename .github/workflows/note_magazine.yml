@@ -1,9 +1,10 @@
 name: note Magazine Auto Runner
 
 on:
-  schedule:
-    - cron: '0 21 * * *'   # 毎日 06:00 JST
-    - cron: '0 23 * * 0'   # 毎週日曜 08:00 JST → 週次分析
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   - cron: '0 21 * * *'   # 毎日 06:00 JST
+  #   - cron: '0 23 * * 0'   # 毎週日曜 08:00 JST → 週次分析
   workflow_dispatch:
     inputs:
       mode:
