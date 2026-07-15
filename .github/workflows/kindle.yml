@@ -1,9 +1,10 @@
 name: Kindle Monthly Bundler
 
 on:
-  schedule:
-    # 毎月2日 10:00 JST = 01:00 UTC
-    - cron: '0 1 2 * *'
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   # 毎月2日 10:00 JST = 01:00 UTC
+  #   - cron: '0 1 2 * *'
   workflow_dispatch:
 
 jobs:

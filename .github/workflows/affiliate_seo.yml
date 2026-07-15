@@ -1,9 +1,10 @@
 name: Affiliate SEO Auto Runner
 
 on:
-  schedule:
-    - cron: '0 20 * * *'   # 毎日 05:00 JST（記事生成・公開）
-    - cron: '0 2 * * 1'    # 毎週月曜 11:00 JST（週次分析）
+  # schedule disabled — manual dispatch only (2026-07-15)
+  # schedule:
+  #   - cron: '0 20 * * *'   # 毎日 05:00 JST（記事生成・公開）
+  #   - cron: '0 2 * * 1'    # 毎週月曜 11:00 JST（週次分析）
   workflow_dispatch:
     inputs:
       mode:
