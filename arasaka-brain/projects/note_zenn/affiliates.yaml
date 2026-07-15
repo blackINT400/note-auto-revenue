@@ -1,0 +1,42 @@
+affiliates:
+  - id: pairs
+    name: "Pairs（ペアーズ）"
+    network: "A8.net"
+    category: "恋愛マッチングアプリ"
+    affiliate_url: ""
+    status: "pending_approval"
+    commission: "成果報酬型"
+
+  - id: with
+    name: "with"
+    network: "A8.net"
+    category: "恋愛マッチングアプリ"
+    affiliate_url: ""
+    status: "pending_approval"
+    commission: "成果報酬型"
+
+  - id: omiai
+    name: "Omiai"
+    network: "A8.net"
+    category: "恋愛マッチングアプリ"
+    affiliate_url: ""
+    status: "pending_approval"
+    commission: "成果報酬型"
+
+  - id: udemy
+    name: "Udemy"
+    network: "A8.net"
+    category: "自己成長・学習"
+    affiliate_url: ""
+    status: "pending_approval"
+    commission: "成果報酬型"
+
+  - id: rakuten_books
+    name: "楽天ブックス"
+    network: "楽天アフィリエイト"
+    category: "哲学・心理学書籍"
+    affiliate_url: ""
+    status: "pending_approval"
+    commission: "成果報酬型"
+
+notes: "A8.net審査通過後にaffiliate_urlを設定すること。記事10本以上・更新頻度・質が審査条件。"

@@ -1,0 +1,48 @@
+name: ARASAKA Cost Check
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # 6時間ごと
+  workflow_dispatch:
+
+jobs:
+  cost-check:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: arasaka-brain
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: pip install pyyaml requests
+      - name: Check cost and alert
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          DISCORD_ALERT_CHANNEL: ${{ secrets.DISCORD_ALERT_CHANNEL }}
+        run: |
+          python - <<'EOF'
+          import sys, json, os
+          from pathlib import Path
+          sys.path.insert(0, ".")
+          import yaml
+          from shared.cost_tracker import CostTracker
+          from shared.discord_notifier import DiscordNotifier
+
+          with open("config.yaml") as f:
+              config = yaml.safe_load(f)
+
+          tracker = CostTracker(config["cost"])
+          notifier = DiscordNotifier(config["discord"])
+          summary = tracker.monthly_summary()
+
+          print(f"月次コスト: ¥{summary['total_jpy']} ({summary['usage_pct']}%)")
+
+          if tracker.is_sl_triggered():
+              notifier.alert(f"🚨 SL発動！月次コスト上限到達: ¥{summary['total_jpy']} ({summary['usage_pct']}%)")
+              sys.exit(1)
+          elif tracker.is_alert_triggered():
+              notifier.alert(f"⚠️ コスト警告: ¥{summary['total_jpy']} ({summary['usage_pct']}%) — 残り¥{int(summary['remaining_usd'] * 150)}")
+          EOF
